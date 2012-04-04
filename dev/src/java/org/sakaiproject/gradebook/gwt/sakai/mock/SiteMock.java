@@ -563,10 +563,4 @@ public class SiteMock implements Site {
 		
 	}
 
-	@Override
-	public Collection<String> getMembersInGroups(Set<String> arg0) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

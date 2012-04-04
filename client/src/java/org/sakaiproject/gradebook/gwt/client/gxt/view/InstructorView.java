@@ -847,19 +847,19 @@ public class InstructorView extends AppView {
 	private Menu newMoreActionsMenu() {
 		
 		Menu moreActionsMenu = new AriaMenu();
+		
+		// TODO: add DOWNLOAD_NEW_ITEM_TEMPLATE
+		MenuItem menuItem = new AriaMenuItem(i18n.headerDownloadNewItemTemplate(), menuSelectionListener);
+		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.DOWNLOAD_NEW_ITEM_TEMPLATE);
+		menuItem.setIcon(AbstractImagePrototype.create(resources.page_white_put()));
+		menuItem.setTitle(i18n.headerDownloadNewItemTemplateTitle());
+		moreActionsMenu.add(menuItem);
 
-		MenuItem menuItem = new AriaMenuItem(i18n.headerExport(), menuSelectionListener);
+		menuItem = new AriaMenuItem(i18n.headerExport(), menuSelectionListener);
 		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT);
 		//menuItem.setIconStyle(resources.css().gbExportItemIcon());
 		menuItem.setIcon(AbstractImagePrototype.create(resources.page_white_put()));
 		menuItem.setTitle(i18n.headerExportTitle());
-		moreActionsMenu.add(menuItem);
-		
-		// TODO: add DOWNLOAD_NEW_ITEM_TEMPLATE
-		menuItem = new AriaMenuItem(i18n.headerDownloadNewItemTemplate(), menuSelectionListener);
-		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.DOWNLOAD_NEW_ITEM_TEMPLATE);
-		menuItem.setIcon(AbstractImagePrototype.create(resources.page_white_put()));
-		menuItem.setTitle(i18n.headerDownloadNewItemTemplateTitle());
 		moreActionsMenu.add(menuItem);
 
 		// If we're dealing with an "editable" instance of the tool, show the other editing menu items

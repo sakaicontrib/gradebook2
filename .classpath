@@ -28,69 +28,49 @@
 	<classpathentry kind="var" path="M2_REPO/cglib/cglib-nodep/2.1_3/cglib-nodep-2.1_3.jar"/>
 	<classpathentry kind="var" path="M2_REPO/antlr/antlr/2.7.6/antlr-2.7.6.jar"/>
 	<classpathentry kind="var" path="M2_REPO/jexcelapi/jxl/2.4.2/jxl-2.4.2.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/course-management/coursemanagement-api/1.3-SNAPSHOT/coursemanagement-api-1.3-SNAPSHOT.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/gradebook/gradebook-service-hibernate/1.3-SNAPSHOT/gradebook-service-hibernate-1.3-SNAPSHOT.jar" sourcepath="/SRC/edu-services-trunk"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/gradebook/gradebook-service-impl/1.3-SNAPSHOT/gradebook-service-impl-1.3-SNAPSHOT.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-component-manager/1.4.0-SNAPSHOT/sakai-component-manager-1.4.0-SNAPSHOT.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/sections/sections-api/1.3-SNAPSHOT/sections-api-1.3-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/course-management/coursemanagement-api/1.2-SNAPSHOT/coursemanagement-api-1.2-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/gradebook/gradebook-service-hibernate/1.2-SNAPSHOT/gradebook-service-hibernate-1.2-SNAPSHOT.jar" sourcepath="/SRC/edu-services-trunk"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/gradebook/gradebook-service-impl/1.2-SNAPSHOT/gradebook-service-impl-1.2-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-component-manager/1.3.0-SNAPSHOT/sakai-component-manager-1.3.0-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/sections/sections-api/1.2-SNAPSHOT/sections-api-1.2-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-webmvc/2.5.6.SEC03/spring-webmvc-2.5.6.SEC03.jar"/>
-	<classpathentry kind="var" path="M2_REPO/com/sun/jersey/contribs/jersey-spring/1.11/jersey-spring-1.11.jar"/>
-	<classpathentry kind="var" path="M2_REPO/com/sun/jersey/jersey-core/1.11/jersey-core-1.11.jar"/>
-	<classpathentry kind="var" path="M2_REPO/com/sun/jersey/jersey-server/1.11/jersey-server-1.11.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/sun/jersey/contribs/jersey-spring/1.7/jersey-spring-1.7.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/sun/jersey/jersey-core/1.7/jersey-core-1.7.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/sun/jersey/jersey-server/1.7/jersey-server-1.7.jar"/>
 	<classpathentry kind="var" path="M2_REPO/asm/asm/3.1/asm-3.1.jar"/>
-	<classpathentry kind="var" path="M2_REPO/com/sun/jersey/jersey-json/1.11/jersey-json-1.11.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/sun/jersey/jersey-json/1.7/jersey-json-1.7.jar"/>
 	<classpathentry kind="var" path="M2_REPO/stax/stax-api/1.0.1/stax-api-1.0.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/sun/xml/bind/jaxb-impl/2.2.3-1/jaxb-impl-2.2.3-1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javax/xml/bind/jaxb-api/2.2.2/jaxb-api-2.2.2.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/codehaus/jackson/jackson-core-asl/1.9.2/jackson-core-asl-1.9.2.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/codehaus/jackson/jackson-jaxrs/1.9.2/jackson-jaxrs-1.9.2.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/codehaus/jackson/jackson-mapper-asl/1.9.2/jackson-mapper-asl-1.9.2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/codehaus/jackson/jackson-core-asl/1.7.1/jackson-core-asl-1.7.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/codehaus/jackson/jackson-jaxrs/1.7.1/jackson-jaxrs-1.7.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/codehaus/jackson/jackson-mapper-asl/1.7.1/jackson-mapper-asl-1.7.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/google/gwt/google-apis/gwt-visualization/1.1.1/gwt-visualization-1.1.1.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-util/1.4.0-SNAPSHOT/sakai-kernel-util-1.4.0-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-util/1.3.0-SNAPSHOT/sakai-kernel-util-1.3.0-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javax/activation/activation/1.1.1/activation-1.1.1.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/sections/sections-model/1.3-SNAPSHOT/sections-model-1.3-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/sections/sections-model/1.2-SNAPSHOT/sections-model-1.2-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-test/2.5.6.SEC03/spring-test-2.5.6.SEC03.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/common/archive-api/1.3-SNAPSHOT/archive-api-1.3-SNAPSHOT.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/common/archive-impl/1.3-SNAPSHOT/archive-impl-1.3-SNAPSHOT.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-api/1.4.0-SNAPSHOT/sakai-kernel-api-1.4.0-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/common/archive-api/1.2-SNAPSHOT/archive-api-1.2-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/common/archive-impl/1.2-SNAPSHOT/archive-impl-1.2-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-api/1.3.0-SNAPSHOT/sakai-kernel-api-1.3.0-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="M2_REPO/log4j/log4j/1.2.8/log4j-1.2.8.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-impl/1.4.0-SNAPSHOT/sakai-kernel-impl-1.4.0-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-impl/1.3.0-SNAPSHOT/sakai-kernel-impl-1.3.0-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/commons/commons-math/2.1/commons-math-2.1.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/gradebook/gradebook-service-api/1.3-SNAPSHOT/gradebook-service-api-1.3-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/gradebook/gradebook-service-api/1.2-SNAPSHOT/gradebook-service-api-1.2-SNAPSHOT.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="var" path="M2_REPO/net/sf/ehcache/ehcache/1.6.1/ehcache-1.6.1.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/entitybroker/entitybroker-api/1.6-SNAPSHOT/entitybroker-api-1.6-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="M2_REPO/aopalliance/aopalliance/1.0/aopalliance-1.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/googlecode/gwt/inject/gin/1.5-post-gwt-2.2/gin-1.5-post-gwt-2.2.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javax/inject/javax.inject/1/javax.inject-1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/google/inject/extensions/guice-assistedinject/3.0/guice-assistedinject-3.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/google/inject/guice/3.0/guice-3.0.jar"/>
 	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
-	<classpathentry kind="var" path="M2_REPO/com/sun/jersey/jersey-servlet/1.11/jersey-servlet-1.11.jar"/>
-	<classpathentry kind="var" path="M2_REPO/edu/ucar/netcdf/4.2-min/netcdf-4.2-min.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/apache/james/apache-mime4j-core/0.7/apache-mime4j-core-0.7.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/slf4j/slf4j-api/1.5.6/slf4j-api-1.5.6.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/apache/james/apache-mime4j-dom/0.7/apache-mime4j-dom-0.7.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/apache/commons/commons-compress/1.3/commons-compress-1.3.jar"/>
 	<classpathentry kind="var" path="M2_REPO/commons-codec/commons-codec/1.5/commons-codec-1.5.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/apache/pdfbox/pdfbox/1.6.0/pdfbox-1.6.0.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/apache/pdfbox/fontbox/1.6.0/fontbox-1.6.0.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/apache/pdfbox/jempbox/1.6.0/jempbox-1.6.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/bouncycastle/bcmail-jdk15/1.45/bcmail-jdk15-1.45.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/bouncycastle/bcprov-jdk15/1.45/bcprov-jdk15-1.45.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/apache/poi/poi-scratchpad/3.7/poi-scratchpad-3.7.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/apache/geronimo/specs/geronimo-stax-api_1.0_spec/1.0.1/geronimo-stax-api_1.0_spec-1.0.1.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/ccil/cowan/tagsoup/tagsoup/1.2.1/tagsoup-1.2.1.jar"/>
-	<classpathentry kind="var" path="M2_REPO/rome/rome/0.9/rome-0.9.jar"/>
 	<classpathentry kind="var" path="M2_REPO/jdom/jdom/1.0/jdom-1.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/tika/tika-core/1.0/tika-core-1.0.jar" sourcepath="/M2_REPO/org/apache/tika/tika-core/1.0/tika-core-1.0-sources.jar"/>
-	<classpathentry kind="var" path="M2_REPO/com/drewnoakes/metadata-extractor/2.4.0-beta-1/metadata-extractor-2.4.0-beta-1.jar"/>
-	<classpathentry kind="var" path="M2_REPO/de/l3s/boilerpipe/boilerpipe/1.1.0/boilerpipe-1.1.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/poi/poi/3.7/poi-3.7.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/poi/poi-ooxml/3.7/poi-ooxml-3.7.jar" sourcepath="/M2_REPO/org/apache/poi/poi-ooxml/3.8-beta4/poi-ooxml-3.8-beta4-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/poi/poi-ooxml-schemas/3.7/poi-ooxml-schemas-3.7.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/apache/xmlbeans/xmlbeans/2.3.0/xmlbeans-2.3.0.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/apache/tika/tika-parsers/1.0/tika-parsers-1.0.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>
