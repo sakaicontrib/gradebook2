@@ -2076,9 +2076,9 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			String letterGrade = gradeCalculations.convertPercentageToLetterGrade(numericGrade);
 			rowData[colIdx] = letterGrade;
 			learnerRow.set(id, rowData[colIdx]);
+			learnerRow.set(id + AppConstants.ACTUAL_SCORE_SUFFIX, grade);
 			learnerRow.set(Util.buildConvertedMessageKey(id), "Converted numeric to letter grade");
 			learnerRow.set(Util.buildConvertedGradeKey(id), grade);
-			//learnerRow.set(LearnerKey.S_ORIG_GRD.name(), grade);
 			log.debug("#####: Converting numberic grade [" + grade + "] to a letter grade [" + letterGrade + "]");
 			return;
 		}
