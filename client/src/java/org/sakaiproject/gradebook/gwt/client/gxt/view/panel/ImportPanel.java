@@ -853,7 +853,7 @@ public class ImportPanel extends GradebookPanel {
 		
 		wizard.show();
 		
-		wizard.resize(0,-50);
+		wizard.setSize(540, 350);
 
 	}
 	
