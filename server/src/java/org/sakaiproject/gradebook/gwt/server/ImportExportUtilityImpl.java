@@ -1073,8 +1073,34 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		{
 			boolean shouldBeScantron = FileFormat.SCANTRON.name().equals(settings.getFileFormatName());
 			boolean isReallyScantron = isScantronSheetForJExcelApi(s);
+			boolean shouldBeNoStructureGB = FileFormat.NO_STRUCTURE.name().equals(settings.getFileFormatName());
 			
-			if (shouldBeScantron && !isReallyScantron
+			if (shouldBeNoStructureGB) {
+				ImportExportDataFile raw = new ImportExportDataFile();  
+
+				for (int i = 0; i < s.getRows(); i++)
+				{
+					Cell[] row = null; 
+					String[] data = null; 
+
+					row = s.getRow(i);
+
+					data = new String[row.length]; 
+					for (int j = 0; j < row.length ; j++)
+					{
+						data[j] = row[j].getContents(); 
+					}
+					raw.addRow(data); 
+				}
+				if ( 0 < readDataForStructureInformation(raw, buildRowIndicatorMap(), new HashMap<StructureRow, String[]>()) ) {
+					rv = new UploadImpl();
+					rv.setErrors(true);
+					rv.setNotes(unexpectedFormatErrorMessage);
+					return rv;
+				}
+				//exit if-statement
+			} else
+				if (shouldBeScantron && !isReallyScantron
 					|| !shouldBeScantron && isReallyScantron) {
 				rv.setErrors(true);
 				rv.setNotes(unexpectedFormatErrorMessage);
@@ -1421,6 +1447,12 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 				if (FileFormat.FULL.equals(fileFormatChosen)) {
 					ret = processNormalXls(cur, settings); ///cart before the horse but this is mid refactor
 					if ( 0 >= readDataForStructureInformation(ret, buildRowIndicatorMap(), new HashMap<StructureRow, String[]>()) ) {
+						mismatch = true;
+					}
+			} else
+				if (FileFormat.NO_STRUCTURE.equals(fileFormatChosen)) {
+					ret = processNormalXls(cur, settings); ///cart before the horse but this is mid refactor
+					if ( 0 < readDataForStructureInformation(ret, buildRowIndicatorMap(), new HashMap<StructureRow, String[]>()) ) {
 						mismatch = true;
 					}
 				}
@@ -3282,6 +3314,10 @@ private GradeItem buildNewCategory(String curCategoryString,
 						} 
 					} else if (FileFormat.FULL.equals(FileFormat.valueOf(importSettings.getFileFormatName()))) {
 						if (0 >= readDataForStructureInformation(rawData, buildRowIndicatorMap(), new HashMap<StructureRow, String[]>())){
+							typeOK = false;
+						}
+					} else if (FileFormat.NO_STRUCTURE.equals(FileFormat.valueOf(importSettings.getFileFormatName()))) {
+						if (0 < readDataForStructureInformation(rawData, buildRowIndicatorMap(), new HashMap<StructureRow, String[]>())){
 							typeOK = false;
 						}
 					}

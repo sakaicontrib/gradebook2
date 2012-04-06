@@ -25,7 +25,8 @@ public enum FileFormat implements FileModel {
 	FULL("full"),
 	SCANTRON("scantron"), 
 	CLICKER("clicker"), 
-	TEMPLATE("template");
+	TEMPLATE("template"),
+	NO_STRUCTURE("no-structure"); // DEPRECATED
 
 	private String typeName;
 	private String displayName;
@@ -54,6 +55,8 @@ public enum FileFormat implements FileModel {
 			case FULL:
 				displayName = i18n.importFullGradebook();
 				break;
+			case NO_STRUCTURE:
+				displayName = i18n.noStructureGradebook();
 			}
 		}
 		

@@ -505,11 +505,16 @@ public interface I18nConstants extends Constants {
 	String importFullGradebook();
 	String importScantronClickerPointsConversionTitle();
 	String importScantronClickerPointsConversionFinish();
-	String noImportJustStructureForTemplateFormat();
+	String noImportJustStructureForFormat();
 	String importWizardTitle();
 	
 	// GRBK-1220
 	String downloadNewItemTemplateWizardHeading();
+	
+	// GRBK-1263 - Deprecated
+	
+	String noStructureGradebook();
+
 	
 	
 }

@@ -773,6 +773,7 @@ public class ImportPanel extends GradebookPanel {
 		maxPointsNumberField.setValidator(new MinMaxDoubleValidator(maxScore, i18n.itemFormPanelEditPointsInvalid()));
 		form.add(maxPointsNumberField);
 		
+		
 		card1.addFinishListener(new Listener<BaseEvent>() {
 
 			public void handleEvent(BaseEvent be) {
