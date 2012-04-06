@@ -1228,7 +1228,6 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 	// GRBK-1255
 	private Boolean hasEqualWeights(List<Assignment> assignments) {
 	
-		System.out.println("DEBUG: hasEqualWeights num assignments = " + assignments.size());
 		if(null == assignments || assignments.size() < 2) {
 
 			return Boolean.FALSE;
