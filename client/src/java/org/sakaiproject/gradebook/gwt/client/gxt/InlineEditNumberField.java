@@ -27,6 +27,7 @@ import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FieldEvent;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.event.dom.client.KeyCodes;
 
 public class InlineEditNumberField extends NumberField {
@@ -41,6 +42,23 @@ public class InlineEditNumberField extends NumberField {
 			break;
 		}
 		
+	}
+	
+	//GRBK-1090
+	//Override methods to allow maximum input on fields
+	
+	@Override
+	 public	void setMaxLength(int m) {
+		super.setMaxLength(m);
+		if (rendered)	{
+			getInputEl().setElementAttribute("maxLength", m);
+		}
+	}
+		
+	@Override
+	protected void onRender(Element target, int index) {
+		super.onRender(target, index);
+		getInputEl().setElementAttribute("maxLength", getMaxLength());
 	}
 	
 	public void complete() {
