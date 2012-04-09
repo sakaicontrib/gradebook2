@@ -801,9 +801,13 @@ public class ImportPanel extends GradebookPanel {
 					String newValStr = "??"; 
 					Double pnts = null;
 					try {
-						pnts = Double.valueOf((String)row.get(i.getIdentifier() + AppConstants.ACTUAL_SCORE_SUFFIX));
+						pnts = Double.valueOf((String)row.get(i.getIdentifier()));
 					} catch (NumberFormatException e) {
-						pnts = 0d;
+						try {
+							pnts = Double.valueOf((String)row.get(i.getIdentifier() + AppConstants.ACTUAL_SCORE_SUFFIX));
+						} catch (NumberFormatException nfe2) {
+							pnts = 0d;
+						}
 					} catch (NullPointerException npe) {
 						pnts = 0d;
 					}
