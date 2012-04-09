@@ -314,3 +314,10 @@
 	white-space:nowrap;
 }
 	
+ /* GRBK-1264 */
+ 
+ .gbFileFormatInfo textarea {
+	border: none !important;
+	background-color: transparent;
+	font-weight:bold
+}

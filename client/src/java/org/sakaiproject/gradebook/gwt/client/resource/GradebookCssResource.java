@@ -127,4 +127,7 @@ public interface GradebookCssResource extends CssResource {
 	/* GRBK-514 */
 	String gbLeftAlignFlushNoWrapInput();
 
+	/* GRBK-1264 */
+	String gbFileFormatInfo();
+
 }

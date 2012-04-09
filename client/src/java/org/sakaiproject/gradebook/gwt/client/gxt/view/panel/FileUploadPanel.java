@@ -32,7 +32,6 @@ import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.type.ExportType;
 import org.sakaiproject.gradebook.gwt.client.gxt.type.FileFormat;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
-import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.LearnerSummaryPanel.FlexTableContainer;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 import org.sakaiproject.gradebook.gwt.client.wizard.formpanel.ExportTypeComboBox;
@@ -50,11 +49,12 @@ import com.extjs.gxt.ui.client.widget.form.Field;
 import com.extjs.gxt.ui.client.widget.form.FileUploadField;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.HiddenField;
+import com.extjs.gxt.ui.client.widget.form.TextArea;
 import com.extjs.gxt.ui.client.widget.form.Validator;
+import com.extjs.gxt.ui.client.widget.layout.FormData;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Cookies;
-import com.google.gwt.user.client.ui.FlexTable;
 
 public class FileUploadPanel extends FormPanel {
 
@@ -64,7 +64,7 @@ public class FileUploadPanel extends FormPanel {
 	private ExportTypeComboBox importTypeComboBox;
 	NullSensitiveCheckBox justStructureChoice;
 	private FileFormatComboBox importFormatComboBox;
-	private FlexTableContainer importFormatInfoTable = null;
+	private TextArea importFormatInfo = null;
 	public final static Integer COMMENTS_CHECKBOX_VALUE = Integer.valueOf(0);
 	public final static Integer EXPORT_TYPE_VALUE = Integer.valueOf(1);
 	
@@ -164,7 +164,7 @@ public class FileUploadPanel extends FormPanel {
 					FileFormat f = FileFormat.valueOf((String)
 							importFormatComboBox.getValue().get(importFormatComboBox.getValueField()));
 					if (f != null) {
-						importFormatInfoTable.setText(1, 0, f.getTypeName() + " is as " + f.getTypeName() + " does...." 
+						importFormatInfo.setValue(f.getTypeName() + " is as " + f.getTypeName() + " does...." 
 								+ (f.equals(FileFormat.NO_STRUCTURE) ? "DEPRECATED":""));
 						
 						if (f.equals(FileFormat.TEMPLATE) || f.equals(FileFormat.NO_STRUCTURE)) {
@@ -224,11 +224,16 @@ public class FileUploadPanel extends FormPanel {
 
 		});
 		
-		importFormatInfoTable   = new FlexTableContainer(new FlexTable());
-		
-		importFormatInfoTable.getFlexCellFormatter().setStyleName(1, 0, resources.css().gbImpact());
-		importFormatInfoTable.getFlexCellFormatter().setHeight(1, 0, "42px");
-		add(importFormatInfoTable);
+		importFormatInfo   = new TextArea();
+		importFormatInfo.setReadOnly(true);
+		//importFormatInfo.setStyleName(led { background-color: transparent; border: 0; }");
+		importFormatInfo.addStyleName(resources.css().gbFileFormatInfo());
+		//importFormatInfo.setVisibleLines(10);
+		importFormatInfo.setLabelSeparator("");
+		importFormatInfo.setAutoHeight(true);
+		importFormatInfo.setAutoWidth(true);
+		//importFormatInfo.setBorders(true);
+		add(importFormatInfo, new FormData("100%"));
 	}
 	
 
