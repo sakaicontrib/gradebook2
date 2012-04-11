@@ -14,6 +14,7 @@ public class ImportSettingsModel extends EntityModel implements ImportSettings {
 	private String fileFormatName = null;
 	private String exportTypeName = null;
 	private String gradebookUid =  null;
+	private Boolean nameUniquenessCheckDone = false;
 
 	
 	public ImportSettingsModel() {
@@ -111,6 +112,15 @@ public class ImportSettingsModel extends EntityModel implements ImportSettings {
 
 	public void setGradebookUid(String gradebookUid) {
 		this.gradebookUid = gradebookUid;
+	}
+
+	public boolean isNameUniquenessCheckDone() {
+		return this.nameUniquenessCheckDone;
+	}
+
+	@Override
+	public void setNameUniquenessCheckDone(Boolean done) {
+		this.nameUniquenessCheckDone = done;
 	}
 	
 }

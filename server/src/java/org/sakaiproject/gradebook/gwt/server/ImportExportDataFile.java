@@ -3,6 +3,8 @@ package org.sakaiproject.gradebook.gwt.server;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.sakaiproject.gradebook.gwt.client.api.ImportSettings;
+
 public class ImportExportDataFile {
 
 	private String fileType; 
@@ -13,7 +15,8 @@ public class ImportExportDataFile {
 	private List<String[]> allRows; 
 	private int curRow; 
 	private boolean isJustStructure = false;
-
+	private ImportSettings importSettings = null;
+	
 	public ImportExportDataFile()
 	{
 		this.errorsFound = false; 
@@ -151,4 +154,13 @@ public class ImportExportDataFile {
 	public void setJustStructure(boolean isJustStructure) {
 		this.isJustStructure = isJustStructure;
 	}
+
+	public void setImportSettings(ImportSettings importSettings) {
+		this.importSettings = importSettings;
+	}
+
+	public ImportSettings getImportSettings() {
+		return importSettings;
+	}
+
 }

@@ -15,6 +15,7 @@ public class ImportSettingsImpl extends BaseModel implements ImportSettings {
 	private String exportTypeName = null;
 	private String fileFormatName;
 	private String gradebookUid = null;
+	private Boolean nameUniquenessCheckDone = false;
 	
 	public ImportSettingsImpl () {
 		super();
@@ -115,6 +116,16 @@ public class ImportSettingsImpl extends BaseModel implements ImportSettings {
 
 	public void setGradebookUid(String gradebookUid) {
 		this.gradebookUid = gradebookUid;
+	}
+
+
+	public boolean isNameUniquenessCheckDone() {
+		return this.nameUniquenessCheckDone;
+	}
+
+
+	public void setNameUniquenessCheckDone(Boolean done) {
+		this.nameUniquenessCheckDone = done;
 	}
 	
 

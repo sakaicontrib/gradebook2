@@ -950,18 +950,18 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		return false; 
 	}
 
-	private String getUniqueFileNameForFileName(String fileName,String gradebookUid) 
+	private String getUniqueItemName(String itemName,String gradebookUid) 
 	throws GradebookImportException {
 
-		log.debug("fileName=" + fileName);
-		if (fileName == null || fileName.equals(""))
+		log.debug("fileName=" + itemName);
+		if (itemName == null || itemName.equals(""))
 		{
 			log.debug("null filename, returning default"); 
 			return "Scantron Import"; 
 		}
 		
 		int i = 1;
-		String curFileName = fileName; 
+		String curFileName = itemName; 
 		while (true)
 		{
 			log.debug("curFileName: " + curFileName); 
@@ -972,7 +972,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			}
 			// else
 			
-			curFileName = fileName + "-" +i; 
+			curFileName = itemName + "-" +i; 
 			
 			i++; 
 
@@ -998,12 +998,9 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		boolean isOriginalName; 
 		
 		try {
-			realFileName = getUniqueFileNameForFileName(fileName, settings.getGradebookUid());
-		} catch (GradebookImportException e) {
-			Upload importFile = new UploadImpl(); 
-			importFile.setErrors(true); 
-			importFile.setNotes(e.getMessage()); 
-			return importFile; 
+			realFileName = getUniqueItemName(fileName, settings.getGradebookUid());
+		} catch (GradebookImportException e) { 
+			return emptyUploadFileWithNotes(e.getMessage()); 
 		} 
 		isOriginalName = realFileName.equals(fileName);
 		
@@ -1057,14 +1054,10 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			wb = Workbook.getWorkbook(is);
 		} catch (BiffException e) {
 			log.error("Caught a biff exception from JExcelAPI: " + e.getLocalizedMessage(), e); 
-			rv.setErrors(true);
-			rv.setNotes(unexpectedTypeErrorMessage);
-			return rv; 
+			return emptyUploadFileWithNotes(unexpectedTypeErrorMessage); 
 		} catch (IOException e) {
 			log.error("Caught an IO exception from JExcelAPI: " + e.getLocalizedMessage(), e); 
-			rv.setErrors(true);
-			rv.setNotes(unexpectedTypeErrorMessage);
-			return rv; 
+			return emptyUploadFileWithNotes(unexpectedTypeErrorMessage); 
 		} 
 
 		is.close();
@@ -1093,10 +1086,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 					raw.addRow(data); 
 				}
 				if ( 0 < readDataForStructureInformation(raw, buildRowIndicatorMap(), new HashMap<StructureRow, String[]>()) ) {
-					rv = new UploadImpl();
-					rv.setErrors(true);
-					rv.setNotes(unexpectedFormatErrorMessage);
-					return rv;
+					return emptyUploadFileWithNotes(unexpectedFormatErrorMessage);
 				}
 				//exit if-statement
 			} else
@@ -1169,10 +1159,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 				|| shouldBeFullGradebook && 
 				1 > readDataForStructureInformation(raw, buildRowIndicatorMap(), new HashMap<StructureRow, String[]> ());
 		if (isBadFormat) {
-			Upload nothing = new UploadImpl();
-			nothing.setErrors(true);
-			nothing.setNotes(unexpectedFormatErrorMessage);
-			return nothing;
+			return emptyUploadFileWithNotes(unexpectedFormatErrorMessage);
 		}
 		
 		if (isClicker || isTemplate) {
@@ -1181,8 +1168,8 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		raw.setFileType("Excel 5.0/7.0" + ( isClicker ? " clicker": "")); 
 		raw.setScantronFile(isClicker || isTemplate); 
 		raw.setJustStructure(settings.isJustStructure());
-
-		return parseImportGeneric(gradebookUid, raw);
+		raw.setImportSettings(settings);
+		return parseImportGeneric(raw);
 	}
 
 	private Upload handleScantronSheetForJExcelApi(Sheet s, String gradebookUid, 
@@ -1192,7 +1179,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		StringBuilder err = new StringBuilder(i18n.getString("scantronHasErrors", "Scantron File with errors: ")); 
 		ImportExportDataFile raw = new ImportExportDataFile(); 
 		boolean stop = false; 
-
+				
 		Cell studentIdHeader = s.findCell(scantronStudentIdHeader);
 		Cell scoreHeader = s.findCell(scantronScoreHeader);
 		
@@ -1236,15 +1223,16 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			raw.setScantronFile(true);
 			raw.setNewAssignment(isNewAssignmentByFileName);
 			raw.setJustStructure(settings.isJustStructure());
-			return parseImportGeneric(gradebookUid, raw);
+			raw.setImportSettings(settings);
+			return parseImportGeneric(raw);
 		}
 		//else
 		
 		raw.setMessages(err.toString());
 		err = null; 
 		raw.setErrorsFound(true); 
-
-		return parseImportGeneric(gradebookUid, raw);
+		raw.setImportSettings(settings);
+		return parseImportGeneric(raw);
 		
 
 	}
@@ -1264,6 +1252,64 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		return header; 
 	}
 	
+	private List<String[]> convertScantronRowsToTemplate(List<String[]> rows, String itemName) {
+		
+		if (null == rows) 
+			return null;
+		
+		List<String[]> rv = new ArrayList<String[]>();
+		int scoreIndex = -1;
+		int idIndex = -1;
+		for (Iterator<String[]> i=rows.iterator();i.hasNext();) {
+			String[] row = i.next();
+			if (isListAScantronHeaderRow(Arrays.asList(row))) {
+				scoreIndex = findScantronScoreIndex(row);
+				idIndex = findScantronIdIndex(row);
+				rv.add(createScantronHeaderRow(itemName));
+			} else if (row.length > scoreIndex && row.length > idIndex) {
+				String[] newRow = new String[2];
+				newRow[RAWFIELD_FIRST_POSITION] = row[idIndex];
+				newRow[RAWFIELD_SECOND_POSITION] = row[scoreIndex];
+				rv.add(newRow);
+			}
+			
+		}
+		
+		
+		
+		return rv;
+		
+		
+	}
+	
+	private int findScantronScoreIndex(String[] row) {
+		int notFound = -1;
+		if (null == row)
+			return notFound; 
+		
+		for (int i=0;i<row.length;++i) {
+			if (row[i].equalsIgnoreCase(scantronRescoreHeader) 
+					|| row[i].equalsIgnoreCase(scantronScoreHeader) ) {
+				return i;
+			}
+		}
+		return notFound;
+	}
+	
+	private int findScantronIdIndex(String[] row) {
+		int notFound = -1;
+		if (null == row)
+			return notFound; 
+		
+		for (int i=0;i<row.length;++i) {
+			if (row[i].equalsIgnoreCase(scantronStudentIdHeader)) {
+				return i;
+			}
+		}
+		return notFound;
+	}
+
+
 	private boolean isScantronSheetForJExcelApi(Sheet s) {
 		Cell studentIdHeader = s.findCell(scantronStudentIdHeader);
 		Cell scoreHeader = s.findCell(scantronScoreHeader);
@@ -1430,7 +1476,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 					log.debug("POI: Not scantron");
 					if (isClickerSheetFromPoi(cur)) {
 						ret = processNormalXls(cur, settings);
-						ret.setNewAssignment(isNewAssignmentByFileName);
+						ret.setNewAssignment(isNewAssignmentByFileName);//TODO: does this make sense?
 						ret.setScantronFile(true);
 					} else {
 						mismatch = true;
@@ -1459,31 +1505,23 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 				
 				
 				if (mismatch) {
-					return nothingWithErrorMessage(unexpectedFormatErrorMessage, settings);
+					return emptyUploadFileWithNotes(unexpectedFormatErrorMessage);
 				} 
 				
 				///#### everything checks out... continue ####
 				ret.setJustStructure(settings.isJustStructure());
-				return parseImportGeneric(settings.getGradebookUid(), ret);
+				ret.setImportSettings(settings);
+				return parseImportGeneric(ret);
 				
 			
 		}
 		//else numsheets == 0 
 		
-		return nothingWithErrorMessage(i18n.getString("importValidSheetsMessage"), settings);
+		return emptyUploadFileWithNotes(i18n.getString("importValidSheetsMessage"));
 		
 
 		
 	}
-
-	private Upload nothingWithErrorMessage(String string, ImportSettings settings) {
-		ImportExportDataFile d = new ImportExportDataFile();
-		d.setMessages(string);
-		d.setErrorsFound(true); 
-		return parseImportGeneric(settings.getGradebookUid(), d);
-
-	}
-
 
 	private ImportExportDataFile processNormalXls(org.apache.poi.ss.usermodel.Sheet cur, ImportSettings settings) {
 		log.debug("processNormalXls() called");
@@ -1727,7 +1765,8 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			rawData.setJustStructure(importSettings.isJustStructure());
 		}else{
 			importSettings = new ImportSettingsImpl();
-		}
+			importSettings.setGradebookUid(gradebookUid);
+			}
 		
 		CSVReader csvReader = new CSVReader(reader);
 		String[] ent;
@@ -1746,7 +1785,8 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 
 		rawData.setFileType("CSV file"); 
 		rawData.setScantronFile(isClickerSheetCSV(rawData) /*||isScantronCSV(rawData)*/);
-		return parseImportGeneric(gradebookUid, rawData);
+		rawData.setImportSettings(importSettings);
+		return parseImportGeneric(rawData);
 	}
 	
 	public Upload parseImportCSV(String gradebookUid, Reader reader,
@@ -2729,14 +2769,12 @@ private GradeItem buildNewCategory(String curCategoryString,
 			
 		for (int i=0;i<headers.length;i++) {
 		
-			ImportHeader header = headers[i];
-			
 			// Ignore null headers
-			if (header == null)
+			if (headers[i] == null)
 				continue;
 	
-			if (header.getField() == Field.S_ITEM || header.getField() == Field.S_COMMENT) {
-				handleItemOrComment(header, pointsColumns, percentCategoryColumns, ieInfo, i);
+			if (headers[i].getField() == Field.S_ITEM || headers[i].getField() == Field.S_COMMENT) {
+				handleItemOrComment(headers[i], pointsColumns, percentCategoryColumns, ieInfo, i);
 			}
 		
 		}
@@ -2759,6 +2797,13 @@ private GradeItem buildNewCategory(String curCategoryString,
 		CategoryType categoryType = gradebookItemModel.getCategoryType();
 		String itemName = header.getHeaderName();
 		
+		FileFormat format = FileFormat.valueOf(ieInfo.getImportsettings().getFileFormatName());
+		
+		boolean treatAllItemsAsNewItems = 
+			       format.equals(FileFormat.SCANTRON)
+				|| format.equals(FileFormat.CLICKER)
+				|| format.equals(FileFormat.TEMPLATE);
+		
 		if (header.getField() == Field.S_ITEM) {
 			// If we have the points and percent Category from the structure information, this will put it where it needs to be. 
 			handlePointsAndPercentCategoryForHeader(pointsColumns, percentCategoryColumns, headerNumber, header); 
@@ -2767,9 +2812,15 @@ private GradeItem buildNewCategory(String curCategoryString,
 		GradeItem itemModel = p.getItem();
 		GradeItem categoryModel = p.getCategory();
 		boolean isNewItem = false;
-
-		if (itemModel == null) {
+		if (itemModel == null || treatAllItemsAsNewItems) {
 			isNewItem = true;
+			if (treatAllItemsAsNewItems && !ieInfo.getImportsettings().isNameUniquenessCheckDone()) {
+				try {
+					header.setHeaderName(getUniqueItemName(header.getHeaderName(), ieInfo.getImportsettings().getGradebookUid()));
+				} catch (GradebookImportException e) {
+					throw new ImportFormatException(e.getMessage());
+				}
+			}
 			itemModel =  createNewGradeItem(header, headerNumber);
 		} else {
 			header.setId(itemModel.getIdentifier());
@@ -2870,6 +2921,15 @@ private GradeItem buildNewCategory(String curCategoryString,
 
 		String[] assignmentPositionToCategoryIdQuick = ieInfo.getAssignmentPositionToCategoryIdQuick();
 		CategoryItemPair p = null; 
+		
+		/*
+		 * For clickers, templates, scantrons... we assume all items are new items
+		 */
+		FileFormat f = FileFormat.valueOf(ieInfo.getImportsettings().getFileFormatName());
+		
+		if (f.equals(FileFormat.SCANTRON) || f.equals(FileFormat.CLICKER) || f.equals(FileFormat.TEMPLATE)) {
+			return new CategoryItemPair( ieInfo.getCategoryIdItemMap().get("-1"), null);
+		}
 
 		switch (categoryType) {
 		case NO_CATEGORIES:
@@ -2957,19 +3017,16 @@ private GradeItem buildNewCategory(String curCategoryString,
 		}		
 	}
 
-	public Upload parseImportGeneric(String gradebookUid, ImportExportDataFile rawData) {
+	public Upload parseImportGeneric(ImportExportDataFile rawData) {
 		
 		String msgs = rawData.getMessages();
 		boolean errorsFound = rawData.isErrorsFound(); 
 
 		if (errorsFound) {
-			Upload importFile = new UploadImpl();
-			importFile.setErrors(true); 
-			importFile.setNotes(msgs);
-			return importFile; 
+			return emptyUploadFileWithNotes(msgs); 
 		}
 
-		Gradebook gradebook = service.getGradebook(gradebookUid);
+		Gradebook gradebook = service.getGradebook(rawData.getImportSettings().getGradebookUid());
 		Item gradebookItemModel = gradebook.getGradebookItemModel();
 
 		List<UserDereference> userDereferences = this.service.findAllUserDereferences();
@@ -2982,15 +3039,9 @@ private GradeItem buildNewCategory(String curCategoryString,
 		// this is just housekeeping and may not be immediately necessary
 		importFile.getImportSettings().setScantron(rawData.isScantronFile());
 		importFile.getImportSettings().setJustStructure(rawData.isJustStructure());
-		ieInfo.setImportsettings(importFile.getImportSettings());
+		ieInfo.setImportsettings(rawData.getImportSettings());
 		//
 		
-		if (rawData.isScantronFile())
-		{
-			importFile.setNotifyAssignmentName(!rawData.isNewAssignment()); 
-			if (!rawData.isNewAssignment()) // FIXME - i18n 
-				importFile.addNotes(i18n.getString("gb2ImportScantronSameName"));
-		}
 		
 		ieInfo.setGradebookItemModel(gradebookItemModel);
 		
@@ -3008,7 +3059,26 @@ private GradeItem buildNewCategory(String curCategoryString,
 			try {
 				readInHeaderRow(rawData, ieInfo, structureStop);
 				processStructureInformation(ieInfo, structureColumnsMap);
+				
+				/*
+				 * if a header name changes when it returns from processHeaders, there was a unique name
+				 * generated, and in that case, send notificaton
+				 */
+				String[] headerNames = new String[ieInfo.getHeaders().length];
+				for (int i=0;i<headerNames.length;++i) {
+					headerNames[i] = ieInfo.getHeaders()[i].getHeaderName();
+				}
+				String[] copy = Arrays.copyOf(headerNames, headerNames.length);
 				processHeaders(ieInfo, structureColumnsMap);
+				for (int i=0;i<headerNames.length;++i) {
+					headerNames[i] = ieInfo.getHeaders()[i].getHeaderName();
+				}
+				
+				if ( ! (rawData.isNewAssignment() &&  Arrays.deepEquals(copy, headerNames))) {
+					importFile.setNotifyAssignmentName(true);
+					importFile.setNotes(i18n.getString("gb2ImportItemSameName"));
+				}
+				
 				
 				// At this point, we need to remove assignments that are not in the import
 				// file
@@ -3201,11 +3271,22 @@ private GradeItem buildNewCategory(String curCategoryString,
 				"The file format did not match your selection: " 
 				+ importSettings.getFileFormatName());
 		
+		String itemNameFromFile = removeFileExenstion(file.getOriginalFilename());
+		String newItemName = null;
+		if(importSettings.getFileFormatName().equals(FileFormat.SCANTRON.name())) {
+			try {
+				newItemName = getUniqueItemName(itemNameFromFile, importSettings.getGradebookUid());
+				importSettings.setNameUniquenessCheckDone(true);
+			} catch (GradebookImportException e) {
+				return emptyUploadFileWithNotes(e.getMessage());
+			}
+		}
+		
+		
 		try {
 			bis = new BufferedInputStream(file.getInputStream());
 		} catch (IOException e1) {
-			e1.printStackTrace(); //TODO: be more nice
-			return null;
+			return emptyUploadFileWithNotes(e1.getMessage());
 		}
 		
 		// first level of problems would be from declared/detected type mismatch
@@ -3221,7 +3302,8 @@ private GradeItem buildNewCategory(String curCategoryString,
 				
 				if(typeOK) {
 					//proceed
-					rv = handlePoiSpreadSheet(wbPoi, file.getOriginalFilename(), importSettings.isScantron(), importSettings);
+					rv = handlePoiSpreadSheet(wbPoi, newItemName, 
+							itemNameFromFile.equalsIgnoreCase(newItemName), importSettings);
 				} else {
 					errorMessage = unexpectedTypeErrorMessage;
 				}
@@ -3240,7 +3322,8 @@ private GradeItem buildNewCategory(String curCategoryString,
 						typeOK = wbJxl != null;
 						if (typeOK) {
 							try {
-								rv = handleJExcelAPISpreadSheet(file.getInputStream(), file.getOriginalFilename(), importSettings.isScantron(), importSettings);
+								rv = handleJExcelAPISpreadSheet(file.getInputStream(), newItemName, 
+										itemNameFromFile.equalsIgnoreCase(newItemName), importSettings);
 							} catch (InvalidInputException e) {
 								typeOK = false;
 							} catch (FatalException e) {
@@ -3255,7 +3338,8 @@ private GradeItem buildNewCategory(String curCategoryString,
 								+ importSettings.getGradebookUid()
 								+ " ; file: " + file.getOriginalFilename());
 						
-						rv = handlePoiSpreadSheet(wbPoi, file.getOriginalFilename(), importSettings.isScantron(), importSettings);
+						rv = handlePoiSpreadSheet(wbPoi, newItemName, 
+								itemNameFromFile.equalsIgnoreCase(newItemName), importSettings);
 					}
 				}
 				
@@ -3280,7 +3364,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 					
 					while ( (ent = csvReader.readNext() ) != null)
 					{
-						rawData.addRow(ent); 
+							rawData.addRow(ent); 
 					}
 					csvReader.close();
 					
@@ -3300,18 +3384,28 @@ private GradeItem buildNewCategory(String curCategoryString,
 						rawData.setScantronFile(true); // scantrons & clickers are processed similarly
 						if (!isClickerSheetCSV(rawData)) {
 							typeOK = false;
+						} else {
+							rawData.setNewAssignment(true);
 						}
 						
 					} else if(FileFormat.SCANTRON.equals(FileFormat.valueOf(importSettings.getFileFormatName()))) {
 						rawData.setScantronFile(true);					
 						if (!isScantronSheetCSV(rawData)) {
 							typeOK = false;
+						} else {
+							/* now that the file format is validated
+							 * swap out the header for one based on the filename
+							 */
+							rawData.setAllRows(convertScantronRowsToTemplate(rawData.getAllRows(), newItemName));
+							rawData.setNewAssignment(itemNameFromFile.equalsIgnoreCase(newItemName));
 						}
 						
 					} else if (FileFormat.TEMPLATE.equals(FileFormat.valueOf(importSettings.getFileFormatName()))) {
 						if(!isAssignmentTemplateFormat(rawData)) {
 							typeOK = false;
-						} 
+						} else {
+							rawData.setNewAssignment(true);
+						}
 					} else if (FileFormat.FULL.equals(FileFormat.valueOf(importSettings.getFileFormatName()))) {
 						if (0 >= readDataForStructureInformation(rawData, buildRowIndicatorMap(), new HashMap<StructureRow, String[]>())){
 							typeOK = false;
@@ -3323,7 +3417,8 @@ private GradeItem buildNewCategory(String curCategoryString,
 					}
 				}
 				if (typeOK) {
-					rv = parseImportGeneric(importSettings.getGradebookUid(), rawData);
+					rawData.setImportSettings(importSettings);
+					rv = parseImportGeneric(rawData);
 
 				}
 			}
@@ -3336,9 +3431,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 		}
 
 		if (!typeOK) {
-			rv = new UploadImpl();
-			rv.setErrors(true);
-			rv.setNotes(errorMessage);
+			rv = emptyUploadFileWithNotes(errorMessage);
 		} else {
 			/// TODO: this scantron flag is being too overloaded methinks
 			FileFormat format = null;
@@ -3346,9 +3439,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 				format = FileFormat.valueOf(importSettings.getFileFormatName());
 				rv.getImportSettings().setScantron(!format.equals(FileFormat.FULL));
 			} catch (Exception e) {
-				rv = new UploadImpl();
-				rv.setErrors(true);
-				rv.setNotes(unexpectedFormatErrorMessage);
+				rv = emptyUploadFileWithNotes(unexpectedFormatErrorMessage);
 			}
 		}
 		
@@ -3357,6 +3448,14 @@ private GradeItem buildNewCategory(String curCategoryString,
 	
 	
 	
+	private Upload emptyUploadFileWithNotes(String message) {
+		Upload importFile = new UploadImpl(); 
+		importFile.setErrors(true); 
+		importFile.setNotes(message); 
+		return importFile; 
+	}
+
+
 	private boolean isScantronSheetCSV(ImportExportDataFile rawData) {
 		
 		// if there is structure found it is not a scantron

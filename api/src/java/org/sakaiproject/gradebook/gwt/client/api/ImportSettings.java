@@ -25,7 +25,7 @@ public interface ImportSettings {
 	
 	public Boolean isJustStructure();
 	
-	public void setJustStructure (Boolean yes);
+	public void setJustStructure (Boolean justStructure);
 	
 	public void setFileFormatName(String fileFormatName);
 	
@@ -38,5 +38,10 @@ public interface ImportSettings {
 	public String getGradebookUid();
 	
 	public void setGradebookUid(String Uid);
+	
+	public boolean isNameUniquenessCheckDone();
+	
+	public void setNameUniquenessCheckDone(Boolean done);
+	
 
 }
