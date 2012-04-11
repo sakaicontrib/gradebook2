@@ -4259,6 +4259,26 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 					&& categoryGradeItem.getDropLowest() > 0;
 		boolean unevenPoints  = false;
 
+		//GRBK-1201
+		boolean needRecal = false;
+
+  		if (assignments != null && category != null && Util.checkBoolean(category.isEqualWeightAssignments())) {
+  			
+        	for(Assignment a : assignments) {
+        		
+				if (gradeCalculations.hasAssignmentWeight(a) == false && ! Util.checkBoolean(a.isNotCounted())) {
+				
+					needRecal = true;
+					break;
+				}	
+			}
+		}
+        
+		if (needRecal) {
+			
+			assignments = recalculateAssignmentWeights(category, null, assignments);
+		}
+	
 		if (assignments != null) {
 			BigDecimal[] sums = gradeCalculations.calculatePointsCategoryPercentSum(category, assignments, isWeighted, isCategoryExtraCredit);
 			percentCategorySum = sums[0];

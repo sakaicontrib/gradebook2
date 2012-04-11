@@ -1082,6 +1082,17 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 		else
 			return null;
 	}
+
+	//GRBK-1201
+	public boolean hasAssignmentWeight(Assignment assignment) {
+
+		// If the assignment doesn't exist or has no weight then we return false
+		if (assignment != null && assignment.getAssignmentWeighting() != null)
+			return true;
+		else
+			return false;
+	}
+	
 	
 	protected Double calculateEquivalentPointValueForPercent(Double doublePointsPossible, Double doublePercentEarned) {
 		

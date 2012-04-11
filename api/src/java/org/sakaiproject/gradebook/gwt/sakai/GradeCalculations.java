@@ -257,4 +257,6 @@ public interface GradeCalculations {
 	// GRBK-483 calc and return EarnedWeightedPercentage
 	public BigDecimal getEarnedWeightedPercentage(Assignment gradableObject, AssignmentGradeRecord gradeRecord);
 
+	//GRBK-1201
+	public boolean hasAssignmentWeight(Assignment assignment);
 }
