@@ -351,11 +351,10 @@ public class ItemTreePanel extends GradebookPanel {
 				
 				// GRBK-936 : Start adding
 				Item itemModel = (Item)m;
-				boolean isIncluded = itemModel.getIncluded() != null && itemModel.getIncluded().booleanValue();
 				boolean isItem = itemModel.getItemType() == ItemType.ITEM;
 				boolean isCategory = itemModel.getItemType() == ItemType.CATEGORY;
+				boolean isIncluded = itemModel.getIncluded() != null && itemModel.getIncluded().booleanValue();
 				boolean isReleased = itemModel.getReleased() != null && itemModel.getReleased().booleanValue();
-				int dropLowest = itemModel.getDropLowest() == null ? 0 : itemModel.getDropLowest().intValue();	
 				// GRBK-936 : Stop adding
 				
 				StringBuffer sb = new StringBuffer();
@@ -448,9 +447,35 @@ public class ItemTreePanel extends GradebookPanel {
 					sb.append(" ").append(resources.css().gbCellExtraCredit());
 				}
 				
-				sb.append("\">&nbsp;");
-				if (!isExtraCredit && dropLowest > 0) {
+				//checkifdroplowestvisible start
+				int dropLowest = itemModel.getDropLowest() == null ? 0 : itemModel.getDropLowest().intValue();	
+				boolean isDropLowestVisible = false;
+				if (isCategory && !isExtraCredit && dropLowest > 0) {
 					
+					CategoryType categoryType = null;
+					Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
+					if(null != selectedGradebook) {
+						categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
+					}
+					boolean isWeightedCategories = categoryType != null && categoryType == CategoryType.WEIGHTED_CATEGORIES;
+					boolean isUnweightedCategories =  categoryType != null && categoryType == CategoryType.SIMPLE_CATEGORIES;
+					
+					if (isWeightedCategories) {
+						boolean isEqualWeight = itemModel.getEqualWeightAssignments() != null && itemModel.getEqualWeightAssignments().booleanValue();
+						boolean isWeightByPoints = itemModel.getEnforcePointWeighting() != null && itemModel.getEnforcePointWeighting().booleanValue();	
+						
+						if (isEqualWeight && !isWeightByPoints) {
+							isDropLowestVisible = true;
+						}
+					} else if (isUnweightedCategories) {
+						isDropLowestVisible = true;
+					}
+					
+				}
+				//checkifdroplowestvisible end
+				
+				sb.append("\">&nbsp;");
+				if (isDropLowestVisible) {
 					sb.append("<font style=\"font-style: regular;font-size:9pt\"> -").append(dropLowest).append("</font>&nbsp;");
 				}
 				// GRBK-936 : Stop editing/adding

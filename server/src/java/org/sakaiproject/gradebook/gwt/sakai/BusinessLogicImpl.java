@@ -70,7 +70,8 @@ public class BusinessLogicImpl implements BusinessLogic {
 		if (!isEqualWeight && dropLowest > 0) {
 			StringBuilder builder = new StringBuilder();
 			builder.append("Drop lowest is only valid for categories with equally weighted items. ")
-			.append("Please select equally weighted before setting a drop lowest value.");
+			.append("If you are adding a drop lowest value, please select equally weighted first. ")
+			.append("If you are deselecting equally weighted, please set the drop lowest value to 0 first.");
 
 			throw new BusinessRuleException(builder.toString(), BusinessLogicCode.OnlyEqualWeightDropLowestRule);
 		}

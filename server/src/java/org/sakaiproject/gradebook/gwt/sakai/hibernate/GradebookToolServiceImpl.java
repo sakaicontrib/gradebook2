@@ -183,7 +183,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				setEntity(1, gb).list());
 				int numNameConflicts = conflictList.size();
 				if(numNameConflicts > 0) {
-					throw new ConflictingCategoryNameException("You can not save multiple catetories in a gradebook with the same name");
+					throw new ConflictingCategoryNameException("You cannot save multiple categories in a gradebook with the same name");
 				}
 				if (weight != null) {
 					if ( weight.intValue() > 1 || weight.intValue() < 0)
@@ -1486,7 +1486,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				setLong(2, category.getId().longValue()).list());
 				int numNameConflicts = conflictList.size();
 				if(numNameConflicts > 0) {
-					throw new ConflictingCategoryNameException("You can not save multiple category in a gradebook with the same name");
+					throw new ConflictingCategoryNameException("You cannot save multiple categories in a gradebook with the same name");
 				}
 				if(category.getWeight().doubleValue() > 1 || category.getWeight().doubleValue() < 0)
 				{
@@ -1606,7 +1606,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				// course grade records, disallow this update.
 				if (!mappingFromPersistence.getId().equals(gradebook.getSelectedGradeMapping().getId())) {
 					if(isExplicitlyEnteredCourseGradeRecords(gradebook.getId())) {
-						throw new IllegalStateException("Selected grade mapping can not be changed, since explicit course grades exist.");
+						throw new IllegalStateException("Selected grade mapping cannot be changed, since explicit course grades exist.");
 					}
 				}
 

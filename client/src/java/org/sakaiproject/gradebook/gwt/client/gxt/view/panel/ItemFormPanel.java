@@ -119,9 +119,9 @@ public class ItemFormPanel extends GradebookPanel {
 	private TextField<String> nameField;
 	private ComboBox<ModelData> categoryTypePicker, gradeTypePicker;
 	private ComboBox<ItemModel> categoryPicker;
-	private CheckBox includedField, extraCreditField, equallyWeightChildrenField, releasedField;
-	private CheckBox nullsAsZerosField, releaseGradesField, releaseItemsField, scaledExtraCreditField;
-	private CheckBox enforcePointWeightingField, showMeanField, showMedianField, showModeField;
+	private CheckBox enforcePointWeightingField, equallyWeightChildrenField, extraCreditField, includedField;
+	private CheckBox nullsAsZerosField, releasedField, releaseGradesField, releaseItemsField, scaledExtraCreditField;
+	private CheckBox showMeanField, showMedianField, showModeField;
 	private CheckBox showRankField, showItemStatsField, showStatisticsChartField;
 	private NumberField percentCourseGradeField, percentCategoryField, pointsField, dropLowestField;
 	private DateField dueDateField;
@@ -142,7 +142,7 @@ public class ItemFormPanel extends GradebookPanel {
 	private KeyListener keyListener;
 	private Listener<BindingEvent> bindListener;
 	private Listener<DatePickerEvent> datePickerListener;
-	private Listener<FieldEvent> extraCreditChangeListener, checkboxChangeListener, enforcePointWeightingListener;
+	private Listener<FieldEvent> extraCreditChangeListener, checkboxChangeListener, enforcePointWeightingListener, equallyWeightChildrenListener;
 	private SelectionListener<ButtonEvent> selectionListener;
 	private SelectionChangedListener<ItemModel> categorySelectionChangedListener;
 	// GRBK-1054
@@ -479,13 +479,6 @@ public class ItemFormPanel extends GradebookPanel {
 		extraCreditField.setToolTip(newToolTipConfig(i18n.extraCreditToolTip()));
 		formPanel.add(extraCreditField);
 
-		equallyWeightChildrenField = new NullSensitiveCheckBox();
-		equallyWeightChildrenField.setName(ItemKey.B_EQL_WGHT.name());
-		equallyWeightChildrenField.setFieldLabel(i18n.equallyWeightChildrenFieldLabel());
-		equallyWeightChildrenField.setVisible(false);
-		equallyWeightChildrenField.setToolTip(newToolTipConfig(i18n.equallyWeightChildrenToolTip()));
-		formPanel.add(equallyWeightChildrenField);
-
 		releasedField = new NullSensitiveCheckBox();
 		releasedField.setName(ItemKey.B_RLSD.name());
 		releasedField.setFieldLabel(i18n.releasedFieldLabel());
@@ -499,6 +492,13 @@ public class ItemFormPanel extends GradebookPanel {
 		nullsAsZerosField.setVisible(false);
 		nullsAsZerosField.setToolTip(newToolTipConfig(i18n.nullsAsZerosToolTip()));
 		formPanel.add(nullsAsZerosField);
+
+		equallyWeightChildrenField = new NullSensitiveCheckBox();
+		equallyWeightChildrenField.setName(ItemKey.B_EQL_WGHT.name());
+		equallyWeightChildrenField.setFieldLabel(i18n.equallyWeightChildrenFieldLabel());
+		equallyWeightChildrenField.setVisible(false);
+		equallyWeightChildrenField.setToolTip(newToolTipConfig(i18n.equallyWeightChildrenToolTip()));
+		formPanel.add(equallyWeightChildrenField);
 
 		enforcePointWeightingField = new NullSensitiveCheckBox();
 		enforcePointWeightingField.setName(ItemKey.B_WT_BY_PTS.name());
@@ -1037,9 +1037,9 @@ public class ItemFormPanel extends GradebookPanel {
 		formPanel.clear();
 
 		boolean isEditable = true;
-		boolean isEqualWeight = false;
 		boolean isExtraCredit = false;
 		boolean isDropLowestVisible = isEditable && isCategory;
+		boolean isEqualWeight = false;
 		boolean isWeightByPoints = false;
 		boolean isParentExtraCreditCategory = false;
 
@@ -1071,39 +1071,45 @@ public class ItemFormPanel extends GradebookPanel {
 				isPercentCategoryVisible = (hasWeights && isExtraCredit) && isItem;
 			}
 
-			isWeightByPoints = category == null ? false : DataTypeConversionUtil.checkBoolean(category.getEnforcePointWeighting());
 			isEqualWeight = category == null ? false : DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
-			isPercentCategoryVisible = hasWeights && (!isEqualWeight || isExtraCredit) && isItem && !isWeightByPoints && (!isParentExtraCreditCategory || !isEqualWeight);
+			isWeightByPoints = category == null ? false : DataTypeConversionUtil.checkBoolean(category.getEnforcePointWeighting());
 			isWeightByPointsVisible = isEditable && isCategory && hasWeights;
 			isWeightByPointsVisible = category == null ? isWeightByPointsVisible : isWeightByPointsVisible && !DataTypeConversionUtil.checkBoolean(category.getExtraCredit());
+			isPercentCategoryVisible = hasWeights && (!isEqualWeight || isExtraCredit) && isItem && !isWeightByPoints && (!isParentExtraCreditCategory || !isEqualWeight);
 
-			isDropLowestVisible = checkIfDropLowestVisible(category, categoryType, isEditable, isCategory, isWeightByPoints, isExtraCredit);
+			isDropLowestVisible = checkIfDropLowestVisible(categoryType, isEditable, isCategory, isExtraCredit, isEqualWeight, isWeightByPoints); 
 
 		} else {
 			isPercentCategoryVisible = hasWeights && isItem;
 		}
 
+		//Common panel fields
 		initField(nameField, isAllowedToEdit && isEditable && !isDelete && !isExternal, true);
-		initField(pointsField, isAllowedToEdit && !isDelete && !isExternal, isEditable && isItem);
-		initField(percentCategoryField, isAllowedToEdit && !isDelete && (isItem || isCreateNewItem), isEditable && isPercentCategoryVisible);
-		initField(percentCourseGradeField, isAllowedToEdit && !isDelete, isEditable && isCategory && hasWeights);
-		initField(equallyWeightChildrenField, isAllowedToEdit && !isDelete, isEditable && isCategory && hasWeights && !isWeightByPoints);
-		initField(extraCreditField, !isParentExtraCreditCategory && isAllowedToEdit && !isDelete, isEditable && isNotGradebook); // GRBK-833
 		initField(dropLowestAdapterField, isAllowedToEdit && !isDelete, isDropLowestVisible);
 		initField(dropLowestField, isAllowedToEdit && !isDelete, isDropLowestVisible);
-		initField(dueDateField, isAllowedToEdit && !isDelete && !isExternal, isEditable && isItem);
+		initField(extraCreditField, !isParentExtraCreditCategory && isAllowedToEdit && !isDelete, isEditable && isNotGradebook); // GRBK-833
 		initField(includedField, isAllowedToEdit && !isDelete, isEditable && isNotGradebook);
 		initField(releasedField, isAllowedToEdit && !isDelete, isEditable && isNotGradebook);
-		initField(nullsAsZerosField, isAllowedToEdit && !isDelete, isEditable && isItem);
+
+		//Item panel fields
 		initField(categoryPicker, isAllowedToEdit && !isDelete, isEditable && hasCategories && isItem);
+		initField(dueDateField, isAllowedToEdit && !isDelete && !isExternal, isEditable && isItem);
+		initField(nullsAsZerosField, isAllowedToEdit && !isDelete, isEditable && isItem);
+		initField(percentCategoryField, isAllowedToEdit && !isDelete && (isItem || isCreateNewItem), isEditable && isPercentCategoryVisible);
+		initField(pointsField, isAllowedToEdit && !isDelete && !isExternal, isEditable && isItem);
+		initField(sourceField, false, isEditable && isItem);
+
+		//Category panel fields
+		initField(percentCourseGradeField, isAllowedToEdit && !isDelete, isEditable && isCategory && hasWeights);
+		initField(enforcePointWeightingField, isAllowedToEdit && !isDelete, isWeightByPointsVisible);
+		initField(equallyWeightChildrenField, isAllowedToEdit && !isDelete, isEditable && isCategory && hasWeights && !isWeightByPoints);
+		
+		//Gradebook Setup panel fields
 		initField(categoryTypePicker, isAllowedToEdit, isEditable && !isNotGradebook);
 		initField(gradeTypePicker, isAllowedToEdit, isEditable && !isNotGradebook);
-		initField(sourceField, false, isEditable && isItem);
-		initField(scaledExtraCreditField, !isDelete && isAllowedToEdit, !isNotGradebook && gradebookItem.isScaledExtraCreditEnabled());
-		initField(enforcePointWeightingField, !isDelete && isAllowedToEdit, isWeightByPointsVisible);
-
 		initField(releaseGradesField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
 		initField(releaseItemsField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
+		initField(scaledExtraCreditField, isAllowedToEdit && !isDelete, !isNotGradebook && gradebookItem.isScaledExtraCreditEnabled());
 		initField(showMeanField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
 		initField(showMedianField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
 		initField(showModeField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
@@ -1127,29 +1133,22 @@ public class ItemFormPanel extends GradebookPanel {
 
 	}
 
+	private boolean checkIfDropLowestVisible(CategoryType categoryType, boolean isEditable, 
+		boolean isCategory, boolean isExtraCredit, boolean isEqualWeight, boolean isWeightByPoints) {
 
-	private boolean checkIfDropLowestVisible(ItemModel category, CategoryType categoryType, boolean isEditable, 
-			boolean isCategory, boolean isWeightByPoints, boolean isExtraCredit) {
-		boolean isDropLowestVisible = isEditable && isCategory && !isExtraCredit;
-		boolean isWeightedCategories = categoryType == CategoryType.WEIGHTED_CATEGORIES;
-		boolean isUnweightedCategories = categoryType == CategoryType.SIMPLE_CATEGORIES;
-
-		if (isDropLowestVisible && category != null 
-				&& ((isWeightByPoints && isWeightedCategories) || isUnweightedCategories)) {
-			if (category.getChildCount() > 0) {
-				Double points = null;
-				for (int i=0;i<category.getChildCount();i++) {
-					Item item = (Item) category.getChild(i);
-					if (!DataTypeConversionUtil.checkBoolean(item.getExtraCredit())) {
-						if (points == null)
-							points = item.getPoints();
-						else if (!points.equals(item.getPoints())) {
-							isDropLowestVisible = false;
-							break;
-						}
-					}
+		boolean isDropLowestVisible = false;
+		if (isEditable && isCategory && !isExtraCredit) {
+			
+			boolean isWeightedCategories = categoryType != null && categoryType == CategoryType.WEIGHTED_CATEGORIES;
+			boolean isUnweightedCategories = categoryType != null && categoryType == CategoryType.SIMPLE_CATEGORIES;
+			
+			if (isWeightedCategories) {
+				if (isEqualWeight && !isWeightByPoints) {
+					isDropLowestVisible = true;
 				}
-			}
+			} else if (isUnweightedCategories) {
+				isDropLowestVisible = true;
+			}	
 		}
 
 		return isDropLowestVisible;
@@ -1268,11 +1267,11 @@ public class ItemFormPanel extends GradebookPanel {
 		dueDateField.getDatePicker().addListener(Events.Select, datePickerListener);
 		includedField.addListener(Events.Change, checkboxChangeListener);
 		extraCreditField.addListener(Events.Change, extraCreditChangeListener);
-		equallyWeightChildrenField.addListener(Events.Change, checkboxChangeListener);
 		releasedField.addListener(Events.Change, checkboxChangeListener);
 		nullsAsZerosField.addListener(Events.Change, checkboxChangeListener);
 		scaledExtraCreditField.addListener(Events.Change, checkboxChangeListener);
 		enforcePointWeightingField.addListener(Events.Change, enforcePointWeightingListener);
+		equallyWeightChildrenField.addListener(Events.Change, equallyWeightChildrenListener);
 		showMeanField.addListener(Events.Change, checkboxChangeListener);
 		showMedianField.addListener(Events.Change, checkboxChangeListener);
 		showModeField.addListener(Events.Change, checkboxChangeListener);
@@ -1304,11 +1303,11 @@ public class ItemFormPanel extends GradebookPanel {
 		dueDateField.getDatePicker().removeListener(Events.Select, datePickerListener);
 		includedField.removeListener(Events.Change, checkboxChangeListener);
 		extraCreditField.removeListener(Events.Change, extraCreditChangeListener);
-		equallyWeightChildrenField.removeListener(Events.Change, checkboxChangeListener);
 		releasedField.removeListener(Events.Change, checkboxChangeListener);
 		nullsAsZerosField.removeListener(Events.Change, checkboxChangeListener);
 		scaledExtraCreditField.removeListener(Events.Change, checkboxChangeListener);
 		enforcePointWeightingField.removeListener(Events.Change, enforcePointWeightingListener);
+		equallyWeightChildrenField.removeListener(Events.Change, equallyWeightChildrenListener);
 		showMeanField.removeListener(Events.Change, checkboxChangeListener);
 		showMedianField.removeListener(Events.Change, checkboxChangeListener);
 		showModeField.removeListener(Events.Change, checkboxChangeListener);
@@ -1389,25 +1388,54 @@ public class ItemFormPanel extends GradebookPanel {
 				boolean isChecked = DataTypeConversionUtil.checkBoolean(((CheckBox)fe.getField()).getValue());
 				CategoryType categoryType = gradebookItemModel.getCategoryType();
 				boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;
-				setChanges();
 				boolean isDropLowestVisible = false;
+				boolean isEqualWeight = DataTypeConversionUtil.checkBoolean(equallyWeightChildrenField.getValue());
 				boolean isExtraCredit = DataTypeConversionUtil.checkBoolean(extraCreditField.getValue());
 
 				if (selectedItemModel != null) {
 					switch (selectedItemModel.getItemType()) {
 					case CATEGORY:
 						initField(equallyWeightChildrenField, !isDelete, !isChecked && hasWeights);
-						isDropLowestVisible = checkIfDropLowestVisible(selectedItemModel, categoryType, true, true, isChecked, isExtraCredit);
+						isDropLowestVisible = checkIfDropLowestVisible(categoryType, true, true, isExtraCredit, isEqualWeight, isChecked); 
 						initField(dropLowestField, !isDelete, isDropLowestVisible);
 						initField(dropLowestAdapterField, !isDelete, isDropLowestVisible);
 						break;
 					}
 				} else if (createItemType == ItemType.CATEGORY) {
 					initField(equallyWeightChildrenField, !isDelete, !isChecked && hasWeights);
-					isDropLowestVisible = checkIfDropLowestVisible(selectedItemModel, categoryType, true, true, isChecked, isExtraCredit);
+					isDropLowestVisible = checkIfDropLowestVisible(categoryType, true, true, isExtraCredit, isEqualWeight, isChecked);
 					initField(dropLowestField, !isDelete, isDropLowestVisible);
 					initField(dropLowestAdapterField, !isDelete, isDropLowestVisible);
 				}
+				setChanges();
+			}
+		};
+				
+		equallyWeightChildrenListener = new Listener<FieldEvent>() {
+
+			public void handleEvent(FieldEvent fe) {
+				boolean isChecked = DataTypeConversionUtil.checkBoolean(((CheckBox)fe.getField()).getValue());		
+				
+				CategoryType categoryType = gradebookItemModel.getCategoryType();
+				boolean isDropLowestVisible = false;
+				boolean isExtraCredit = DataTypeConversionUtil.checkBoolean(extraCreditField.getValue());
+				boolean isWeightByPoints = DataTypeConversionUtil.checkBoolean(enforcePointWeightingField.getValue());
+
+				if (selectedItemModel != null) {
+					switch (selectedItemModel.getItemType()) {
+					case CATEGORY:
+						isDropLowestVisible = checkIfDropLowestVisible(categoryType, true, true, isExtraCredit, isChecked, isWeightByPoints);						
+						initField(dropLowestField, !isDelete, isDropLowestVisible);
+						initField(dropLowestAdapterField, !isDelete, isDropLowestVisible);
+						break;
+					}
+				} else if (createItemType == ItemType.CATEGORY) {
+					isDropLowestVisible = checkIfDropLowestVisible(categoryType, true, true, isExtraCredit, isChecked, isWeightByPoints);
+					initField(dropLowestField, !isDelete, isDropLowestVisible);
+					initField(dropLowestAdapterField, !isDelete, isDropLowestVisible);
+				}
+				
+				setChanges();
 			}
 		};
 
@@ -1429,7 +1457,7 @@ public class ItemFormPanel extends GradebookPanel {
 						isWeightByPoints = DataTypeConversionUtil.checkBoolean(enforcePointWeightingField.getValue());
 						isEqualWeight = DataTypeConversionUtil.checkBoolean(equallyWeightChildrenField.getValue());
 
-						isDropLowestVisible = checkIfDropLowestVisible(selectedItemModel, categoryType, true, true, isWeightByPoints, isChecked);
+						isDropLowestVisible = checkIfDropLowestVisible(categoryType, true, true, isChecked, isEqualWeight, isWeightByPoints);
 						initField(dropLowestField, !isDelete, isDropLowestVisible);
 						initField(dropLowestAdapterField, !isDelete, isDropLowestVisible);
 						initField(enforcePointWeightingField, !isDelete, hasWeights && !isChecked);
@@ -1453,7 +1481,7 @@ public class ItemFormPanel extends GradebookPanel {
 					isWeightByPoints = DataTypeConversionUtil.checkBoolean(enforcePointWeightingField.getValue());
 					isEqualWeight = DataTypeConversionUtil.checkBoolean(equallyWeightChildrenField.getValue());
 
-					isDropLowestVisible = checkIfDropLowestVisible(selectedItemModel, categoryType, true, true, isWeightByPoints, isChecked);
+					isDropLowestVisible = checkIfDropLowestVisible(categoryType, true, true, isChecked, isEqualWeight, isWeightByPoints);
 					initField(dropLowestField, !isDelete, isDropLowestVisible);
 					initField(dropLowestAdapterField, !isDelete, isDropLowestVisible);
 					initField(equallyWeightChildrenField, !isDelete, hasWeights && !isWeightByPoints);
