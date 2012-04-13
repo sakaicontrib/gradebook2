@@ -27,6 +27,11 @@
 	<entry-point class='org.sakaiproject.gradebook.gwt.client.GradebookApplication'/>
 
 	<extend-property name="locale" values="es"/>
+	<extend-property name="locale" values="de"/>
+	<extend-property name="locale" values="fr"/>
+	<extend-property name="locale" values="it"/>
+	<extend-property name="locale" values="ja"/>
+	<extend-property name="locale" values="nl_NL"/>
 
 	<set-property-fallback name="locale" value="default"/>
 

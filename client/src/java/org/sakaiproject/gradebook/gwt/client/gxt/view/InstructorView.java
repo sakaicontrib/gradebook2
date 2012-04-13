@@ -61,7 +61,6 @@ import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 import org.sakaiproject.gradebook.gwt.client.wizard.formpanel.DownloadNewItemFormPanel;
 import org.sakaiproject.gradebook.gwt.client.wizard.formpanel.ExportFormPanel;
-import org.sakaiproject.gradebook.gwt.server.Util;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
