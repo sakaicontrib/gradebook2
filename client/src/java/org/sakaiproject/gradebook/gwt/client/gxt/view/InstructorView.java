@@ -61,6 +61,7 @@ import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 import org.sakaiproject.gradebook.gwt.client.wizard.formpanel.DownloadNewItemFormPanel;
 import org.sakaiproject.gradebook.gwt.client.wizard.formpanel.ExportFormPanel;
+import org.sakaiproject.gradebook.gwt.server.Util;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
@@ -684,7 +685,8 @@ public class InstructorView extends AppView {
 				exportDetails.setIncludeComments((Boolean) selectedExportValues.get(ExportFormPanel.COMMENTS_CHECKBOX_VALUE));
 				exportDetails.setFileType((FileModel) selectedExportValues.get(ExportFormPanel.EXPORT_TYPE_VALUE));
 				exportDetails.setSectionUid((String) selectedExportValues.get(ExportFormPanel.SECTIONS_VAlUE));
-				exportDetails.setIncludeStructure(true);
+				Boolean hasStructure = (Boolean)selectedExportValues.get(ExportFormPanel.STRUCTURE_CHECKBOX_VALUE);
+				exportDetails.setIncludeStructure(DataTypeConversionUtil.checkBoolean(hasStructure));
 				Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), exportDetails);
 			}
 		});

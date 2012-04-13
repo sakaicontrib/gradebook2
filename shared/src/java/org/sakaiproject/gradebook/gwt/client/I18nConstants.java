@@ -439,6 +439,7 @@ public interface I18nConstants extends Constants {
 	String wizardDefaultStepDescriptor();
 	String wizardDefaultOutOfDescriptor();
 	String exportIncludeComments();
+	String exportIncludeStructure();
 	String exportWizardHeading();
 	String exportChoices(); 
 

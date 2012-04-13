@@ -44,11 +44,14 @@ public class ExportFormPanel extends FormPanel {
 	public final static Integer COMMENTS_CHECKBOX_VALUE = Integer.valueOf(0);
 	public final static Integer EXPORT_TYPE_VALUE = Integer.valueOf(1);
 	public final static Integer SECTIONS_VAlUE = Integer.valueOf(2);
+	public final static Integer STRUCTURE_CHECKBOX_VALUE = Integer.valueOf(3);
 	
 	private SectionsComboBox<ModelData> sectionsComboBox;
 	private ComboBox<ModelData> exportTypeComboBox;
 	private CheckBox commentsCheckbox;
-	private ToolTipConfig toolTipConfig;
+	private CheckBox structureCheckbox;
+	private ToolTipConfig commentsCheckboxToolTipConfig;
+	private ToolTipConfig structureCheckboxToolTipConfig;
 	private GradebookResources resources;
 	private I18nConstants i18n;
 	
@@ -61,24 +64,41 @@ public class ExportFormPanel extends FormPanel {
 		setLabelWidth(200);
 		setFieldWidth(150);
 		
+		// Section selection
 		sectionsComboBox = new SectionsComboBox<ModelData>();
 		AdapterField adapterField = new AdapterField(sectionsComboBox);
 		adapterField.setFieldLabel(i18n.exportFormPanelLabelSections());
 		add(adapterField);
 		
-		toolTipConfig = new ToolTipConfig(i18n.exportIncludeComments());
-		toolTipConfig.setDismissDelay(10000);
+		// Include Comments checkbox
+		commentsCheckboxToolTipConfig = new ToolTipConfig(i18n.exportIncludeComments());
+		commentsCheckboxToolTipConfig.setDismissDelay(10000);
 		commentsCheckbox = new NullSensitiveCheckBox();
 		commentsCheckbox.setFieldLabel(i18n.exportIncludeComments());
 		commentsCheckbox.setAutoHeight(false);
 		commentsCheckbox.setAutoWidth(false);
 		commentsCheckbox.setVisible(true);
-		commentsCheckbox.setToolTip(toolTipConfig);
+		commentsCheckbox.setToolTip(commentsCheckboxToolTipConfig);
 		commentsCheckbox.setReadOnly(false);
 		commentsCheckbox.setValue(Boolean.TRUE);
 		commentsCheckbox.addStyleName(resources.css().gbCheckBoxAlignLeft());
 		add(commentsCheckbox);
 		
+		// Include Structure checkbox
+		structureCheckboxToolTipConfig = new ToolTipConfig(i18n.exportIncludeStructure());
+		structureCheckboxToolTipConfig.setDismissDelay(10000);
+		structureCheckbox = new NullSensitiveCheckBox();
+		structureCheckbox.setFieldLabel(i18n.exportIncludeStructure());
+		structureCheckbox.setAutoHeight(false);
+		structureCheckbox.setAutoWidth(false);
+		structureCheckbox.setVisible(true);
+		structureCheckbox.setToolTip(structureCheckboxToolTipConfig);
+		structureCheckbox.setReadOnly(false);
+		structureCheckbox.setValue(Boolean.TRUE);
+		structureCheckbox.addStyleName(resources.css().gbCheckBoxAlignLeft());
+		add(structureCheckbox);
+		
+		// Export As section
 		exportTypeComboBox = new ExportTypeComboBox();
 
 		add(exportTypeComboBox);
@@ -90,6 +110,7 @@ public class ExportFormPanel extends FormPanel {
 		Map<Integer, Object> values = new HashMap<Integer, Object>();
 		
 		values.put(COMMENTS_CHECKBOX_VALUE, commentsCheckbox.getValue());
+		values.put(STRUCTURE_CHECKBOX_VALUE, structureCheckbox.getValue());
 		
 		List<ModelData> exportTypeModelData = exportTypeComboBox.getSelection();
 		
