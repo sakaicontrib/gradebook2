@@ -20,6 +20,11 @@
 package org.sakaiproject.gradebook.gwt.server;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -848,70 +853,44 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	}
 	
 
-	private org.apache.poi.ss.usermodel.Workbook readPoiSpreadsheet(BufferedInputStream is) 
+	private org.apache.poi.ss.usermodel.Workbook readPoiSpreadsheet(File file) 
 	{
 		org.apache.poi.ss.usermodel.Workbook spread = null;
-		String detected = getMimeType(is);
-		
-		/*
-		 *  Until we get better detection with Tika
-		 *  we can only test if this *could be* a 
-		 *  OOXML container... reading the file with POI could still fail
-		 *  but we can at least differentiate CSV and other types from
-		 *  OOXML
-		 *  
-		 *  Also TODO: this defers all XLS97 format files to JExcel which
-		 *  may not be what we want to do
-		 *  
-		 */
-		if(DETECTOR_OOXML_CONTAINER_MIMETYPE.equals(detected)) {
+				
+		//file.mark(1024*1024*512); // file-size limit is 512MB
+		try {
+			spread = new HSSFWorkbook(POIFSFileSystem.createNonClosingInputStream(new FileInputStream(file)));
+			log.debug("HSSF file detected"); 
+		} 
+		catch (IOException e) 
+		{
+			log.debug("Caught I/O Exception", e);
+		} 
+		catch (IllegalArgumentException iae)
+		{
+			log.debug("Caught IllegalArgumentException Exception", iae);
+		}
+		if (spread == null)
+		{
 			
-			
-			
-	
-			is.mark(1024*1024*512); // file-size limit is 512MB
 			try {
-				spread = new HSSFWorkbook(POIFSFileSystem.createNonClosingInputStream(is));
-				log.debug("HSSF file detected"); 
-			} 
-			catch (IOException e) 
+				spread = new XSSFWorkbook(POIFSFileSystem.createNonClosingInputStream(new FileInputStream(file)));
+				log.debug("XSSF file detected");
+
+			} catch (IOException e) 
 			{
-				log.debug("Caught I/O Exception", e);
+				log.debug("Caught I/O Exception checking for xlsx format", e);
 			} 
 			catch (IllegalArgumentException iae)
 			{
-				log.debug("Caught IllegalArgumentException Exception", iae);
-			}
-			if (spread == null)
+				log.debug("Caught IllegalArgumentException Exception checking for xlsx format", iae);
+			} catch (POIXMLException e) 
 			{
-				
-				try {
-					is.reset(); 
-					spread = new XSSFWorkbook(POIFSFileSystem.createNonClosingInputStream(is));
-					log.debug("XSSF file detected");
-	
-				} catch (IOException e) 
-				{
-					log.debug("Caught I/O Exception checking for xlsx format", e);
-				} 
-				catch (IllegalArgumentException iae)
-				{
-					log.debug("Caught IllegalArgumentException Exception checking for xlsx format", iae);
-				} catch (POIXMLException e) 
-				{
-					log.debug("Caught POIXMLException Exception checking for xlsx format", e);
-				}
-	
+				log.debug("Caught POIXMLException Exception checking for xlsx format", e);
 			}
-		}
 
-		if (null == spread) {
-			try {
-				is.reset();
-			} catch (IOException e) {
-				/// suggestions?
-			}
 		}
+		
 		return spread; 
 
 	}
@@ -1011,7 +990,8 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 
 		BufferedInputStream bufStream = new BufferedInputStream(file.getInputStream()); 
 
-		inspread = readPoiSpreadsheet(bufStream);
+		//inspread = readPoiSpreadsheet(tempfi);
+		///TODO: this is broken buonly called by the *Test class for this class and not by default
 
 		if (inspread != null)
 		{
@@ -3271,6 +3251,8 @@ private GradeItem buildNewCategory(String curCategoryString,
 				"The file format did not match your selection: " 
 				+ importSettings.getFileFormatName());
 		
+		String suffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf('.'));
+		
 		String itemNameFromFile = removeFileExenstion(file.getOriginalFilename());
 		String newItemName = null;
 		if(importSettings.getFileFormatName().equals(FileFormat.SCANTRON.name())) {
@@ -3282,9 +3264,25 @@ private GradeItem buildNewCategory(String curCategoryString,
 			}
 		}
 		
+		InputStream origFile = null;
 		
+		/* get the file and save it locally so we can abuse it */
+		File tempFile = null;
+		InputStream tempInput = null;
+		String prefix = Thread.currentThread().hashCode() + "_";
 		try {
-			bis = new BufferedInputStream(file.getInputStream());
+			origFile = file.getInputStream();
+			byte[] buf = new byte[1024];
+			tempFile = File.createTempFile(prefix, suffix);
+			FileOutputStream fos = new FileOutputStream(tempFile, true);
+			BufferedOutputStream bos = new BufferedOutputStream(fos);
+			int cnt;  
+			while ((cnt = origFile.read(buf)) != -1)  
+			   bos.write(buf, 0, cnt);
+			bos.close();
+			tempInput = new FileInputStream(tempFile);
+			bis = new BufferedInputStream(tempInput);
+			tempFile.deleteOnExit();
 		} catch (IOException e1) {
 			return emptyUploadFileWithNotes(e1.getMessage());
 		}
@@ -3296,9 +3294,25 @@ private GradeItem buildNewCategory(String curCategoryString,
 		jxl.Workbook wbJxl = null;
 		try {
 			if (FileType.XLSX.equals(type)) {
+
+
+				String detected = null;
+				try {
+					detected = getMimeType(new FileInputStream(tempFile));
+				} catch (FileNotFoundException e1) {
+					log.error("tempfile read failed: " + tempFile.getPath());
+					e1.printStackTrace();
+					typeOK = false;
+					//I18N 
+					errorMessage = "File IO";
+				}
+
 				
-				wbPoi = readPoiSpreadsheet(bis);
-				typeOK = wbPoi != null;
+				typeOK = DETECTOR_OOXML_CONTAINER_MIMETYPE.equals(detected)              //shallow detection
+						|| DETECTOR_OOXML_SPREADSHEET_MIME_TYPE.equals(detected);       //deep detection
+						
+				wbPoi = readPoiSpreadsheet(tempFile);
+				typeOK = typeOK && wbPoi != null;
 				
 				if(typeOK) {
 					//proceed
@@ -3314,10 +3328,18 @@ private GradeItem buildNewCategory(String curCategoryString,
 				 * that the detected mime type is compatible with XLS97
 				 * (and not XLSX, for example)typeOk = getMimeType(bis)
 				 */
-				typeOK = DETECTOR_MS_OFFICE_GENERIC_MIMETYPE.equals(getMimeType(bis));
+				String detected = getMimeType(tempInput);
+				typeOK = DETECTOR_MS_OFFICE_GENERIC_MIMETYPE.equals(detected)
+						|| DETECTOR_MS_EXCEL_MIMETYPE.equals(detected);
+				wbPoi = readPoiSpreadsheet(tempFile);
+				typeOK = wbPoi != null;
+
 				if(typeOK) {
-					wbPoi = readPoiSpreadsheet(bis); //this is not really doing anything with xls97 files anymore
-					if (null == wbPoi) {
+					//proceed
+					rv = handlePoiSpreadSheet(wbPoi, newItemName, 
+							itemNameFromFile.equalsIgnoreCase(newItemName), importSettings);
+				} else {
+					if(typeOK) {
 						wbJxl = getJexcelWorkbook(bis);
 						typeOK = wbJxl != null;
 						if (typeOK) {
@@ -3333,13 +3355,10 @@ private GradeItem buildNewCategory(String curCategoryString,
 						} else {
 							errorMessage = unexpectedTypeErrorMessage;
 						}
-					} else { /// got a POI sheet.. does this happen in the 'wild'?
-						log.info("gradebook2 field study: poi/xls97 ; gradebook: "
-								+ importSettings.getGradebookUid()
-								+ " ; file: " + file.getOriginalFilename());
 						
-						rv = handlePoiSpreadSheet(wbPoi, newItemName, 
-								itemNameFromFile.equalsIgnoreCase(newItemName), importSettings);
+					} else {
+						log.info("Import: expected either " + DETECTOR_MS_OFFICE_GENERIC_MIMETYPE + " or  " +
+								DETECTOR_MS_EXCEL_MIMETYPE + " but got " + detected);
 					}
 				}
 				
@@ -3349,7 +3368,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 				ImportExportDataFile rawData = new ImportExportDataFile(); 
 				String[] ent;
 				
-				String detected = getMimeType(file.getInputStream());
+				String detected = getMimeType(tempInput);
 				
 				if (!DETECTOR_CSV_MIMETYPE.equals(detected)) {
 					typeOK = false;
@@ -3359,7 +3378,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 					errorMessage = unexpectedFormatErrorMessage;
 				
 			
-					InputStreamReader reader = new InputStreamReader(file.getInputStream());
+					InputStreamReader reader = new InputStreamReader(tempInput);
 					CSVReader csvReader = new CSVReader(reader);
 					
 					while ( (ent = csvReader.readNext() ) != null)
@@ -3442,6 +3461,9 @@ private GradeItem buildNewCategory(String curCategoryString,
 				rv = emptyUploadFileWithNotes(unexpectedFormatErrorMessage);
 			}
 		}
+		
+		if (tempFile != null) 
+			tempFile.delete();
 		
 		return rv; 
 	}
@@ -3530,19 +3552,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 	private Workbook getJexcelWorkbook(InputStream inputStream) {
 		boolean ok = true;
 		Workbook wb = null;
-		String detected = getMimeType(inputStream);
 		
-		/*
-		 *  Until we get better detection with Tika
-		 *  we can only test if this *could be* a 
-		 *  OOXML container... reading the file with POI could still fail
-		 *  but we can at least differentiate CSV and other types from
-		 *  OOXML
-		 *  
-		 */
-		if(!DETECTOR_MS_OFFICE_GENERIC_MIMETYPE.equals(detected)) {
-			return null;
-		}
 		
 		try {
 			 wb = Workbook.getWorkbook(inputStream);

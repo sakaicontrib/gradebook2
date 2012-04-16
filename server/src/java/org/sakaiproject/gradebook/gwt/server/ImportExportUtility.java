@@ -18,7 +18,8 @@ public interface ImportExportUtility {
 	public static String DETECTOR_OOXML_CONTAINER_MIMETYPE = "application/zip";
 	public static String DETECTOR_CSV_MIMETYPE = "text/plain";
 	public static String DETECTOR_MS_OFFICE_GENERIC_MIMETYPE = "application/x-tika-msoffice";
-
+	public static String DETECTOR_MS_EXCEL_MIMETYPE = "application/vnd.ms-excel";
+	public static String DETECTOR_OOXML_SPREADSHEET_MIME_TYPE="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 	
 	/*
 	 * public enums
