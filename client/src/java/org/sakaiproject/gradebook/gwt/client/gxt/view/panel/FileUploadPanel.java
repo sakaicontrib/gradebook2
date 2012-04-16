@@ -129,7 +129,7 @@ public class FileUploadPanel extends FormPanel {
 		file.setFieldLabel(i18n.fileLabel());
 		file.setName("Test");
 
-		//-------------------------
+		//-------------security-values----------
 
 		HiddenField<String> gradebookUidField = new HiddenField<String>();
 		gradebookUidField.setName(AppConstants.REQUEST_FORM_FIELD_GBUID);
@@ -141,6 +141,7 @@ public class FileUploadPanel extends FormPanel {
 		formTokenField.setValue(Cookies.getCookie(AppConstants.GB2_TOKEN));
 		add(formTokenField);
 		
+		//---------invisible combo box set by validator for format combo
 		importTypeComboBox = new ExportTypeComboBox();
 		importTypeComboBox.setName(AppConstants.IMPORT_PARAM_FILETYPE);
 		
@@ -149,7 +150,7 @@ public class FileUploadPanel extends FormPanel {
 		importTypeComboBox.setVisible(false);
 
 		
-		
+		//------------format combo 
 				
 		importFormatComboBox = new FileFormatComboBox();
 		
@@ -190,7 +191,7 @@ public class FileUploadPanel extends FormPanel {
 		});
 
 				
-		//-------------------
+		//-----------structure-only checkbox ----
 							
 		// GRBK-514
 		justStructureChoice = new NullSensitiveCheckBox() {
@@ -226,15 +227,14 @@ public class FileUploadPanel extends FormPanel {
 
 		});
 		
+		//--- format choice info box ----
+		
 		importFormatInfo   = new TextArea();
 		importFormatInfo.setReadOnly(true);
-		//importFormatInfo.setStyleName(led { background-color: transparent; border: 0; }");
 		importFormatInfo.addStyleName(resources.css().gbFileFormatInfo());
-		//importFormatInfo.setVisibleLines(10);
 		importFormatInfo.setLabelSeparator("");
 		importFormatInfo.setAutoHeight(true);
 		importFormatInfo.setAutoWidth(true);
-		//importFormatInfo.setBorders(true);
 		
 		//-----------------
 		add(file);

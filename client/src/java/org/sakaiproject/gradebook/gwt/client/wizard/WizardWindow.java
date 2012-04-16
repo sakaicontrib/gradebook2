@@ -276,14 +276,6 @@ public class WizardWindow extends Window {
 		}
 	}
 
-	public Button getPrevBtn() {
-		return prevBtn;
-	}
-
-	public void setPrevBtn(Button prevBtn) {
-		this.prevBtn = prevBtn;
-	}
-
 	public boolean isHidePreviousButtonOnFirstCard() {
 		return hidePreviousButtonOnFirstCard;
 	}
@@ -749,6 +741,31 @@ public class WizardWindow extends Window {
 		this.buttonAlignment = buttonAlignment;
 	}
 	
+	public Component getPreviousButton() {
+		return prevBtn;
+	}
 	
+	public Component getNextButton() {
+		return nextBtn;
+	}
+	
+	public Component getCancelButton() {
+		return cancelBtn;
+	}
+
+	public void pressPreviousButton() {
+		onButtonPressed(getPreviousButton());
+		
+	}
+
+	public void pressNextButton() {
+		onButtonPressed(getNextButton());
+		
+	}
+
+	public void pressCancelButton() {
+		onButtonPressed(getCancelButton());
+		
+	}
 
 }

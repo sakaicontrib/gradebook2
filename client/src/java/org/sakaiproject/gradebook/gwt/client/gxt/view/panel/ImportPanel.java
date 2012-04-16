@@ -331,6 +331,8 @@ public class ImportPanel extends GradebookPanel {
 			if (hasErrors) {
 				
 				mainCardLayout.setActiveItem(errorContainer);
+				wizard.show();
+				wizard.pressPreviousButton();
 				 
 			} else {
 			
@@ -342,9 +344,10 @@ public class ImportPanel extends GradebookPanel {
 				}
 				
 				refreshSetupPanel(importSettings.isJustStructure());
+				wizard.hide();
 			}
 			
-			wizard.hide();
+			
 		} catch (Exception e) {
 			
 			Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(e));
@@ -357,7 +360,7 @@ public class ImportPanel extends GradebookPanel {
 			GradeType type = ((Gradebook)Registry.get(AppConstants.CURRENT)).getGradebookItemModel().getGradeType();
 			
 			if( type == GradeType.PERCENTAGES || type == GradeType.LETTERS ) {
-				getScantronOrClickerPointsWithWizard();
+				pointsConversionWizard();
 			}
 		}
 
@@ -569,7 +572,7 @@ public class ImportPanel extends GradebookPanel {
 				} else if (411 == statusCode) {
 					uploadingBox.close();
 					submitButton.setVisible(true);
-					getScantronOrClickerPointsWithWizard();
+					pointsConversionWizard();
 				} else {
 					onFailure(request, caught);
 				}
@@ -702,7 +705,7 @@ public class ImportPanel extends GradebookPanel {
 		
 	}
 
-	protected void getScantronOrClickerPointsWithWizard() {
+	protected void pointsConversionWizard() {
 		//show the wizard and ask for points possible for scantron
 		WidgetInjector injector = Registry.get(AppConstants.WIDGET_INJECTOR);
 		wizard = injector.getWizardProvider().get();

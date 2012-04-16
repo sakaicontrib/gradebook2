@@ -117,4 +117,10 @@ public interface Wizard {
 
 	public abstract HorizontalAlignment getButtonAlignment();
 	
+	public void pressPreviousButton();
+	
+	public void pressNextButton();
+	
+	public void pressCancelButton();
+	
 }

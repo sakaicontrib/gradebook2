@@ -220,5 +220,17 @@ public class SimpleWizard extends WizardWindow implements Wizard  {
 	public void setButtonAlignment(HorizontalAlignment buttonAlignment) {
 		this.buttonAlignment = buttonAlignment;
 	}
+	
+	public void pressPreviousButton() {
+		super.pressPreviousButton();
+	}
+
+	public void pressNextButton() {
+		super.pressNextButton();
+	}
+
+	public void pressCancelButton() {
+		super.pressCancelButton();
+	}
 
 }

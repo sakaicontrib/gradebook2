@@ -41,7 +41,7 @@ public class ImportExportView extends View {
 		switch (GradebookEvents.getEvent(event.getType()).getEventKey()) {
 		case START_IMPORT:
 			// this event arrives after the panel is instantiated
-			((ImportPanel)importPanel).startImportWizard();
+			importPanel.startImportWizard();
 			break;
 		case STOP_IMPORT:
 			importPanel.finish();
