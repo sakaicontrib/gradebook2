@@ -3307,27 +3307,24 @@ private GradeItem buildNewCategory(String curCategoryString,
 					rv = handlePoiSpreadSheet(wbPoi, newItemName, 
 							itemNameFromFile.equalsIgnoreCase(newItemName), importSettings);
 				} else {
-					if(typeOK) {
-						wbJxl = getJexcelWorkbook(new BufferedInputStream(new FileInputStream(tempFile)));
-						typeOK = wbJxl != null;
-						if (typeOK) {
-							try {
-								rv = handleJExcelAPISpreadSheet(file.getInputStream(), newItemName, 
-										itemNameFromFile.equalsIgnoreCase(newItemName), importSettings);
-							} catch (InvalidInputException e) {
-								typeOK = false;
-							} catch (FatalException e) {
-								log.error("cannot read Jexcel File: " + file.getOriginalFilename());
-								errorMessage = unexpectedTypeErrorMessage;
-							}
-						} else {
+					wbJxl = getJexcelWorkbook(new BufferedInputStream(new FileInputStream(tempFile)));
+					typeOK = wbJxl != null;
+					if (typeOK) {
+						try {
+							rv = handleJExcelAPISpreadSheet(file.getInputStream(), newItemName, 
+									itemNameFromFile.equalsIgnoreCase(newItemName), importSettings);
+						} catch (InvalidInputException e) {
+							typeOK = false;
+						} catch (FatalException e) {
+							log.error("cannot read Jexcel File: " + file.getOriginalFilename());
 							errorMessage = unexpectedTypeErrorMessage;
 						}
-						
 					} else {
-						log.info("Import: expected either " + DETECTOR_MS_OFFICE_GENERIC_MIMETYPE + " or  " +
-								DETECTOR_MS_EXCEL_MIMETYPE + " but got " + detected);
+						errorMessage = unexpectedTypeErrorMessage;
 					}
+					
+						
+					
 				}
 				
 			}
