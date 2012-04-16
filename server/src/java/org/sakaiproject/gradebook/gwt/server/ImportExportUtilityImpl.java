@@ -3026,7 +3026,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 					headerNames[i] = ieInfo.getHeaders()[i].getHeaderName();
 				}
 				
-				if ( ! (rawData.isNewAssignment() &&  Arrays.deepEquals(copy, headerNames))) {
+				if ( ! Arrays.deepEquals(copy, headerNames)) {
 					importFile.setNotifyAssignmentName(true);
 					importFile.setNotes(i18n.getString("gb2ImportItemSameName"));
 				}
