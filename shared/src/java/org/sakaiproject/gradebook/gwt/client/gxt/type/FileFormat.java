@@ -24,7 +24,6 @@ public enum FileFormat implements FileModel {
 	
 	FULL("full"),
 	SCANTRON("scantron"), 
-	CLICKER("clicker"), 
 	TEMPLATE("template"),
 	NO_STRUCTURE("no-structure"); // DEPRECATED
 
@@ -45,9 +44,6 @@ public enum FileFormat implements FileModel {
 			switch(this) {
 			case SCANTRON:
 				displayName = i18n.importFormatSCANTRON();
-				break;
-			case CLICKER:
-				displayName = i18n.importFormatCLICKER();
 				break;
 			case TEMPLATE:
 				displayName = i18n.exportFormatTemplate();

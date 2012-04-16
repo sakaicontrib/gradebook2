@@ -129,7 +129,7 @@ public class FileUploadPanel extends FormPanel {
 		file.setFieldLabel(i18n.fileLabel());
 		file.setName("Test");
 
-		add(file);
+		//-------------------------
 
 		HiddenField<String> gradebookUidField = new HiddenField<String>();
 		gradebookUidField.setName(AppConstants.REQUEST_FORM_FIELD_GBUID);
@@ -148,7 +148,7 @@ public class FileUploadPanel extends FormPanel {
 		
 		importTypeComboBox.setVisible(false);
 
-		add(importTypeComboBox);
+		
 		
 				
 		importFormatComboBox = new FileFormatComboBox();
@@ -167,7 +167,8 @@ public class FileUploadPanel extends FormPanel {
 						importFormatInfo.setValue(f.getTypeName() + " is as " + f.getTypeName() + " does...." 
 								+ (f.equals(FileFormat.NO_STRUCTURE) ? "DEPRECATED":""));
 						
-						if (f.equals(FileFormat.TEMPLATE) || f.equals(FileFormat.NO_STRUCTURE)) {
+						if (f.equals(FileFormat.TEMPLATE) || f.equals(FileFormat.NO_STRUCTURE)
+								|| f.equals(FileFormat.SCANTRON) ) {
 							
 							if(justStructureChoice.getValue()) {
 								return i18n.noImportJustStructureForFormat() 
@@ -189,7 +190,7 @@ public class FileUploadPanel extends FormPanel {
 		});
 
 				
-		add(importFormatComboBox);
+		//-------------------
 							
 		// GRBK-514
 		justStructureChoice = new NullSensitiveCheckBox() {
@@ -214,7 +215,8 @@ public class FileUploadPanel extends FormPanel {
 		justStructureChoice.setAutoHeight(false);
 		justStructureChoice.setAutoWidth(false);
 		justStructureChoice.addStyleName(resources.css().gbLeftAlignFlushNoWrapInput());
-		add(justStructureChoice);
+		
+		
 		
 		addListener(Events.Submit, new Listener<FormEvent>() {
 
@@ -233,6 +235,12 @@ public class FileUploadPanel extends FormPanel {
 		importFormatInfo.setAutoHeight(true);
 		importFormatInfo.setAutoWidth(true);
 		//importFormatInfo.setBorders(true);
+		
+		//-----------------
+		add(file);
+		add(importTypeComboBox);
+		add(justStructureChoice);
+		add(importFormatComboBox);
 		add(importFormatInfo, new FormData("100%"));
 	}
 	

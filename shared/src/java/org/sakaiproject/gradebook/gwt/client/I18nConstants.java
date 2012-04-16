@@ -502,10 +502,9 @@ public interface I18nConstants extends Constants {
 	String importingJustStructure();
 	String importFileTypesWarning();
 	String importFormatSCANTRON();
-	String importFormatCLICKER();
 	String importFullGradebook();
-	String importScantronClickerPointsConversionTitle();
-	String importScantronClickerPointsConversionFinish();
+	String importPointsConversionTitle();
+	String importPointsConversionFinish();
 	String noImportJustStructureForFormat();
 	String importWizardTitle();
 	

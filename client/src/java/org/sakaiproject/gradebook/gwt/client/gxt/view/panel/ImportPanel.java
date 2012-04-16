@@ -855,8 +855,8 @@ public class ImportPanel extends GradebookPanel {
 		card1.setFormPanel(form);
 		
 		wizard.setHeading(i18n.importWizardHeading());
-		wizard.setHeaderTitle(i18n.importScantronClickerPointsConversionTitle());
-		wizard.setFinishButtonText(i18n.importScantronClickerPointsConversionFinish());
+		wizard.setHeaderTitle(i18n.importPointsConversionTitle());
+		wizard.setFinishButtonText(i18n.importPointsConversionFinish());
 		
 		wizard.show();
 		

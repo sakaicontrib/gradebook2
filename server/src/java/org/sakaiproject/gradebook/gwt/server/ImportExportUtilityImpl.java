@@ -1047,7 +1047,6 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			boolean shouldBeScantron = FileFormat.SCANTRON.name().equals(settings.getFileFormatName());
 			boolean isReallyScantron = isScantronSheetForJExcelApi(s);
 			boolean shouldBeNoStructureGB = FileFormat.NO_STRUCTURE.name().equals(settings.getFileFormatName());
-			
 			if (shouldBeNoStructureGB) {
 				ImportExportDataFile raw = new ImportExportDataFile();  
 
@@ -1065,6 +1064,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 					}
 					raw.addRow(data); 
 				}
+				
 				if ( 0 < readDataForStructureInformation(raw, buildRowIndicatorMap(), new HashMap<StructureRow, String[]>()) ) {
 					return emptyUploadFileWithNotes(unexpectedFormatErrorMessage);
 				}
@@ -1128,13 +1128,9 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			raw.addRow(data); 
 		}
 		boolean shouldBeFullGradebook = FileFormat.FULL.name().equals(settings.getFileFormatName());
-		boolean isClicker = isClickerSheetForJExcelApi(s);
-		boolean shouldBeClicker = FileFormat.CLICKER.name().equals(settings.getFileFormatName());
-		boolean isTemplate = isAssignmentTemplateFormat(raw);
+		boolean isTemplate = couldBeNewItemTemplate(raw);
 		boolean shouldBeTemplate = FileFormat.TEMPLATE.name().equals(settings.getFileFormatName());
-		boolean isBadFormat = isClicker && !shouldBeClicker
-				||!isClicker && shouldBeClicker
-				|| !isTemplate && shouldBeTemplate
+		boolean isBadFormat = !isTemplate && shouldBeTemplate
 				|| isTemplate && !shouldBeTemplate
 				|| shouldBeFullGradebook && 
 				1 > readDataForStructureInformation(raw, buildRowIndicatorMap(), new HashMap<StructureRow, String[]> ());
@@ -1142,11 +1138,11 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			return emptyUploadFileWithNotes(unexpectedFormatErrorMessage);
 		}
 		
-		if (isClicker || isTemplate) {
+		if (isTemplate) {
 			raw.setNewAssignment(isNewAssignmentByFileName); //// TODO: this may not be appropriate for anything but scantrons
 		}
-		raw.setFileType("Excel 5.0/7.0" + ( isClicker ? " clicker": "")); 
-		raw.setScantronFile(isClicker || isTemplate); 
+		raw.setFileType("Excel 5.0/7.0"); 
+		raw.setScantronFile(isTemplate); 
 		raw.setJustStructure(settings.isJustStructure());
 		raw.setImportSettings(settings);
 		return parseImportGeneric(raw);
@@ -1322,13 +1318,13 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		return false; /// empty sheet
 	}
 	
-	private boolean isTemplateSheetFromPoi(org.apache.poi.ss.usermodel.Sheet sheet) {
+	private boolean couldBeNewItemTemplate(org.apache.poi.ss.usermodel.Sheet sheet) {
 		//skip all empty rows
 		if(sheet!=null)
 			for (Row row : sheet) {
 				for (org.apache.poi.ss.usermodel.Cell cell : row) {
 					if (!"".equals(cell.getStringCellValue().trim())) {
-						return isTemplateHeaderRow(row);
+						return couldBeNewItemTemplateHeaderRow(row);
 					}
 				}
 			}
@@ -1337,15 +1333,9 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	}
 	
 
-	private boolean isTemplateHeaderRow(Row row) {
+	private boolean couldBeNewItemTemplateHeaderRow(Row row) {
 		boolean isTemplate = templateHeaderColumnSet.size()>0;
-		List<String> headers =  new ArrayList<String> (templateHeaderColumnSet);
-		for (int i=0;i<headers.size();++i) {
-			isTemplate = isTemplate && row !=null  
-						&& row.getCell(i).getStringCellValue().trim().toLowerCase().equals(
-								headers.get(i).trim().toLowerCase());
-			}
-		return isTemplate;
+		return isTemplate && row.getCell(0).getStringCellValue().trim().equalsIgnoreCase(templateHeaderColumnSet.get(0));
 	}
 
 
@@ -1409,17 +1399,10 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	}
 	
 	/// this requires all header values and fails if the order is different
-	private boolean isListTemplateHeaderRow(List<String> list) {
+	private boolean couldBeNewItemTemplateHeaderRow(List<String> list) {
 		boolean isTemplate = templateHeaderColumnSet.size()>0;
-		List<String> headers =  new ArrayList<String> (templateHeaderColumnSet);
-		for (int i=0;i<headers.size();++i) {
-			isTemplate = isTemplate && list !=null  
-						&& list.get(i).trim().toLowerCase().equals(
-								headers.get(i).trim().toLowerCase());
-			}
-		
-		return isTemplate;
-	}
+		return isTemplate && list.get(0).equalsIgnoreCase(templateHeaderColumnSet.get(0));
+		}
 
 
 	private Upload handlePoiSpreadSheet(org.apache.poi.ss.usermodel.Workbook inspread, 
@@ -1451,21 +1434,11 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 					mismatch  = true;	
 				}
 			} else 
-				if (FileFormat.CLICKER.equals(fileFormatChosen)) {
-				
-					log.debug("POI: Not scantron");
-					if (isClickerSheetFromPoi(cur)) {
-						ret = processNormalXls(cur, settings);
-						ret.setNewAssignment(isNewAssignmentByFileName);//TODO: does this make sense?
-						ret.setScantronFile(true);
-					} else {
-						mismatch = true;
-					}
-			} else 
 				if (FileFormat.TEMPLATE.equals(fileFormatChosen)) {
-					if (isTemplateSheetFromPoi(cur)) {
+					if (couldBeNewItemTemplate(cur)) {
 						ret = processNormalXls(cur, settings);
 						ret.setScantronFile(false);
+						ret.setNewAssignment(true);
 					} else {
 						mismatch = true;
 					}
@@ -2781,7 +2754,6 @@ private GradeItem buildNewCategory(String curCategoryString,
 		
 		boolean treatAllItemsAsNewItems = 
 			       format.equals(FileFormat.SCANTRON)
-				|| format.equals(FileFormat.CLICKER)
 				|| format.equals(FileFormat.TEMPLATE);
 		
 		if (header.getField() == Field.S_ITEM) {
@@ -2903,11 +2875,11 @@ private GradeItem buildNewCategory(String curCategoryString,
 		CategoryItemPair p = null; 
 		
 		/*
-		 * For clickers, templates, scantrons... we assume all items are new items
+		 * For templates, scantrons... we assume all items are new items
 		 */
 		FileFormat f = FileFormat.valueOf(ieInfo.getImportsettings().getFileFormatName());
 		
-		if (f.equals(FileFormat.SCANTRON) || f.equals(FileFormat.CLICKER) || f.equals(FileFormat.TEMPLATE)) {
+		if (f.equals(FileFormat.SCANTRON) || f.equals(FileFormat.TEMPLATE)) {
 			return new CategoryItemPair( ieInfo.getCategoryIdItemMap().get("-1"), null);
 		}
 
@@ -3242,7 +3214,6 @@ private GradeItem buildNewCategory(String curCategoryString,
 		Upload rv = null;
 		boolean typeOK = true;
 		final FileType type = FileType.valueOf(importSettings.getExportTypeName());
-		BufferedInputStream bis = null;
 		String errorMessage = "";
 		final String unexpectedTypeErrorMessage = i18n.getString("expectedFormat" + importSettings.getExportTypeName(), 
 				"The file format did not match your selection: " 
@@ -3268,7 +3239,6 @@ private GradeItem buildNewCategory(String curCategoryString,
 		
 		/* get the file and save it locally so we can abuse it */
 		File tempFile = null;
-		InputStream tempInput = null;
 		String prefix = Thread.currentThread().hashCode() + "_";
 		try {
 			origFile = file.getInputStream();
@@ -3280,8 +3250,6 @@ private GradeItem buildNewCategory(String curCategoryString,
 			while ((cnt = origFile.read(buf)) != -1)  
 			   bos.write(buf, 0, cnt);
 			bos.close();
-			tempInput = new FileInputStream(tempFile);
-			bis = new BufferedInputStream(tempInput);
 			tempFile.deleteOnExit();
 		} catch (IOException e1) {
 			return emptyUploadFileWithNotes(e1.getMessage());
@@ -3328,7 +3296,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 				 * that the detected mime type is compatible with XLS97
 				 * (and not XLSX, for example)typeOk = getMimeType(bis)
 				 */
-				String detected = getMimeType(tempInput);
+				String detected = getMimeType(new FileInputStream(tempFile));
 				typeOK = DETECTOR_MS_OFFICE_GENERIC_MIMETYPE.equals(detected)
 						|| DETECTOR_MS_EXCEL_MIMETYPE.equals(detected);
 				wbPoi = readPoiSpreadsheet(tempFile);
@@ -3340,7 +3308,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 							itemNameFromFile.equalsIgnoreCase(newItemName), importSettings);
 				} else {
 					if(typeOK) {
-						wbJxl = getJexcelWorkbook(bis);
+						wbJxl = getJexcelWorkbook(new BufferedInputStream(new FileInputStream(tempFile)));
 						typeOK = wbJxl != null;
 						if (typeOK) {
 							try {
@@ -3368,7 +3336,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 				ImportExportDataFile rawData = new ImportExportDataFile(); 
 				String[] ent;
 				
-				String detected = getMimeType(tempInput);
+				String detected = getMimeType(new FileInputStream(tempFile));
 				
 				if (!DETECTOR_CSV_MIMETYPE.equals(detected)) {
 					typeOK = false;
@@ -3378,7 +3346,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 					errorMessage = unexpectedFormatErrorMessage;
 				
 			
-					InputStreamReader reader = new InputStreamReader(tempInput);
+					InputStreamReader reader = new InputStreamReader(new FileInputStream(tempFile));
 					CSVReader csvReader = new CSVReader(reader);
 					
 					while ( (ent = csvReader.readNext() ) != null)
@@ -3398,16 +3366,8 @@ private GradeItem buildNewCategory(String curCategoryString,
 					 * if they are ok, then pass
 					 * the lot to the generic handler... 
 					 */
-					
-					if (FileFormat.CLICKER.equals(FileFormat.valueOf(importSettings.getFileFormatName()))) {
-						rawData.setScantronFile(true); // scantrons & clickers are processed similarly
-						if (!isClickerSheetCSV(rawData)) {
-							typeOK = false;
-						} else {
-							rawData.setNewAssignment(true);
-						}
-						
-					} else if(FileFormat.SCANTRON.equals(FileFormat.valueOf(importSettings.getFileFormatName()))) {
+					 
+					if(FileFormat.SCANTRON.equals(FileFormat.valueOf(importSettings.getFileFormatName()))) {
 						rawData.setScantronFile(true);					
 						if (!isScantronSheetCSV(rawData)) {
 							typeOK = false;
@@ -3420,7 +3380,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 						}
 						
 					} else if (FileFormat.TEMPLATE.equals(FileFormat.valueOf(importSettings.getFileFormatName()))) {
-						if(!isAssignmentTemplateFormat(rawData)) {
+						if(!couldBeNewItemTemplate(rawData)) {
 							typeOK = false;
 						} else {
 							rawData.setNewAssignment(true);
@@ -3523,7 +3483,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 	}
 
 
-	private boolean isAssignmentTemplateFormat(ImportExportDataFile rawData) {
+	private boolean couldBeNewItemTemplate(ImportExportDataFile rawData) {
 		
 		if (null == rawData || 0 == rawData.getAllRows().size())
 			return false;
@@ -3538,7 +3498,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 				rowLowerCase.add(cell.trim().toLowerCase());
 			}
 			// accept first qualified match
-			if (isListTemplateHeaderRow(rowLowerCase))
+			if (couldBeNewItemTemplateHeaderRow(rowLowerCase))
 				return true;
 		}
 		return false;
