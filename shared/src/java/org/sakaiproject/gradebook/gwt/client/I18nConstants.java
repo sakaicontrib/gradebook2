@@ -507,6 +507,10 @@ public interface I18nConstants extends Constants {
 	String importPointsConversionFinish();
 	String noImportJustStructureForFormat();
 	String importWizardTitle();
+	String scantronFormatDescription();
+	String fullGradebookFormatDescription();
+	String newItemTemplateFormatDescription();
+	String unstructuredGradebookFormatDescription();
 	
 	// GRBK-1220
 	String downloadNewItemTemplateWizardHeading();

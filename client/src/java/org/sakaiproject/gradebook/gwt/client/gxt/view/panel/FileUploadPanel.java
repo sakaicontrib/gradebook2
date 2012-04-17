@@ -165,8 +165,7 @@ public class FileUploadPanel extends FormPanel {
 					FileFormat f = FileFormat.valueOf((String)
 							importFormatComboBox.getValue().get(importFormatComboBox.getValueField()));
 					if (f != null) {
-						importFormatInfo.setValue(f.getTypeName() + " is as " + f.getTypeName() + " does...." 
-								+ (f.equals(FileFormat.NO_STRUCTURE) ? "DEPRECATED":""));
+						importFormatInfo.setValue(f.getDescription(i18n));
 						
 						if (f.equals(FileFormat.TEMPLATE) || f.equals(FileFormat.NO_STRUCTURE)
 								|| f.equals(FileFormat.SCANTRON) ) {

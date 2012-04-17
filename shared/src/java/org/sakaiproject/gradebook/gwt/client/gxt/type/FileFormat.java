@@ -29,6 +29,7 @@ public enum FileFormat implements FileModel {
 
 	private String typeName;
 	private String displayName;
+	private String description;
 
 
 	
@@ -57,6 +58,26 @@ public enum FileFormat implements FileModel {
 		}
 		
 		return displayName;
+	}
+	
+	public String getDescription(I18nConstants i18n) {
+		if (null == description) {
+			switch(this) {
+			case SCANTRON:
+				description = i18n.scantronFormatDescription();
+				break;
+			case TEMPLATE:
+				description = i18n.newItemTemplateFormatDescription();
+				break;
+			case FULL:
+				description = i18n.fullGradebookFormatDescription();
+				break;
+			case NO_STRUCTURE:
+				description = i18n.unstructuredGradebookFormatDescription();
+			}
+		}
+		
+		return description;
 	}
 	
 	public String  getTypeName() {
