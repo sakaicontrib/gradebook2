@@ -872,9 +872,14 @@ public class ImportPanel extends GradebookPanel {
 		Double boundary = findlower ? Double.MAX_VALUE : 0d;
 		String score = null;
 		Double d = null;
+		String id = i.getIdentifier();
+		Gradebook gb = Registry.get(AppConstants.CURRENT);
+		if (gb != null && gb.getGradebookItemModel().getGradeType().equals(GradeType.LETTERS)) {
+			id += AppConstants.ACTUAL_SCORE_SUFFIX;
+		}
 		for (Learner row : rows) {
 			try {
-				score = (String) row.get(i.getIdentifier());
+				score = (String) row.get(id);
 				if (null == score)
 					continue;
 				d = Double.valueOf(score);

@@ -3474,8 +3474,6 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 										try {
 											value = Double.valueOf(Double.parseDouble((String) v));
 											isParseable = true;
-											// If it's a numeric upload into a letter grade gradebook then use points
-											gradeType = GradebookService.GRADE_TYPE_POINTS;
 										} catch (NumberFormatException nfe) {
 											log.debug("This string does not seem to be a double: " + strValue);
 										}
