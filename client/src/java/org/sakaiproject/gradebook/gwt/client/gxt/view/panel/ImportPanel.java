@@ -830,12 +830,15 @@ public class ImportPanel extends GradebookPanel {
 						errorFound = true; 
 					}
 					
+					
 					row.set(i.getIdentifier(), newValStr);
+					String errorProp = DataTypeConversionUtil.buildFailedKey(i.getIdentifier());
 					if (errorFound)
 					{
-						String errorProp = DataTypeConversionUtil.buildFailedKey(i.getIdentifier());
 						row.set(errorProp, "true");
 						
+					} else {
+						row.set(errorProp, null);
 					}
 				}
 				/*
