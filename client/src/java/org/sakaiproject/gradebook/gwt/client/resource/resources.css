@@ -308,16 +308,13 @@
 }
 
 /* GRBK-514 */
-
 .gbLeftAlignFlushNoWrapInput input {
 	left:0px !important;
 	white-space:nowrap;
 }
-	
- /* GRBK-1264 */
- 
- .gbFileFormatInfo textarea {
-	border: none !important;
-	background-color: transparent;
-	font-weight:bold
+
+/* GRBK-1278 */
+.importFormatInformationMessage {
+	padding-top: 10px !important; 
+	padding-bottom: 10px !important; 
 }

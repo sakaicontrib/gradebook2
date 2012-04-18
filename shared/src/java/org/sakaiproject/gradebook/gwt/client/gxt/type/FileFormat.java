@@ -23,61 +23,58 @@ import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 public enum FileFormat implements FileModel { 
 	
 	FULL("full"),
-	SCANTRON("scantron"), 
 	TEMPLATE("template"),
-	NO_STRUCTURE("no-structure"); // DEPRECATED
+	NO_STRUCTURE("no-structure"),
+	SCANTRON("scantron"); // NO_STRUCTURE DEPRECATED
 
-	private String typeName;
 	private String displayName;
-	private String description;
+	private String importMessage;
+	private String typeName;
 
-
-	
 	FileFormat(String typeName) {
 		
 		this.typeName = typeName;
 		
 	}
-	
 
 	public String getDisplayName(I18nConstants i18n) {
 		if (null == displayName) {
 			switch(this) {
+			case FULL:
+				displayName = i18n.fileFormatNameFull();
+				break;
 			case SCANTRON:
-				displayName = i18n.importFormatSCANTRON();
+				displayName = i18n.fileFormatNameScantron();
 				break;
 			case TEMPLATE:
-				displayName = i18n.exportFormatTemplate();
-				break;
-			case FULL:
-				displayName = i18n.importFullGradebook();
+				displayName = i18n.fileFormatNameTemplate();
 				break;
 			case NO_STRUCTURE:
-				displayName = i18n.noStructureGradebook();
+				displayName = i18n.fileFormatNameNoStructure(); // DEPRECATED
 			}
 		}
 		
 		return displayName;
 	}
-	
-	public String getDescription(I18nConstants i18n) {
-		if (null == description) {
+
+	public String getImportMessage(I18nConstants i18n) {
+		if (null == importMessage) {
 			switch(this) {
+			case FULL:
+				importMessage = i18n.fileFormatImportMessageFull();
+				break;
 			case SCANTRON:
-				description = i18n.scantronFormatDescription();
+				importMessage = i18n.fileFormatImportMessageScantron();
 				break;
 			case TEMPLATE:
-				description = i18n.newItemTemplateFormatDescription();
-				break;
-			case FULL:
-				description = i18n.fullGradebookFormatDescription();
+				importMessage = i18n.fileFormatImportMessageTemplate();
 				break;
 			case NO_STRUCTURE:
-				description = i18n.unstructuredGradebookFormatDescription();
+				importMessage = i18n.fileFormatImportMessageNoStructure(); // DEPRECATED
 			}
 		}
-		
-		return description;
+
+		return importMessage;
 	}
 	
 	public String  getTypeName() {
@@ -92,7 +89,4 @@ public enum FileFormat implements FileModel {
 		}
 		return null;
 	}
-	
-
-	
 }

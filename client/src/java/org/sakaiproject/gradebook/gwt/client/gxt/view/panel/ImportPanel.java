@@ -252,8 +252,8 @@ public class ImportPanel extends GradebookPanel {
 			}
 		});
 		
-		wizard.setSize(540, 350);
-		
+		wizard.setSize(600, 500);
+				
 		mainCardLayoutContainer.add(fileUploadContainer);
 		mainCardLayoutContainer.add(borderLayoutContainer);
 		mainCardLayoutContainer.add(errorContainer); 

@@ -19,7 +19,7 @@ public interface GradebookCssResource extends CssResource {
 	String gbCellClickable();
 	
 	String gbCellCommented();
-
+	
 	String gbCellDropped();
 	
 	String gbCellError();
@@ -61,15 +61,15 @@ public interface GradebookCssResource extends CssResource {
 	String gbItemIcon();
 	
 	String gbNotIncluded();
-
+	
 	String gbNotIncludedEC();
-
+	
 	String gbNumericFieldInput();
 	
 	String gbReleased();
-
+	
 	String gbReleasedEC();
-
+	
 	String gbSetupButton();
 	
 	String gbStatisticsButton();
@@ -126,8 +126,8 @@ public interface GradebookCssResource extends CssResource {
 	
 	/* GRBK-514 */
 	String gbLeftAlignFlushNoWrapInput();
-
-	/* GRBK-1264 */
-	String gbFileFormatInfo();
+	
+	/* GRBK-1278 */
+	String importFormatInformationMessage();
 
 }

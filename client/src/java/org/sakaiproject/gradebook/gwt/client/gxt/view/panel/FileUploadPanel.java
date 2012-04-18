@@ -39,35 +39,38 @@ import org.sakaiproject.gradebook.gwt.client.wizard.formpanel.FileFormatComboBox
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
+import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FormEvent;
 import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.widget.Html;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.form.Field;
+import com.extjs.gxt.ui.client.widget.form.FieldSet;
 import com.extjs.gxt.ui.client.widget.form.FileUploadField;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.HiddenField;
-import com.extjs.gxt.ui.client.widget.form.TextArea;
 import com.extjs.gxt.ui.client.widget.form.Validator;
-import com.extjs.gxt.ui.client.widget.layout.FormData;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Cookies;
 
 public class FileUploadPanel extends FormPanel {
-
-	private FileUploadField file = null;
-	private final I18nConstants i18n;
-	private final ImportPanel newImportPanel;
-	private ExportTypeComboBox importTypeComboBox;
-	NullSensitiveCheckBox justStructureChoice;
-	private FileFormatComboBox importFormatComboBox;
-	private TextArea importFormatInfo = null;
 	public final static Integer COMMENTS_CHECKBOX_VALUE = Integer.valueOf(0);
 	public final static Integer EXPORT_TYPE_VALUE = Integer.valueOf(1);
 	
+	private final I18nConstants i18n;
+	private final ImportPanel newImportPanel;
+
+	private FileUploadField file = null;
+	private FileFormatComboBox importFormatComboBox;
+	private Html importFormatInformationMessage;
+	private FieldSet importFormatSet;
+	private ExportTypeComboBox importTypeComboBox;
+
+	NullSensitiveCheckBox justStructureChoice;
 	
 	public FileUploadPanel(final ImportPanel newImportPanel) {
 		
@@ -81,7 +84,7 @@ public class FileUploadPanel extends FormPanel {
 
 		final Gradebook gbModel = Registry.get(AppConstants.CURRENT);
 
-		setLabelWidth(200);
+		setLabelWidth(180);
 
 		setHeaderVisible(false);
 
@@ -93,6 +96,8 @@ public class FileUploadPanel extends FormPanel {
 		setMethod(Method.POST);
 		setPadding(4);
 		setButtonAlign(HorizontalAlignment.RIGHT);
+		
+		//---------------------------------------------------------------------------
 
 		file = new FileUploadField() {
 			@Override
@@ -129,7 +134,7 @@ public class FileUploadPanel extends FormPanel {
 		file.setFieldLabel(i18n.fileLabel());
 		file.setName("Test");
 
-		//-------------security-values----------
+		//---security-values------------------------------------------------------------
 
 		HiddenField<String> gradebookUidField = new HiddenField<String>();
 		gradebookUidField.setName(AppConstants.REQUEST_FORM_FIELD_GBUID);
@@ -140,20 +145,22 @@ public class FileUploadPanel extends FormPanel {
 		formTokenField.setName(AppConstants.REQUEST_FORM_FIELD_FORM_TOKEN);
 		formTokenField.setValue(Cookies.getCookie(AppConstants.GB2_TOKEN));
 		add(formTokenField);
+
+		//---invisible combo box set by validator for format combo----------------------
 		
-		//---------invisible combo box set by validator for format combo
 		importTypeComboBox = new ExportTypeComboBox();
 		importTypeComboBox.setName(AppConstants.IMPORT_PARAM_FILETYPE);
-		
 		importTypeComboBox.setAllowBlank(false);
-		
 		importTypeComboBox.setVisible(false);
 
-		
-		//------------format combo 
+		//---format combo---------------------------------------------------------------
 				
-		importFormatComboBox = new FileFormatComboBox();
+		importFormatInformationMessage = new Html();
+		importFormatInformationMessage.setHtml(i18n.fileFormatImportMessageFull());
+		importFormatInformationMessage.setStyleName(resources.css().importFormatInformationMessage());
 		
+		importFormatComboBox = new FileFormatComboBox();		
+		importFormatComboBox.setWidth("50%");
 		importFormatComboBox.setName(AppConstants.IMPORT_PARAM_FILEFORMAT);
 		importFormatComboBox.setEmptyText(i18n.importFormPanelImportTypeEmptyText());
 		importFormatComboBox.setAllowBlank(false);
@@ -165,7 +172,7 @@ public class FileUploadPanel extends FormPanel {
 					FileFormat f = FileFormat.valueOf((String)
 							importFormatComboBox.getValue().get(importFormatComboBox.getValueField()));
 					if (f != null) {
-						importFormatInfo.setValue(f.getDescription(i18n));
+						importFormatInformationMessage.setHtml(f.getImportMessage(i18n));
 						
 						if (f.equals(FileFormat.TEMPLATE) || f.equals(FileFormat.NO_STRUCTURE)
 								|| f.equals(FileFormat.SCANTRON) ) {
@@ -188,10 +195,19 @@ public class FileUploadPanel extends FormPanel {
 				return "This should not happen: format dropdown value == null";
 			}
 		});
-
-				
-		//-----------structure-only checkbox ----
-							
+		
+		importFormatSet = new FieldSet();
+		importFormatSet.setCollapsible(false);
+		importFormatSet.setHeading("Import Format");  
+		importFormatSet.setCheckboxToggle(false);  
+		importFormatSet.setAutoHeight(true);
+		importFormatSet.setScrollMode(Scroll.AUTO);
+		importFormatSet.setVisible(true);
+		importFormatSet.add(importFormatComboBox);
+		importFormatSet.add(importFormatInformationMessage);
+		
+		//---structure-only check-box----------------------------------------------------
+		
 		// GRBK-514
 		justStructureChoice = new NullSensitiveCheckBox() {
 
@@ -204,9 +220,8 @@ public class FileUploadPanel extends FormPanel {
 			
 		};
 		justStructureChoice.setName(AppConstants.IMPORT_PARAM_STRUCTURE);
-		justStructureChoice.setValueAttribute("c");// we just check for ! null serverside
+		justStructureChoice.setValueAttribute("c");// we just check for ! null server-side
 
-		
 		ToolTipConfig checkBoxToolTipConfig = new ToolTipConfig(i18n.structureOnlyCheckboxToolTip());
 		checkBoxToolTipConfig.setDismissDelay(10000);
 		justStructureChoice.setToolTip(checkBoxToolTipConfig);
@@ -216,8 +231,6 @@ public class FileUploadPanel extends FormPanel {
 		justStructureChoice.setAutoWidth(false);
 		justStructureChoice.addStyleName(resources.css().gbLeftAlignFlushNoWrapInput());
 		
-		
-		
 		addListener(Events.Submit, new Listener<FormEvent>() {
 
 			public void handleEvent(FormEvent fe) {
@@ -225,24 +238,14 @@ public class FileUploadPanel extends FormPanel {
 			}
 
 		});
-		
-		//--- format choice info box ----
-		
-		importFormatInfo   = new TextArea();
-		importFormatInfo.setReadOnly(true);
-		importFormatInfo.addStyleName(resources.css().gbFileFormatInfo());
-		importFormatInfo.setLabelSeparator("");
-		importFormatInfo.setAutoHeight(true);
-		importFormatInfo.setAutoWidth(true);
-		
-		//-----------------
+
+		//---------------------------------------------------------------------------
+
+		add(importFormatSet);
 		add(file);
-		add(importTypeComboBox);
 		add(justStructureChoice);
-		add(importFormatComboBox);
-		add(importFormatInfo, new FormData("100%"));
+		add(importTypeComboBox);
 	}
-	
 
 	public void readFile() {
 		// TODO Auto-generated method stub
@@ -271,10 +274,6 @@ public class FileUploadPanel extends FormPanel {
 			values.put(EXPORT_TYPE_VALUE, ExportType.CSV);
 		}
 
-		
 		return values;
 	}
- 
-
-	
 }

@@ -409,7 +409,6 @@ public interface I18nConstants extends Constants {
 	String gradeFormatNormalTooltip();
 	
 	// GRBK-1054
-	
 	String gradebookSetupCategoryMessageForNoCats();
 	String gradebookSetupCategoryMessageForSimpleCats();
 	String gradebookSetupCategoryMessageForWeightedCats();
@@ -467,28 +466,23 @@ public interface I18nConstants extends Constants {
 	
 	String finalGradeSubmissionStatusDialogTitle();
 	String finalGradeSubmissionStatusErrorMessage();
-	
-	/*
-	 * GRBK-1083
-	 */
+
+	// GRBK-1083
 	String itemFormPanelReleasedItemForCategoryEmptyMessage();
 	
-	/*
-	 * GRBK-1128
-	 */
+	// GRBK-1128
 	String dropLowestHelpText();
 	String dropLowestHelpTextTitle();
 	
-	
+	//
 	String exportFormPanelLabelSections();
 	String exportFormPanelLabelExportType();
 	String exportFormPanelExportTypeEmptyText();
 	String exportTypeCSV();
 	String exportTypeXLS();
 	String exportTypeXLSX();
-	String exportFormatTemplate();
 	
-	//GRBK-514 GRBK-1221
+	// GRBK-514 GRBK-1221
 	String importFormPanelLabelFileFormat();
 	String importFormPanelImportTypeEmptyText();
 	String structureOnlyCheckbox();
@@ -501,24 +495,22 @@ public interface I18nConstants extends Constants {
 	String loading();
 	String importingJustStructure();
 	String importFileTypesWarning();
-	String importFormatSCANTRON();
-	String importFullGradebook();
 	String importPointsConversionTitle();
 	String importPointsConversionFinish();
 	String noImportJustStructureForFormat();
 	String importWizardTitle();
-	String scantronFormatDescription();
-	String fullGradebookFormatDescription();
-	String newItemTemplateFormatDescription();
-	String unstructuredGradebookFormatDescription();
 	
 	// GRBK-1220
 	String downloadNewItemTemplateWizardHeading();
 	
-	// GRBK-1263 - Deprecated
-	
-	String noStructureGradebook();
-
-	
+	// GRBK-1253
+	String fileFormatImportMessageFull();
+	String fileFormatImportMessageNoStructure();
+	String fileFormatImportMessageScantron();
+	String fileFormatImportMessageTemplate();
+	String fileFormatNameFull();
+	String fileFormatNameNoStructure();
+	String fileFormatNameScantron();
+	String fileFormatNameTemplate();
 	
 }
