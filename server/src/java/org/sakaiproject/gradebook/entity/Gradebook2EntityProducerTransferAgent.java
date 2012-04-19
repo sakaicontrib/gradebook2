@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -29,8 +28,10 @@ import org.sakaiproject.entity.api.HttpAccess;
 import org.sakaiproject.entity.api.Reference;
 import org.sakaiproject.entity.api.ResourceProperties;
 import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
+import org.sakaiproject.gradebook.gwt.client.api.ImportSettings;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
+import org.sakaiproject.gradebook.gwt.client.gxt.type.FileFormat;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.Upload;
@@ -38,6 +39,7 @@ import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
+import org.sakaiproject.gradebook.gwt.server.ImportSettingsImpl;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility.FileType;
 import org.sakaiproject.service.gradebook.shared.GradebookFrameworkService;
 import org.sakaiproject.service.gradebook.shared.GradebookNotFoundException;
@@ -205,7 +207,6 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 		log.info("setting entityproducer label: " + label);
 	}
 
-	@SuppressWarnings("unchecked")
 	public String merge(String arg0, Element arg1, String arg2, String arg3,
 			Map arg4, Map arg5, Set arg6) {
 		// TODO Auto-generated method stub
@@ -217,6 +218,13 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 		return false;
 	}
 
+	/* 
+	 * 
+	 * in practice, this is a misnamed method since archiveService currently
+	 * uses this to determine if a class will do arching operations.. not simply merge.
+	 * (non-Javadoc)
+	 * @see org.sakaiproject.entity.api.EntityProducer#willArchiveMerge()
+	 */
 	public boolean willArchiveMerge() {
 		return true;
 	}
@@ -233,7 +241,6 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 		this.myToolIds = myToolIds;
 	}
 
-	@SuppressWarnings("unchecked")
 	public void transferCopyEntities(String from, String to, List ids) {
 		ByteArrayOutputStream result = new ByteArrayOutputStream();
 		try {
@@ -254,21 +261,18 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 			frameworkService.addGradebook(to, i18n
 					.getString("defaultGradebookName"));
 		}
-		String structure = "";
-		int headerRow = result.toString().indexOf(i18n.getString("exportColumnHeaderStudentId"));
-		if(headerRow > -1) {
-			int lineEnd = result.toString().indexOf('\n', headerRow);
-			structure = result.toString().substring(0, lineEnd);
-		}
-		log.debug(structure);
+		
+		ImportSettings settings= new ImportSettingsImpl();
+		settings.setJustStructure(true);
+		settings.setGradebookUid(to);
+		settings.setFileFormatName(FileFormat.FULL.name());
+
 		Upload importFile = null;
 		try {
-			importFile = importExportUtil.parseImportCSV(to, new InputStreamReader(new ByteArrayInputStream(structure.getBytes("UTF-8"))));
+			importFile = importExportUtil.parseImportCSV(new InputStreamReader(new ByteArrayInputStream(result.toByteArray())), settings);
 		} catch (InvalidInputException e) {
 			e.printStackTrace();
 		} catch (FatalException e) {
-			e.printStackTrace();
-		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
 		
@@ -288,7 +292,6 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 		this.importExportUtil = importExportUtil;
 	}
 
-	@SuppressWarnings("unchecked")
 	public void transferCopyEntities(String from, String to, List ids,
 			boolean cleanup) {
 		

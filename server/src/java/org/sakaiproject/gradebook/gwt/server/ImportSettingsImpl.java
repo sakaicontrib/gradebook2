@@ -21,6 +21,7 @@ public class ImportSettingsImpl extends BaseModel implements ImportSettings {
 		super();
 		setScantron(false);
 		setForceOverwriteAssignments(false);
+		setJustStructure(false);
 	}
 	
 	

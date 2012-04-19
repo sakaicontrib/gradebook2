@@ -9,4 +9,72 @@ find . -name pom.xml | xargs sed -i -e 's/<old version>/<new version>/g'
 e.g.
 find . -name pom.xml | xargs sed -i -e 's/1.4.0-SNAPSHOT/1.4.0/g'
 
+=====================================================
+* Testing Site-to-Site copy in GWT Development Mode *
+=====================================================
+
+
+In the 'dev'module is a JAXRS REST resource defined for testing Sakai archiving operations:
+
+org.sakaiproject.gradebook.gwt.sakai.rest.resource.EntityArchiveTester
+
+The EntityproducerTransferrer is in the 'server' module:
+
+org.sakaiproject.gradebook.entity.Gradebook2EntityProducerTransferAgent
+
+
+
+The REST Resource defines three paths:
+
+/archive/{siteId}
+
+Calls archiveService.archive(siteId) directly.
+
+
+
+/archive/transfer/{from}/{to}
+
+Acts as an agent for the archive service and gets all EntityTransferrer marked classes from EntityManager and calls Gradebook2EntityProducerTransferAgent.transferCopyEntities({from}, {to}, null, true) on each one.
+Note that the signature of the method differs from merge below.  Also, the sites id's are interpreted as gradebook UID's and the gradebooks service is called to validate that each exists.
+
+
+/archive/merge/{from}/{to}
+
+Acts as an agent for the archive service and gets all EntityTransferrer marked classes from EntityManager and, for each one, calls Gradebook2EntityProducerTransferAgent.transferCopyEntities({from}, {to}, null) ....
+Note that the signature of the method differs from transfer above. Also, the sites id's are interpreted as gradebook UID's and the gradebooks service is called to validate that each exists.
+
+
+In order to trigger one of the above, grab the url you are using for dev mode: launch and copy it from the url bar...typically it something like 
+
+http://127.0.0.1:59704/GradebookApplication.html?gwt.codesvr=127.0.0.1:9997
+
+Modify it to do an EntityTransferrer operation. Here is a site to site transfer template:
+
+
+http://127.0.0.1:{port}/gradebook/rest/archive/transfer/{from}/{to}
+
+EXAMPLE:
+
+http://127.0.0.1:59704/gradebook/rest/archive/transfer/ANOTHER_SITE_CONTEXT/TESTSITECONTEXT
+
+(Notes: the port changes each time the 'Run/Debug Configuration' is run, so make sure you grab it from Eclipse. Also, the gwt.codesrv param is not needed unless you want to step through gwt client code and that is not applicable in this testing)
+
+There are two sites created in dev mode: 
+ - The main site is the one associated with the gradeboook you see in the UI... it's ID (siteId/ContextId/gradebookUID) can be found in AppConstants.TEST_SITE_CONTEXT_ID
+ - The other site is not visible in the UI and is setup primarity for testing EntityTransferrer operations. It's ID can be found in ArchiveServiceMock.ANOTHER_SITE_CONTEXT
+
+Make sure you get the order correct so that you can see the results in the UI.
+
+After you navigate to an Archive REST url like above, you can reload the main gradebook2 url
+
+http://127.0.0.1:59704/GradebookApplication.html?gwt.codesvr=127.0.0.1:9997
+
+to see any results (of copy and merge operations).
+
+
+
+
+
+
+
 

@@ -1709,17 +1709,24 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		return false;
 	}
 	
+	
+	/*
+	 * This import path does not check filetypes and/or file extensions
+	 * It just takes a stream reader and assumes it is CSV
+	 * (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.server.ImportExportUtility#parseImportCSV(java.lang.String, java.io.Reader, org.sakaiproject.gradebook.gwt.client.api.ImportSettings)
+	 */
 
-	public Upload parseImportCSV(String gradebookUid, Reader reader, ImportSettings importSettings) 
+	public Upload parseImportCSV(Reader reader, ImportSettings importSettings) 
 			throws InvalidInputException, FatalException {
 		
 		ImportExportDataFile rawData = new ImportExportDataFile(); 
 		if(importSettings != null) {
 			rawData.setJustStructure(importSettings.isJustStructure());
 		}else{
-			importSettings = new ImportSettingsImpl();
-			importSettings.setGradebookUid(gradebookUid);
-			}
+			importSettings = new ImportSettingsImpl();	
+			log.warn("No import settings supplied to parseImportCSV");
+		}
 		
 		CSVReader csvReader = new CSVReader(reader);
 		String[] ent;
@@ -1737,17 +1744,11 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		}
 
 		rawData.setFileType("CSV file"); 
-		rawData.setScantronFile(isClickerSheetCSV(rawData) /*||isScantronCSV(rawData)*/);
 		rawData.setImportSettings(importSettings);
 		return parseImportGeneric(rawData);
 	}
 	
-	public Upload parseImportCSV(String gradebookUid, Reader reader,
-			boolean importOnlyStructure) throws InvalidInputException,
-			FatalException {
-		
-		return parseImportCSV(gradebookUid, reader, null);
-	}
+	
 
 	
 
@@ -3536,24 +3537,22 @@ private GradeItem buildNewCategory(String curCategoryString,
 	public void setGradebook2ComponentService(Gradebook2ComponentService service) {
 		this.service = service;
 	}
-
-
-	@Override
-	public Upload parseImportCSV(String gradebookUid, InputStreamReader reader)
+	
+	
+	
+	/*
+	 * 
+	 * This import path does not check filetypes and/or file extensions
+	 * It just takes a stream reader and assumes it is CSV
+	 * 
+	 * (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.server.ImportExportUtility#parseImportCSV(java.lang.String, java.io.Reader)
+	 */
+	public Upload parseImportCSV(String gradebookUid, Reader reader)
 			throws InvalidInputException, FatalException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-
-
-	@Override
-	public ImportExportDataFile exportGradebook(String gradebookUid,
-			boolean includeStructure, boolean includeComments,
-			List<String> sectionUidList) throws FatalException {
-		// TODO Auto-generated method stub
-		return null;
+		ImportSettings importSettings = new ImportSettingsImpl();
+		importSettings.setGradebookUid(gradebookUid);
+		return parseImportCSV(reader, importSettings);
 	}
 
 

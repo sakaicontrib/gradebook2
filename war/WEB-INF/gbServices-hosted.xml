@@ -127,7 +127,7 @@
 		</property>
 		<property name="importExportUtil" ref="org.sakaiproject.gradebook.gwt.server.ImportExportUtility" />	
 		<property name="frameworkService" ref="org.sakaiproject.service.gradebook.GradebookFrameworkService"/>
-		
+		<property name="i18n" ref="gradebook2.I18N" />
 	</bean>
 	
 	<bean id="gradebook2.I18N" class="org.sakaiproject.gradebook.gwt.sakai.mock.DevelopmentModeResourceLoader">

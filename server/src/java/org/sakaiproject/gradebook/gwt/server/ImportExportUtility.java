@@ -1,8 +1,8 @@
 package org.sakaiproject.gradebook.gwt.server;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
@@ -95,16 +95,22 @@ public interface ImportExportUtility {
 		}
 	}
 
-
+	/*
+	 * (deprecated)only used in test class. test class is not run in default build
+	 */
 	public Upload parseImportXLS(MultipartFile file, ImportSettings settings)
 	throws InvalidInputException, FatalException, IOException;
 	
-	public Upload parseImportCSV(String gradebookUid, InputStreamReader reader)
+	/*
+	 * (deprecated)only used in test class. test class is not run in default build
+	 */
+	public Upload parseImportCSV(String gradebookUid, Reader reader)
 	throws InvalidInputException, FatalException;
 	
-	public ImportExportDataFile exportGradebook(String gradebookUid, 
-			final boolean includeStructure, final boolean includeComments, List<String> sectionUidList) 
-	throws FatalException;
+	public Upload parseImportCSV(Reader reader, ImportSettings settings)
+	throws InvalidInputException, FatalException;
+	
+	
 	
 	public void exportGradebook(FileType fileType, String filename, OutputStream outStream,
 			Gradebook2ComponentService service, String gradebookUid,
