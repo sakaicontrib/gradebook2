@@ -84,7 +84,7 @@ public class FileUploadPanel extends FormPanel {
 
 		final Gradebook gbModel = Registry.get(AppConstants.CURRENT);
 
-		setLabelWidth(180);
+		setLabelWidth(220);
 
 		setHeaderVisible(false);
 
