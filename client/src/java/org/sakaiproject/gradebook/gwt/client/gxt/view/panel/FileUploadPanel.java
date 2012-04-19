@@ -84,7 +84,7 @@ public class FileUploadPanel extends FormPanel {
 
 		final Gradebook gbModel = Registry.get(AppConstants.CURRENT);
 
-		setLabelWidth(220);
+		setLabelWidth(175);
 
 		setHeaderVisible(false);
 
@@ -159,10 +159,10 @@ public class FileUploadPanel extends FormPanel {
 		importFormatInformationMessage.setHtml(i18n.fileFormatImportMessageFull());
 		importFormatInformationMessage.setStyleName(resources.css().importFormatInformationMessage());
 		
-		importFormatComboBox = new FileFormatComboBox();		
+		importFormatComboBox = new FileFormatComboBox();
 		importFormatComboBox.setWidth("50%");
 		importFormatComboBox.setName(AppConstants.IMPORT_PARAM_FILEFORMAT);
-		importFormatComboBox.setEmptyText(i18n.importFormPanelImportTypeEmptyText());
+		importFormatComboBox.setEmptyText(i18n.importFormatFieldEmptyText());
 		importFormatComboBox.setAllowBlank(false);
 		importFormatComboBox.setValidator(new Validator() {
 			
@@ -178,8 +178,8 @@ public class FileUploadPanel extends FormPanel {
 								|| f.equals(FileFormat.SCANTRON) ) {
 							
 							if(justStructureChoice.getValue()) {
-								return i18n.noImportJustStructureForFormat() 
-								+ "'" + i18n.importingJustStructure() + "'";
+								return i18n.justStructureNotAllowedMessage() 
+								+ "'" + i18n.justStructureCheckboxLabel() + "'";
 							}
 		
 							justStructureChoice.setEnabled(false);
@@ -206,7 +206,7 @@ public class FileUploadPanel extends FormPanel {
 		importFormatSet.add(importFormatComboBox);
 		importFormatSet.add(importFormatInformationMessage);
 		
-		//---structure-only check-box----------------------------------------------------
+		//---just-structure check-box----------------------------------------------------
 		
 		// GRBK-514
 		justStructureChoice = new NullSensitiveCheckBox() {
@@ -222,10 +222,10 @@ public class FileUploadPanel extends FormPanel {
 		justStructureChoice.setName(AppConstants.IMPORT_PARAM_STRUCTURE);
 		justStructureChoice.setValueAttribute("c");// we just check for ! null server-side
 
-		ToolTipConfig checkBoxToolTipConfig = new ToolTipConfig(i18n.structureOnlyCheckboxToolTip());
+		ToolTipConfig checkBoxToolTipConfig = new ToolTipConfig(i18n.justStructureCheckboxToolTip());
 		checkBoxToolTipConfig.setDismissDelay(10000);
 		justStructureChoice.setToolTip(checkBoxToolTipConfig);
-		justStructureChoice.setFieldLabel(i18n.structureOnlyCheckbox());
+		justStructureChoice.setFieldLabel(i18n.justStructureCheckboxLabel());
 		justStructureChoice.setValue(false);
 		justStructureChoice.setAutoHeight(false);
 		justStructureChoice.setAutoWidth(false);

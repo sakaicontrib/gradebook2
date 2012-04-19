@@ -483,27 +483,27 @@ public interface I18nConstants extends Constants {
 	String exportTypeXLSX();
 	
 	// GRBK-514 GRBK-1221
-	String importFormPanelLabelFileFormat();
-	String importFormPanelImportTypeEmptyText();
-	String structureOnlyCheckbox();
-	String structureOnlyCheckboxToolTip();
-	String importFileStep1Label();
-	String preparingPreview();
 	String done();
-	String importCompletedTitle();
-	String importCompleted();
 	String loading();
-	String importingJustStructure();
+	String preparingPreview();
+
+	String importCompleted();
+	String importCompletedTitle();
+	String importFileStep1Label();
+	String justStructureCheckboxLabel();
+	String justStructureCheckboxToolTip();
+	String justStructureImportingMessage();
+	String justStructureNotAllowedMessage();
+	
 	String importFileTypesWarning();
 	String importPointsConversionTitle();
 	String importPointsConversionFinish();
-	String noImportJustStructureForFormat();
 	String importWizardTitle();
 	
 	// GRBK-1220
 	String downloadNewItemTemplateWizardHeading();
 	
-	// GRBK-1253
+	// GRBK-1278
 	String fileFormatImportMessageFull();
 	String fileFormatImportMessageNoStructure();
 	String fileFormatImportMessageScantron();
@@ -512,5 +512,7 @@ public interface I18nConstants extends Constants {
 	String fileFormatNameNoStructure();
 	String fileFormatNameScantron();
 	String fileFormatNameTemplate();
+	String importFormatFieldEmptyText();
+	String importFormatFieldLabel();
 	
 }

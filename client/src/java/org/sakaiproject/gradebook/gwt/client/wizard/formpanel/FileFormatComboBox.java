@@ -55,8 +55,8 @@ public class FileFormatComboBox extends ComboBox<ModelData> {
 		setStore(importFormatStore);
 		setDisplayField(ExportType.DISPLAY_NAME);
 		setValueField(ExportType.DISPLAY_VALUE_STRING);
-		setFieldLabel(i18n.importFormPanelLabelFileFormat());
-		setEmptyText(i18n.importFormPanelImportTypeEmptyText());
+		setFieldLabel(i18n.importFormatFieldLabel());
+		setEmptyText(i18n.importFormatFieldEmptyText());
 		setTypeAhead(true);
 		setEditable(false);
 		setTriggerAction(TriggerAction.ALL);

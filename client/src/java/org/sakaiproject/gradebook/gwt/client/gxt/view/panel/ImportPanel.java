@@ -536,7 +536,7 @@ public class ImportPanel extends GradebookPanel {
 			message = new StringBuilder().append(i18n.uploadingLearnerGradesPrefix()).append(" ")
 			.append(numberOfLearners).append(" ").append(i18n.uploadingLearnerGradesSuffix()).toString();
 		} else {
-			message = i18n.importingJustStructure();
+			message = i18n.justStructureImportingMessage();
 		}
 		
 

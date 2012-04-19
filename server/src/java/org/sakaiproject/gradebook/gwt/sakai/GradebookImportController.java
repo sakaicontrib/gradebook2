@@ -92,14 +92,14 @@ public class GradebookImportController extends SimpleFormController implements O
 		
 		String justStructureCheckBox = multipartRequest.getParameter(AppConstants.IMPORT_PARAM_STRUCTURE);
 
-		Boolean importOnlyStructure =  justStructureCheckBox!=null;
+		Boolean importJustStructure =  justStructureCheckBox!=null;
 		
 		String fileTypeNameFromClient = multipartRequest.getParameter(AppConstants.IMPORT_PARAM_FILETYPE + "-hidden");
 		String fileFormatChosen = multipartRequest.getParameter(AppConstants.IMPORT_PARAM_FILEFORMAT + "-hidden");
 		FileFormat fileFormatFromClient = FileFormat.getFormatByName(fileFormatChosen);
 	
 		ImportSettings importSettings = new ImportSettingsImpl();
-		importSettings.setJustStructure(importOnlyStructure);
+		importSettings.setJustStructure(importJustStructure);
 		importSettings.setGradebookUid(gradebookUid);
 		
 		for (Iterator<String> fileNameIterator = multipartRequest.getFileNames();fileNameIterator.hasNext();) {
@@ -151,12 +151,12 @@ public class GradebookImportController extends SimpleFormController implements O
 //				} else if (fileTypeFromFileExt.isExcelNative()) {
 //					
 //					log.debug("Excel file detected"); 
-//					importFile = importExportUtility.parseImportXLS(service, gradebookUid, file.getInputStream(), origName.toLowerCase(), gbToolService, importOnlyStructure);
+//					importFile = importExportUtility.parseImportXLS(service, gradebookUid, file.getInputStream(), origName.toLowerCase(), gbToolService, importJustStructure);
 //					
 //					} else if(fileTypeFromFileExt.equals(FileType.CSV)) { /// no assumptions, but this should be ensured by the client
 //						log.debug("CSV file"); 
 //						InputStreamReader reader = new InputStreamReader(file.getInputStream());
-//						importFile = importExportUtility.parseImportCSV(service, gradebookUid, reader, importOnlyStructure);
+//						importFile = importExportUtility.parseImportCSV(service, gradebookUid, reader, importJustStructure);
 //					} else { // we are are in outer space
 //						importFile = new UploadImpl();
 //						importFile.setNotes(i18n.getString("unknownFileType"));
@@ -174,7 +174,7 @@ public class GradebookImportController extends SimpleFormController implements O
 				importFile = new UploadImpl();
 				importFile.setErrors(true);
 				importFile.setNotes(i18n.getString("unknownFileType"));
-			} else if(!importOnlyStructure) { /// to save a few cycles
+			} else if(!importJustStructure) { /// to save a few cycles
 				
 				//GRBK-1194
 				List<Learner> rows = importFile.getRows();
