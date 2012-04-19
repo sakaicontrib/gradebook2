@@ -872,12 +872,17 @@ public class InstructorView extends AppView {
 			menuItem.setTitle(i18n.headerImportTitle());
 			moreActionsMenu.add(menuItem);
 
-			// GRBK-37 : TPA
-			menuItem = new AriaMenuItem(i18n.headerFinalGrade(), menuSelectionListener);
-			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.FINAL_GRADE);
-			menuItem.setIcon(AbstractImagePrototype.create(resources.page_white_put()));
-			menuItem.setTitle(i18n.headerFinalGradeTitle());
-			moreActionsMenu.add(menuItem);
+			ApplicationSetup applicationSetup = Registry.get(AppConstants.APP_MODEL);
+			// Final grade submission is enabled by default
+			if(null == applicationSetup || applicationSetup.isFinalGradeSubmissionEnabled()) {
+			
+				// GRBK-37 : TPA
+				menuItem = new AriaMenuItem(i18n.headerFinalGrade(), menuSelectionListener);
+				menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.FINAL_GRADE);
+				menuItem.setIcon(AbstractImagePrototype.create(resources.page_white_put()));
+				menuItem.setTitle(i18n.headerFinalGradeTitle());
+				moreActionsMenu.add(menuItem);
+			}
 		}
 
 		return moreActionsMenu;

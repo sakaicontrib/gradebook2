@@ -28,7 +28,8 @@ public enum ApplicationKey {
 	S_SH_WTD_ENABLED("showWeightedEnabled"),
 	S_AUTH_DETAILS("authorizationDetails"),
 	B_CHECK_FINAL_GRADE_SUBMISSION_STATUS("checkFinalGradeSubmissionStatus"),
-	I_CACHED_DATA_AGE("cachedDataAge");
+	I_CACHED_DATA_AGE("cachedDataAge"),
+	B_ENABLE_FINAL_GRADE_SUBMISSION("enableFinalGradeSubmission");
 
 	
 	private String property;

@@ -65,5 +65,15 @@ public interface ApplicationSetup {
 	 * @since v1.8.0
 	 */
 	public abstract void setCachedDataAge(int age);
+	
+	/*
+	 * @since v1.8.0
+	 */
+	public abstract boolean isFinalGradeSubmissionEnabled();
+	
+	/*
+	 * @since v1.8.0
+	 */
+	public abstract void setFinalGradeSubmissionEnabled(boolean isEnabled);
 
 }

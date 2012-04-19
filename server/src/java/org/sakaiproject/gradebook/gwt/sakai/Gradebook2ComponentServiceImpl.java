@@ -302,6 +302,10 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	private boolean isStatisticsDataChached = false;
 	private int statisticsDataCacheAge = AppConstants.CURRENT_STATISTICS_DATA;
 	
+	/*
+	 * GRBK-1282 : Enable this by default
+	 */
+	private boolean isFinalGradeSubmissionEnabled = true;
 
 	public Learner assignComment(String itemId, String studentUid, String text) {
 
@@ -823,6 +827,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		setup.setShowWeightedEnabled(this.isShowWeightedEnabled());
 		setup.setCheckFinalGradeSubmissionStatus(checkFinalGradeSubmition);
 		setup.setCachedDataAge(statisticsDataCacheAge);
+		setup.setFinalGradeSubmissionEnabled(isFinalGradeSubmissionEnabled);
 		
 		return setup;
 	}
@@ -2561,6 +2566,9 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 				
 				statisticsDataCacheAge = AppConstants.CURRENT_STATISTICS_DATA;
 			}
+			
+			// GRBK-1282 : enabled by default
+			isFinalGradeSubmissionEnabled = configService.getBoolean(AppConstants.ENABLE_FINAL_GRADE_SUBMISSION, true);
 		}
 		else {
 			enabledGradeTypes.add(GradeType.POINTS);

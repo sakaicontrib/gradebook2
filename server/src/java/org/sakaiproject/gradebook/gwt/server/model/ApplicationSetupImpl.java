@@ -160,4 +160,23 @@ public class ApplicationSetupImpl extends BaseModel implements
 		
 		set(ApplicationKey.I_CACHED_DATA_AGE.name(), Integer.valueOf(age));
 	}
+
+	@Override
+	public boolean isFinalGradeSubmissionEnabled() {
+		
+		Boolean isEnabled = get(ApplicationKey.B_ENABLE_FINAL_GRADE_SUBMISSION.name());
+		
+		if(null != isEnabled) {
+			
+			return isEnabled.booleanValue();
+		}
+		
+		return false;
+	}
+
+	@Override
+	public void setFinalGradeSubmissionEnabled(boolean isEnabled) {
+		
+		set(ApplicationKey.B_ENABLE_FINAL_GRADE_SUBMISSION.name(), Boolean.valueOf(isEnabled));
+	}
 }

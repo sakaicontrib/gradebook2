@@ -134,6 +134,8 @@ public interface AppConstants {
 	
 	public static final String ENABLE_FINAL_GRADE_SUBMISSION_CHECK = "gb2.enable.final.grade.submission.check";
 	
+	public static final String ENABLE_FINAL_GRADE_SUBMISSION = "gb2.enable.final.grade.submission";
+	
 	/*
 	 * GRBK-1210: The default cache TTL/TTI need to match with what's defined
 	 * in rest.xml -> org.sakaiproject.gradebook.gwt.sakai.rest.resource.cache

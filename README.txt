@@ -137,6 +137,10 @@ gb2.statistics.cache.time.to.live.seconds = [seconds]
 - default: 30
 - For more details, please see https://jira.sakaiproject.org/browse/GRBK-1210
 
+gb2.enable.final.grade.submission = [true, false]
+- default: true
+- For more details, please see https://jira.sakaiproject.org/browse/GRBK-1282
+
 
 ===========
 * SUPPORT *
