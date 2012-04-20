@@ -10,9 +10,9 @@
 * Educational Community License, Version 2.0 (the "License"); you may
 * not use this file except in compliance with the License. You may
 * obtain a copy of the License at
-* 
+*
 * http://www.osedu.org/licenses/ECL-2.0
-* 
+*
 * Unless required by applicable law or agreed to in writing,
 * software distributed under the License is distributed on an "AS IS"
 * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
@@ -83,7 +83,7 @@ public interface I18nConstants extends Constants {
 	String editCategoryHeading();
 	String editGradebookHeading();
 	String editItemHeading();
-	String editMenuHeader(); 
+	String editMenuHeader();
 	String editMenuGradebookSetupHeading();
 	String editMenuGraderPermissionsHeading();
 	String editMenuGradescaleHeading();
@@ -94,7 +94,7 @@ public interface I18nConstants extends Constants {
 	String extraCreditFieldLabel();
 	String extraCreditToolTip();
 	String fileLabel();
-	String fileMenuNewCategory(); 
+	String fileMenuNewCategory();
 	String fileMenuNewItem();
 	String finalGradeSubmissionConfirmAltTitle();
 	String finalGradeSubmissionConfirmText();
@@ -146,20 +146,11 @@ public interface I18nConstants extends Constants {
 	String headerEditCategoryTitle();
 	String headerEditGradebook();
 	String headerEditGradebookTitle();
-	String headerEditItem(); 
+	String headerEditItem();
 	String headerEditItemTitle();
 	String headerExport();
-	String headerExportCSV();
-	String headerExportCSVTitle();
-	String headerExportData();
-	String headerExportDataTitle();
-	String headerExportStructure();
-	String headerExportStructureTitle();
 	String headerExportTitle();
 	String headerDownloadNewItemTemplateTitle();
-	String headerExportXLS();
-	String headerExportXLSX();
-	String headerExportXLSTitle();
 	String headerFinalGrade();
 	String headerDownloadNewItemTemplate();
 	String headerDownload();
@@ -186,8 +177,8 @@ public interface I18nConstants extends Constants {
 	String includedFieldLabel();
 	String includedToolTip();
 	String itemName();
-	String itemNameRequiredText(); 
-	String itemNameRequiredTitle(); 
+	String itemNameRequiredText();
+	String itemNameRequiredTitle();
 	String itemNameToolTip();
 	String learnerSummaryHeading();
 	String learnerTabCommentHeader();
@@ -236,22 +227,22 @@ public interface I18nConstants extends Constants {
 	String prefMenuEnablePopups();
 	String prefMenuGradebookName();
 	String prefMenuGradeTypeHeader();
-	String prefMenuHeader();		
-	String prefMenuOrgTypeHeader();	
-	String prefMenuOrgTypeLabel();	
+	String prefMenuHeader();
+	String prefMenuOrgTypeHeader();
+	String prefMenuOrgTypeLabel();
 	String prefMenuReleaseGradesNo();
 	String prefMenuReleaseGradesYes();
 	String prevLearner();
 	String preventScantronOverwrite();
-	String rankName();	
+	String rankName();
 	String releasedFieldLabel();
 	String releasedToolTip();
 	String releaseGradesFieldLabel();
 	String releaseGradesToolTip();
 	String releaseItemsFieldLabel();
-	String releaseItemsToolTip(); 
-	String requiredLabel(); 
-	String resetGradingScale(); 
+	String releaseItemsToolTip();
+	String requiredLabel();
+	String resetGradingScale();
 	String saveAndCloseButton();
 	String saveButton();
 	String scaledExtraCreditFieldLabel();
@@ -268,7 +259,7 @@ public interface I18nConstants extends Constants {
 	String showStatisticsChartFieldLabel();
 	String showItemStatsToolTip();
 	String showStatisticsChartToolTip();
-	String showMeanFieldLabel();	
+	String showMeanFieldLabel();
 	String showMeanToolTip();
 	String showMedianFieldLabel();
 	String showMedianToolTip();
@@ -280,37 +271,37 @@ public interface I18nConstants extends Constants {
 	String singleViewHeader();
 	String sourceFieldLabel();
 	String statisticsHeading();
-	String statsMeanHeader();	
+	String statsMeanHeader();
 	String statsMedianHeader();
 	String statsModeHeader();
 	String statsNameHeader();
 	String statsStdDvHeader();
 	String stdvName();
 	String tabGraderPermissionSettingsHeader();
-	String tabGradeScaleHeader();	
+	String tabGradeScaleHeader();
 	String tabGradesHeader();
 	String tabHistoryHeader();
 	String tabSetupHeader();
 	String tabStatisticsHeader();
-	String toHeader();	
-	String treeDirections();	
+	String toHeader();
+	String treeDirections();
 	String unknownException();
 	String uploadingLearnerGradesPrefix();
-	String uploadingLearnerGradesStatus();	
+	String uploadingLearnerGradesStatus();
 	String uploadingLearnerGradesSuffix();
 	String uploadingLearnerGradesTitle();
 	String useClassicNavigation();
 	String userHeader();
 	String usersEmptyText();
-	String viewAsLearner();	
+	String viewAsLearner();
 	String viewMenuHeader();
 	String viewMenuStatsHeading();
 	String viewMenuHistoryHeading();
 
-	String weightName();	
+	String weightName();
 	String showWeightedButton();
 	String showPointsButton();
-	
+
 	// Statistics
 	String statisticsDataErrorTitle();
 	String statisticsDataErrorMsg();
@@ -319,11 +310,11 @@ public interface I18nConstants extends Constants {
 	String statisticsChartLabelDistribution();
 	String statisticsChartLabelFrequency();
 	String statisticsChartTitle();
-	
+
 	String categoriesNot100Percent();
 	String popupBlockerDetected();
-	
-	
+
+
 	// Import
 	String importPromptScantronMaxPoints();
 	String importSetupGridItemHeader();
@@ -335,13 +326,13 @@ public interface I18nConstants extends Constants {
 	String importPanelReturnButton();
 	String importOverwriteExistingAssignmentsWarning();
 	String importOverwriteExistingAssignmentsButton();
-	
+
 	String exportColumnHeaderStudentId();
 	String exportColumnHeaderStudentName();
-	
+
 	// Grade Scale
 	String gradeScaleLetterGradeMessage();
-	
+
 	// Item Form Panel
 	String itemFormPanelCreateNotificationTitle();
 	String itemFormPanelCreatePretext();
@@ -361,53 +352,53 @@ public interface I18nConstants extends Constants {
 	String itemFormPanelEditPointsInvalid();
 	String itemFormPanelEditDropLowestInvalid();
 	String itemFormPanelEditDropLowestNonEquallyWeighted();
-	
-	String businessRuleNoBlankItemCategoryName(); 
-	String businessRulePointsCannotBeNegative(); 
+
+	String businessRuleNoBlankItemCategoryName();
+	String businessRulePointsCannotBeNegative();
 	String businessRuleWeightCannotBeNegative();
-	
+
 	String exportWarnUserFileCannotBeImportedText();
 	String exportWarnUserFileCannotBeImportedTitle();
-	
+
 	String errorOccurredGeneric();
 	String exportError();
-	
+
 	// Course Grade Statistics
 	String statisticsGradebookUpdatingChart();
 	String statisticsGradebookLoadingChart();
-	
+
 	//User Feedback Messages
 	String applicationLoading();
 	String applicationUpdating();
-	
+
 	String gradeScaleInstructions();
-	
-	String performanceItemFormPanelTitle(); 
-	String performanceItemFormPanelMsg(); 
-	
+
+	String performanceItemFormPanelTitle();
+	String performanceItemFormPanelMsg();
+
 	// GradebookApplication
 	String gradebookApplicationWarnUser();
 	String gradebookApplicaitonFailure();
-	
+
 	// StartupController
 	String serverNetworkConnectionError();
 	String userAuthorizationError();
 	String applicationStartupError();
-	
+
 	// GRBK-932
 	String columnConfigVisabilityError();
 	String columnConfigVisabilityErrorMessage();
-	
+
 	String gradeScaleChartUpdateToggle();
 	String gradeScaleChartUpdateToggleToolTipOff();
 	String gradeScaleChartUpdateToggleToolTipOn();
-	
+
 	String multiGradeCellEditFeedback();
-	
+
 	// GRBK-1032
 	String gradeFormatCannotBeChangedWarning();
 	String gradeFormatNormalTooltip();
-	
+
 	// GRBK-1054
 	String gradebookSetupCategoryMessageForNoCats();
 	String gradebookSetupCategoryMessageForSimpleCats();
@@ -419,14 +410,14 @@ public interface I18nConstants extends Constants {
 	String gradebookSetupGradeTypeMessageForPoints();
 	String gradebookSetupGradeTypeMessageForPercentages();
 	String gradebookSetupGradeTypeMessageForLetterGrades();
-	
+
 	String gradebookSetupInstructionalForCategoryTypeGroupingHeading();
 	String gradebookSetupInstructionalForGradeTypeGroupingHeading();
 
 	String categoryTypePickerTooltip();
 	String gradeTypePickerTooltip();
 	String unexpectedResponseFromServer();
-	
+
 	// Mr. Wizard
 	String needValidEmail();
 	String importWizardCardTitlePointsPossible();
@@ -440,7 +431,7 @@ public interface I18nConstants extends Constants {
 	String exportIncludeComments();
 	String exportIncludeStructure();
 	String exportWizardHeading();
-	String exportChoices(); 
+	String exportChoices();
 
 	// Student Panel : GRBK-616
 	String studentPanelVisibleToStudent();
@@ -458,22 +449,21 @@ public interface I18nConstants extends Constants {
 	String studentPanelCourseGrade();
 	String studentPanelCalculatedGrade();
 	String studentPanelRank();
-	String headerExportXLSXTitle();
 	String noItemModelFound();
-	
+
 	// GRBK-1056 - get scantron max points
 	String scantronMaxPointsFieldLabel();
-	
+
 	String finalGradeSubmissionStatusDialogTitle();
 	String finalGradeSubmissionStatusErrorMessage();
 
 	// GRBK-1083
 	String itemFormPanelReleasedItemForCategoryEmptyMessage();
-	
+
 	// GRBK-1128
 	String dropLowestHelpText();
 	String dropLowestHelpTextTitle();
-	
+
 	//
 	String exportFormPanelLabelSections();
 	String exportFormPanelLabelExportType();
@@ -481,7 +471,7 @@ public interface I18nConstants extends Constants {
 	String exportTypeCSV();
 	String exportTypeXLS();
 	String exportTypeXLSX();
-	
+
 	// GRBK-514 GRBK-1221
 	String done();
 	String loading();
@@ -494,15 +484,15 @@ public interface I18nConstants extends Constants {
 	String justStructureCheckboxToolTip();
 	String justStructureImportingMessage();
 	String justStructureNotAllowedMessage();
-	
+
 	String importFileTypesWarning();
 	String importPointsConversionTitle();
 	String importPointsConversionFinish();
 	String importWizardTitle();
-	
+
 	// GRBK-1220
 	String downloadNewItemTemplateWizardHeading();
-	
+
 	// GRBK-1278
 	String fileFormatImportMessageFull();
 	String fileFormatImportMessageNoStructure();
@@ -514,5 +504,5 @@ public interface I18nConstants extends Constants {
 	String fileFormatNameTemplate();
 	String importFormatFieldEmptyText();
 	String importFormatFieldLabel();
-	
+
 }
