@@ -32,6 +32,7 @@ import org.sakaiproject.gradebook.gwt.client.model.type.ActionType;
 import org.sakaiproject.gradebook.gwt.client.model.type.EntityType;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
 import org.sakaiproject.gradebook.gwt.server.Util;
+import org.sakaiproject.service.gradebook.shared.GradebookService;
 import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.Category;
 import org.sakaiproject.tool.gradebook.Gradebook;
@@ -446,6 +447,35 @@ public class BusinessLogicImpl implements BusinessLogic {
 
 	public void setGbService(GradebookToolService gbService) {
 		this.gbService = gbService;
+	}	
+	
+	public boolean isDropLowestAllowed(Category category) {
+		boolean isCategory = category != null && category.getIsCategory();
+		boolean isExtraCreditCategory = category.isExtraCredit() != null && category.isExtraCredit().booleanValue();
+		boolean isWeightedCategoriesGradebook = category.getGradebook() != null && category.getGradebook().getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
+		boolean isWeightEquallyCategory = category.isEqualWeightAssignments() != null && category.isEqualWeightAssignments().booleanValue();
+		boolean isWeightByPointsCategory = category.isEnforcePointWeighting() != null && category.isEnforcePointWeighting().booleanValue();
+		
+		return isDropLowestAllowed(isCategory, isExtraCreditCategory, isWeightedCategoriesGradebook, isWeightEquallyCategory, isWeightByPointsCategory);
+	}
+	
+	public boolean isDropLowestAllowed(Boolean isCategory, Boolean isExtraCreditCategory, Boolean isWeightedCategoriesGradebook, Boolean isWeightEquallyCategory, Boolean isWeightByPointsCategory) {
+		return isDropLowestAllowed(isCategory.booleanValue(), isExtraCreditCategory.booleanValue(), isWeightedCategoriesGradebook.booleanValue(), isWeightEquallyCategory.booleanValue(), isWeightByPointsCategory.booleanValue());
+	}
+
+	public boolean isDropLowestAllowed(boolean isCategory, boolean isExtraCreditCategory, boolean isWeightedCategoriesGradebook, boolean isWeightEquallyCategory, boolean isWeightByPointsCategory) {
+		boolean isDropLowestAllowed = false;
+		
+		if (isCategory && !isExtraCreditCategory) {
+			if (isWeightedCategoriesGradebook) {
+				if (isWeightEquallyCategory && !isWeightByPointsCategory) {
+					isDropLowestAllowed = true;
+				}
+			} else {
+				isDropLowestAllowed = true;
+			}	
+		}
+		return isDropLowestAllowed;
 	}
 
 	public void applyItemNameNotEmpty(String name) throws BusinessRuleException {

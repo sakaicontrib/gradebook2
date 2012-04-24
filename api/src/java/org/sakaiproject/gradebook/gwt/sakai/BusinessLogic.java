@@ -70,6 +70,10 @@ public interface BusinessLogic {
 
 	public boolean checkReleased(List<Assignment> assignments);
 
+	public boolean isDropLowestAllowed(Category category);
+	public boolean isDropLowestAllowed(Boolean isCategory, Boolean isExtraCreditCategory, Boolean isWeightedCategoriesGradebook, Boolean isWeightEquallyCategory, Boolean isWeightByPointsCategory);
+	public boolean isDropLowestAllowed(boolean isCategory, boolean isExtraCreditCategory, boolean isWeightedCategoriesGradebook, boolean isWeightEquallyCategory, boolean isWeightByPointsCategory);
+
 	public void reorderAllCategories(Long gradebookId, Long categoryId, Integer newCategoryOrder, Integer oldCategoryOrder);
 	
 	public void reorderAllItems(Long gradebookId, Long assignmentId, Integer newItemOrder, Integer oldItemOrder);

@@ -688,7 +688,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 				}
 			}
 
-			categoryId = gbService.createCategory(gradebookId, name, Double.valueOf(w), dropLowest, isEqualWeighting, Boolean.valueOf(isUnweighted), isExtraCredit, categoryOrder, doEnforcePointWeighting);
+			categoryId = gradebookToolServiceCreateCategory(hasWeights, gradebookId, name, Double.valueOf(w), dropLowest, isEqualWeighting, Boolean.valueOf(isUnweighted), isExtraCredit, categoryOrder, doEnforcePointWeighting);
 
 			postEvent("gradebook2.newCategory", String.valueOf(gradebook.getId()), String.valueOf(categoryId));
 
@@ -3135,7 +3135,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 							|| (hasWeightedCategories 
 									&& Util.checkBoolean(category.isEnforcePointWeighting())))) {
 				category.setDrop_lowest(0);
-				gbService.updateCategory(category);
+				gradebookToolServiceUpdateCategory(category);
 			}
 
 		} catch (RuntimeException e) {
@@ -3709,7 +3709,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 					businessLogic.applyOnlyEqualWeightDropLowestRule(dropLowestInt, equalWeighting);
 			}
 
-			categoryId = gbService.createCategory(gradebookId, name, Double.valueOf(w), dropLowest, isEqualWeighting, Boolean.valueOf(isUnweighted), isExtraCredit, categoryOrder, doEnforcePointWeighting);
+			categoryId = gradebookToolServiceCreateCategory(hasWeights, gradebookId, name, Double.valueOf(w), dropLowest, isEqualWeighting, Boolean.valueOf(isUnweighted), isExtraCredit, categoryOrder, doEnforcePointWeighting);
 
 			postEvent("gradebook2.newCategory", String.valueOf(gradebook.getId()), String.valueOf(categoryId));
 
@@ -4983,7 +4983,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 							if (!hasEqualPoints && category.getDrop_lowest() > 0 
 									&& (!hasWeightedCategories || (hasWeightedCategories && Util.checkBoolean(category.isEnforcePointWeighting())))) {
 								category.setDrop_lowest(0);
-								gbService.updateCategory(category);
+								gradebookToolServiceUpdateCategory(category);
 							}
 					}
 					// GRBK-577 : End
@@ -6323,7 +6323,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		if (enforceEqualWeighting != null && enforceEqualWeighting.booleanValue() && !category.isEqualWeightAssignments().equals(Boolean.TRUE)) {
 			category.setEqualWeightAssignments(enforceEqualWeighting);
-			gbService.updateCategory(category);
+			gradebookToolServiceUpdateCategory(category);
 		}
 
 		doRecalculate = category.isEqualWeightAssignments() == null ? true : category.isEqualWeightAssignments().booleanValue();
@@ -6526,7 +6526,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 								oldCategoryOrder = Integer.valueOf(count);
 							else if (c.getCategoryOrder() == null) {
 								c.setCategoryOrder(Integer.valueOf(count));
-								gbService.updateCategory(c);
+								gradebookToolServiceUpdateCategory(c);
 							}
 							count++;
 						}
@@ -6554,7 +6554,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			else if (oldCategoryOrder != null)
 				category.setCategoryOrder(oldCategoryOrder);
 
-			gbService.updateCategory(category);
+			gradebookToolServiceUpdateCategory(category);
 
 			if (isRemoved) {
 				postEvent("gradebook2.deleteCategory", String.valueOf(gradebook.getId()), String.valueOf(category.getId()));
@@ -6576,7 +6576,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 					businessLogic.reorderAllCategories(gradebook.getId(), category.getId(), newCategoryOrder, oldCategoryOrder);
 
 				// GRBK-796 
-				// In an import, we dont want to mess with the released state of the GB.  
+				// In an import, we don't want to mess with the released state of the GB.  
 				if (!isImport)
 				{
 					businessLogic.applyReleaseChildItemsWhenCategoryReleased(category, assignmentsForCategory, isReleased);
@@ -6951,6 +6951,62 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		}
 
 		return (null != status ? status : new FinalGradeSubmissionStatusImpl());
+	}
+
+	private Long gradebookToolServiceCreateCategory(boolean isWeightedCategoriesGradebook, Long gradebookId, String name, Double weight, Integer dropLowest, Boolean equalWeightAssignments, Boolean isUnweighted, Boolean isExtraCredit, Integer categoryOrder, Boolean isEnforcePointWeighting) {		
+		boolean isExtraCreditCategory = isExtraCredit == null ? false : isExtraCredit.booleanValue();
+		
+		//isWeightByPointsAllowed
+		//if this category is an extra credit category, then it cannot be weight by points
+		if (isExtraCreditCategory) {
+			isEnforcePointWeighting = Boolean.FALSE;
+		}
+	
+		boolean isWeightByPointsCategory = isEnforcePointWeighting == null ? false : isEnforcePointWeighting.booleanValue();
+		
+		//isEqualWeightingAllowed
+		//if this category is weight by points, then it cannot be weight equally
+		if (isWeightByPointsCategory) {
+			equalWeightAssignments = Boolean.FALSE;
+		}
+		
+		boolean isWeightEquallyCategory = equalWeightAssignments != null && equalWeightAssignments.booleanValue();	
+		
+		//isDropLowestAllowed
+		//if this category is extra credit or weight by points, then it cannot have drop lowest
+		//and this category must be weight equally to have drop lowest
+		if (!businessLogic.isDropLowestAllowed(true, isExtraCreditCategory, isWeightedCategoriesGradebook, isWeightEquallyCategory, isWeightByPointsCategory )) {
+			dropLowest = new Integer(0);
+		}
+		
+		Long categoryId = gbService.createCategory(gradebookId, name, weight, dropLowest, equalWeightAssignments, isUnweighted, isExtraCredit, categoryOrder, isEnforcePointWeighting);
+		return categoryId;
+	}
+	
+	private void gradebookToolServiceUpdateCategory(Category category) {		
+		boolean isExtraCreditCategory = category.isExtraCredit() == null ? false : category.isExtraCredit().booleanValue();
+		boolean isWeightByPointsCategory = category.isEnforcePointWeighting() == null ? false : category.isEnforcePointWeighting().booleanValue();
+		
+		//isWeightByPointsAllowed
+		//if this category is an extra credit category, then it cannot be weight by points
+		if (isExtraCreditCategory) {
+			category.setEnforcePointWeighting(false);
+		}
+		
+		//isEqualWeightingAllowed
+		//if this category is weight by points, then it cannot be weight equally
+		if (isWeightByPointsCategory) {
+			category.setEqualWeightAssignments(false);
+		}
+		
+		//isDropLowestAllowed
+		//if this category is extra credit or weight by points, then it cannot have drop lowest
+		//and this category must be weight equally to have drop lowest
+		if (!businessLogic.isDropLowestAllowed(category)) {
+			category.setDrop_lowest(0);
+		}
+		
+		gbService.updateCategory(category);
 	}
 
 }
