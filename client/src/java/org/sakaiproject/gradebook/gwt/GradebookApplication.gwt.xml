@@ -27,11 +27,17 @@
 	<entry-point class='org.sakaiproject.gradebook.gwt.client.GradebookApplication'/>
 
 	<extend-property name="locale" values="es"/>
+	
+	<!-- 
+		GRBK-1268 : Commented out the following translations because 
+		they are not maintained. Enable them at your own risk. -->
+	<!--
 	<extend-property name="locale" values="de"/>
 	<extend-property name="locale" values="fr"/>
 	<extend-property name="locale" values="it"/>
 	<extend-property name="locale" values="ja"/>
 	<extend-property name="locale" values="nl_NL"/>
+	-->
 
 	<set-property-fallback name="locale" value="default"/>
 
