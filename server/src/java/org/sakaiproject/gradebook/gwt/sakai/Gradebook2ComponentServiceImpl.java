@@ -681,11 +681,6 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 				boolean equalWeighting = isEqualWeighting == null ? false : isEqualWeighting.booleanValue();
 
 				businessLogic.applyNoDuplicateCategoryNamesRule(gradebook.getId(), name, null, categories);
-				if (hasWeights)
-				{
-					businessLogic.applyOnlyEqualWeightDropLowestRule(dropLowestInt, equalWeighting);
-					
-				}
 			}
 
 			categoryId = gradebookToolServiceCreateCategory(hasWeights, gradebookId, name, Double.valueOf(w), dropLowest, isEqualWeighting, Boolean.valueOf(isUnweighted), isExtraCredit, categoryOrder, doEnforcePointWeighting);
@@ -3705,8 +3700,6 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 				boolean equalWeighting = isEqualWeighting == null ? false : isEqualWeighting.booleanValue();
 
 				businessLogic.applyNoDuplicateCategoryNamesRule(gradebook.getId(), name, null, categories);
-				if (hasWeights)
-					businessLogic.applyOnlyEqualWeightDropLowestRule(dropLowestInt, equalWeighting);
 			}
 
 			categoryId = gradebookToolServiceCreateCategory(hasWeights, gradebookId, name, Double.valueOf(w), dropLowest, isEqualWeighting, Boolean.valueOf(isUnweighted), isExtraCredit, categoryOrder, doEnforcePointWeighting);
@@ -6512,9 +6505,6 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 				// Business rule #2
 				businessLogic.applyNoDuplicateCategoryNamesRule(gradebook.getId(), item.getName(), category.getId(), categories);
 
-				if (hasWeights)
-					businessLogic.applyOnlyEqualWeightDropLowestRule(newDropLowest, isEqualWeighting);
-
 				if (oldCategoryOrder == null) {
 					if (categories != null) {
 						int count = 0;
@@ -6985,18 +6975,19 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	
 	private void gradebookToolServiceUpdateCategory(Category category) {		
 		boolean isExtraCreditCategory = category.isExtraCredit() == null ? false : category.isExtraCredit().booleanValue();
-		boolean isWeightByPointsCategory = category.isEnforcePointWeighting() == null ? false : category.isEnforcePointWeighting().booleanValue();
 		
 		//isWeightByPointsAllowed
 		//if this category is an extra credit category, then it cannot be weight by points
 		if (isExtraCreditCategory) {
-			category.setEnforcePointWeighting(false);
+			category.setEnforcePointWeighting(Boolean.FALSE);
 		}
+		
+		boolean isWeightByPointsCategory = category.isEnforcePointWeighting() == null ? false : category.isEnforcePointWeighting().booleanValue();
 		
 		//isEqualWeightingAllowed
 		//if this category is weight by points, then it cannot be weight equally
 		if (isWeightByPointsCategory) {
-			category.setEqualWeightAssignments(false);
+			category.setEqualWeightAssignments(Boolean.FALSE);
 		}
 		
 		//isDropLowestAllowed

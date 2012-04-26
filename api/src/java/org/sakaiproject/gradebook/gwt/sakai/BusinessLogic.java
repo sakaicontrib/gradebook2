@@ -39,8 +39,6 @@ public interface BusinessLogic {
 	
 	public void applyCannotUnremoveItemWithRemovedCategory(boolean isRemoved, Category category) 
 	throws BusinessRuleException;
-	
-	public void applyOnlyEqualWeightDropLowestRule(int dropLowest, boolean isEqualWeight) throws BusinessRuleException;
 
 	public void applyNoDuplicateCategoryNamesRule(Long gradebookId, String name, Long categoryId, List<Category> categories) throws BusinessRuleException;
 

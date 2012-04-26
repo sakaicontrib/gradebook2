@@ -49,8 +49,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 			List<Category> categories, Integer dropLowest, Boolean isEqualWeight) 
 	throws BusinessRuleException {
 		if (hasCategories) {
-			applyNoDuplicateCategoryNamesRule(gradebookId, name, null, categories);		
-			applyOnlyEqualWeightDropLowestRule(dropLowest, isEqualWeight);
+			applyNoDuplicateCategoryNamesRule(gradebookId, name, null, categories);
 		}
 	}
 
@@ -61,22 +60,6 @@ public class BusinessLogicImpl implements BusinessLogic {
 			throw new BusinessRuleException("You cannot undelete a grade item when the category that owns it has been deleted. Please undelete the category first.", 
 					BusinessLogicCode.CannotUnremoveItemWithRemovedCategory);
 	
-	}
-
-	/* (non-Javadoc)
-	 * @see org.sakaiproject.gradebook.gwt.sakai.BusinessLogic#applyOnlyEqualWeightDropLowestRule(int, boolean)
-	 */
-	public void applyOnlyEqualWeightDropLowestRule(int dropLowest, boolean isEqualWeight) throws BusinessRuleException {
-
-		if (!isEqualWeight && dropLowest > 0) {
-			StringBuilder builder = new StringBuilder();
-			builder.append("Drop lowest is only valid for categories with equally weighted items. ")
-			.append("If you are adding a drop lowest value, please select equally weighted first. ")
-			.append("If you are deselecting equally weighted, please set the drop lowest value to 0 first.");
-
-			throw new BusinessRuleException(builder.toString(), BusinessLogicCode.OnlyEqualWeightDropLowestRule);
-		}
-
 	}
 
 	/* (non-Javadoc)
