@@ -433,7 +433,12 @@ public class BusinessLogicImpl implements BusinessLogic {
 	}	
 	
 	public boolean isDropLowestAllowed(Category category) {
-		boolean isCategory = category != null && category.getIsCategory();
+		
+		if(null == category) {
+			return false;
+		}
+		
+		boolean isCategory = category.getIsCategory();
 		boolean isExtraCreditCategory = category.isExtraCredit() != null && category.isExtraCredit().booleanValue();
 		boolean isWeightedCategoriesGradebook = category.getGradebook() != null && category.getGradebook().getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
 		boolean isWeightEquallyCategory = category.isEqualWeightAssignments() != null && category.isEqualWeightAssignments().booleanValue();

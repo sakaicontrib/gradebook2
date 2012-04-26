@@ -3460,7 +3460,13 @@ private GradeItem buildNewCategory(String curCategoryString,
 
 
 	private boolean isListAScantronHeaderRow(List<String> rowLowerCase) {
-		boolean answer = rowLowerCase != null && rowLowerCase.size()>0;
+		
+		if(null == rowLowerCase) {
+			
+			return false;
+		}
+		
+		boolean answer = rowLowerCase.size()>0;
 		
 		for (String v : rowLowerCase) {
 			answer = answer && 
