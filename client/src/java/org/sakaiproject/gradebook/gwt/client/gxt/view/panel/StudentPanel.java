@@ -375,7 +375,7 @@ public class StudentPanel extends GradebookPanel {
 					com.extjs.gxt.ui.client.widget.grid.ColumnData config,
 					int rowIndex, int colIndex, ListStore<ModelData> store, Grid<ModelData> grid) {
 				Boolean hasComment = (Boolean) model.get(property);
-				if (hasComment) {					
+				if (null != hasComment && hasComment) {					
 					hasCommentIcon = new Image(resources.comment());
 					hasCommentIcon.setStyleName(resources.css().commentIcon());
 					return hasCommentIcon;
