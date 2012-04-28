@@ -1334,8 +1334,13 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	
 
 	private boolean couldBeNewItemTemplateHeaderRow(Row row) {
-		boolean isTemplate = templateHeaderColumnSet.size()>0;
-		return isTemplate && row.getCell(0).getStringCellValue().trim().equalsIgnoreCase(templateHeaderColumnSet.get(0));
+		boolean isTemplate = templateHeaderColumnSet.size()>0 
+								&& row != null && row.getCell(0) != null;
+		
+		if(isTemplate)
+			isTemplate = row.getCell(0).getStringCellValue().trim().equalsIgnoreCase(templateHeaderColumnSet.get(0));
+		
+		return isTemplate;
 	}
 
 
@@ -3252,7 +3257,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 			   bos.write(buf, 0, cnt);
 			bos.close();
 			tempFile.deleteOnExit();
-		} catch (IOException e1) {
+		} catch (Exception e1) {
 			return emptyUploadFileWithNotes(e1.getMessage());
 		}
 		
