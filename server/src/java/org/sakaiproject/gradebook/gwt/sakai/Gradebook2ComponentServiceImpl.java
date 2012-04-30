@@ -4933,7 +4933,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			businessLogic.applyItemNameNotEmpty(name);
 			
 			if (hasCategories) {
-				if (categoryId != null) {
+				if (categoryId != null) { /// TODO: handle the 'else' case 
 					assignments = gbService.getAssignmentsForCategory(categoryId);
 					
 					// GRBK-577 : Start

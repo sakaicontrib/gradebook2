@@ -144,24 +144,6 @@ public class GradebookImportController extends SimpleFormController implements O
 				importFile = importExportUtility.getImportFile(file, importSettings);
 				
 				
-//				if (!importExportUtility.canBeReadAs(fileTypeFromFileExt, 
-//						fileFormatFromClient, file.getInputStream())) {
-//					importFile = new UploadImpl();
-//					 
-//				} else if (fileTypeFromFileExt.isExcelNative()) {
-//					
-//					log.debug("Excel file detected"); 
-//					importFile = importExportUtility.parseImportXLS(service, gradebookUid, file.getInputStream(), origName.toLowerCase(), gbToolService, importJustStructure);
-//					
-//					} else if(fileTypeFromFileExt.equals(FileType.CSV)) { /// no assumptions, but this should be ensured by the client
-//						log.debug("CSV file"); 
-//						InputStreamReader reader = new InputStreamReader(file.getInputStream());
-//						importFile = importExportUtility.parseImportCSV(service, gradebookUid, reader, importJustStructure);
-//					} else { // we are are in outer space
-//						importFile = new UploadImpl();
-//						importFile.setNotes(i18n.getString("unknownFileType"));
-//						importFile.setErrors(true); 
-//					}
 			}
 
 			PrintWriter writer = response.getWriter();

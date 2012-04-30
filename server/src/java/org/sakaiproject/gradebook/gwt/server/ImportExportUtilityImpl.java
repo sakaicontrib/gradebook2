@@ -2725,6 +2725,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 		// During the 6/1 refactor I left this alone, probably could have moved this back as 
 		String[] pointsColumns = structureColumnsMap.get(StructureRow.POINTS);
 		String[] percentCategoryColumns = structureColumnsMap.get(StructureRow.PERCENT_CATEGORY);
+		List<CategoryItemPair> matchedItems = new ArrayList<CategoryItemPair>();
 			
 		for (int i=0;i<headers.length;i++) {
 		
@@ -2733,7 +2734,23 @@ private GradeItem buildNewCategory(String curCategoryString,
 				continue;
 	
 			if (headers[i].getField() == Field.S_ITEM || headers[i].getField() == Field.S_COMMENT) {
-				handleItemOrComment(headers[i], pointsColumns, percentCategoryColumns, ieInfo, i);
+				CategoryItemPair match = handleItemOrComment(headers[i], pointsColumns, percentCategoryColumns, ieInfo, i);
+				if (match != null && headers[i].getField() == Field.S_ITEM) {
+					if (matchedItems.contains(match)) {
+						StringBuffer msg = new StringBuffer(i18n.getString("importDuplicateItemsFound"));
+						if (match.getCategory() != null ) {
+							if ("-1".equals(match.getCategory().getIdentifier())) {
+								continue;
+							} 
+							msg.append(i18n.getString("categoryName")).append(" '").append(match.getCategory().getName()).append("' - ");
+							
+						} 
+						msg.append(i18n.getString("itemName")).append(" '").append(match.getItem().getName()).append("'");
+						
+						throw new ImportFormatException(msg.toString());
+					} 
+					matchedItems.add(match);
+				}
 			}
 		
 		}
@@ -2749,7 +2766,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 		
 	}
 	
-	private void handleItemOrComment(ImportHeader header, String[] pointsColumns, 
+	private CategoryItemPair handleItemOrComment(ImportHeader header, String[] pointsColumns, 
 			String[] percentCategoryColumns, ImportExportInformation ieInfo, int headerNumber) throws ImportFormatException {
 
 		Item gradebookItemModel = ieInfo.getGradebookItemModel();
@@ -2789,6 +2806,8 @@ private GradeItem buildNewCategory(String curCategoryString,
 		}
 
 		putItemInGradebookModelHierarchy(categoryType, itemModel, gradebookItemModel, categoryModel, isNewItem); 
+		p.setItem(itemModel);
+		return p;
 	}
 	
 	private void decorateItemFromHeader(ImportHeader header,
@@ -3840,6 +3859,63 @@ class CategoryItemPair
 	public void setItem(GradeItem item) {
 		this.item = item;
 	} 
+	
+	public boolean equals(Object obj) {
+		if (obj == null) { return false; }
+		   if (obj == this) { return true; }
+		   if (obj.getClass() != getClass()) {
+		     return false;
+		   }
+		   
+		   CategoryItemPair rhs = (CategoryItemPair) obj;
+		   if (rhs.getItem() == null && item == null && category == null && rhs.getCategory() == null) {
+			   return true;
+		   }
+		   if (rhs.getItem() == null && item == null) {
+			   return new EqualsBuilder().appendSuper(super.equals(obj))
+               .append(category.getName(), rhs.getCategory().getName())
+               .isEquals();
+		   }
+		   
+		   if (rhs.getCategory() == null && category == null) {
+			   return new EqualsBuilder().appendSuper(super.equals(obj))
+               .append(item.getName(), rhs.getItem().getName())
+               .isEquals();
+		   }
+		   if (rhs.getCategory() == null || rhs.getItem() == null 
+				   || category == null || item == null ) {
+			   return false;
+		   }
+		   
+		   return new EqualsBuilder()
+		                 .append(category.getName(), rhs.getCategory().getName())
+		                 .append(item.getName(), rhs.getItem().getName())
+		                 .isEquals();
+	}
+	
+	public int hashCode() {
+		
+		final int p = 2399;
+		int rv = 1;
+		int d=0;
+		
+		if(null != category && category.getName() == null) {
+			d = category.getName().hashCode();
+		}
+		
+		rv = p*rv + d;
+		
+		if(null != item && item.getName() == null) {
+			d = item.getName().hashCode();
+		}
+		
+		return p*rv + d;
+		
+	    
+	   }
+	
+	
+	
 	
 	
 }
