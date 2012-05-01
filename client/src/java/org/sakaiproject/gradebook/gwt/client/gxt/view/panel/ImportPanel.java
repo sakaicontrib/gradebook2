@@ -734,12 +734,12 @@ public class ImportPanel extends GradebookPanel {
 		
 		//get the min a max values from the data
 		@SuppressWarnings("unchecked")
-		List<ItemModel> gradeItems = (List<ItemModel>) setupPanel.getGradeItems(gradebookItemModel);
-		List<Learner> rows = upload.getRows();
+		final List<ItemModel> gradeItems = (List<ItemModel>) setupPanel.getGradeItems(gradebookItemModel);
+		final List<Learner> rows = upload.getRows();
 		/*
 		 * this is scantron with only one key in it which is *not* in LearnerKey: an item
 		 */
-		ItemModel i = gradeItems.get(0);
+		final ItemModel i = gradeItems.get(0);
 		Double minScore = getMinScoreForItem(i, rows);
 		final Double maxScore = getMaxScoreForItem(i, rows);
 		
@@ -765,6 +765,22 @@ public class ImportPanel extends GradebookPanel {
 			}
 		};
 		
+		// scan the rows and see if the first non null value is a letter or a number
+		boolean importingLetters = false;
+		for (Learner l: rows) {
+			String o = l.get(i.getIdentifier());
+			if (null == o)
+				continue;
+			
+			if (o.trim().matches("^\\w")) {
+				importingLetters = true;
+				break;
+			}
+		}
+		final boolean assumeLetterImport = importingLetters;
+		final boolean importingIntoLetters = gradebookItemModel.getGradeType() == GradeType.LETTERS;
+		
+
 		
 		maxPointsNumberField.setName(ItemKey.D_PNTS.name());
 		maxPointsNumberField.setEmptyText(i18nTemplates.pointsFieldEmptyText(maxScore.toString()));
@@ -782,9 +798,9 @@ public class ImportPanel extends GradebookPanel {
 		card1.addFinishListener(new Listener<BaseEvent>() {
 
 			public void handleEvent(BaseEvent be) {
-				
-				Number entry = maxPointsNumberField.getValue();
 				Double maxPoints = null;
+				Number entry = maxPointsNumberField.getValue();
+				
 				
 				if (null == entry) 
 					maxPoints = maxScore;
@@ -792,64 +808,74 @@ public class ImportPanel extends GradebookPanel {
 					maxPoints = Double.valueOf(entry.doubleValue());
 								// TODO: i18n (Decimal format symbol)
 				importSettings.setScantronMaxPoints(maxPoints.toString().substring(0, maxPoints.toString().indexOf(".")));
-
-				@SuppressWarnings("unchecked")
-				List<ItemModel> gradeItems = (List<ItemModel>) setupPanel.getGradeItems(gradebookItemModel);
-				ItemModel i = gradeItems.get(0);
 				
-				List<Learner> rows = upload.getRows();
-				for (Learner row : rows) {
-					// GRBK-1105
-					// Note the below string has not been vetted, but GRBK-1104 should correct this to not be able to happen. 
-					String newValStr = "??"; 
-					Double pnts = null;
-					try {
-						pnts = Double.valueOf((String)row.get(i.getIdentifier()));
-					} catch (NumberFormatException e) {
-						try {
-							pnts = Double.valueOf((String)row.get(i.getIdentifier() + AppConstants.ACTUAL_SCORE_SUFFIX));
-						} catch (NumberFormatException nfe2) {
-							pnts = 0d;
+				if(!assumeLetterImport || !importingIntoLetters) { 
+					
+					for (Learner row : rows) {
+						// GRBK-1105
+						// Note the below string has not been vetted, but GRBK-1104 should correct this to not be able to happen. 
+						String newValStr = "??"; 
+						
+						
+						Double pnts = null;
+						Object o = row.get(i.getIdentifier());
+						if (o != null) {
+							try {
+								pnts = Double.valueOf((String)o);
+							} catch (NumberFormatException e) {
+								try {
+									pnts = Double.valueOf((String)row.get(i.getIdentifier() + AppConstants.ACTUAL_SCORE_SUFFIX));
+								} catch (NumberFormatException nfe2) {
+									pnts = 0d;
+								}
+							} catch (NullPointerException npe) {
+								pnts = 0d;
+							}
+							boolean errorFound = false; 
+							if (Double.valueOf(0).compareTo(maxPoints) != 0 ) {
+								
+								Double derivedPercentageVal = Double.valueOf(pnts / maxPoints * I100); 
+								
+								if (derivedPercentageVal.compareTo(MINIMUM_PERCENTAGE_VALUE) < 0 || derivedPercentageVal.compareTo(MAXIMUM_PERCENTAGE_VALUE) > 0) {
+									
+									errorFound = true; 
+								}
+								
+								newValStr = derivedPercentageVal.toString(); 
+							}
+							else {
+								errorFound = true; 
+							}
+						
+					
+					
+					
+							row.set(i.getIdentifier(), newValStr);
+							String errorProp = DataTypeConversionUtil.buildFailedKey(i.getIdentifier());
+							if (errorFound)
+							{
+								row.set(errorProp, "true");
+								
+							} else {
+								row.set(errorProp, null);
+							}
 						}
-					} catch (NullPointerException npe) {
-						pnts = 0d;
-					}
-					boolean errorFound = false; 
-					if (Double.valueOf(0).compareTo(maxPoints) != 0 ) {
-						
-						Double derivedPercentageVal = Double.valueOf(pnts / maxPoints * I100); 
-						
-						if (derivedPercentageVal.compareTo(MINIMUM_PERCENTAGE_VALUE) < 0 || derivedPercentageVal.compareTo(MAXIMUM_PERCENTAGE_VALUE) > 0) {
 							
-							errorFound = true; 
-						}
 						
-						newValStr = derivedPercentageVal.toString(); 
 					}
-					else {
-						errorFound = true; 
-					}
+					/*
+					 * this is scantron or clicker with only one key in it which is *not* in LearnerKey: an item
+					 */
 					
 					
-					row.set(i.getIdentifier(), newValStr);
-					String errorProp = DataTypeConversionUtil.buildFailedKey(i.getIdentifier());
-					if (errorFound)
-					{
-						row.set(errorProp, "true");
-						
-					} else {
-						row.set(errorProp, null);
+					if(i.getIdentifier().startsWith(AppConstants.FAILED_FLAG)) {
+						i.setIdentifier(DataTypeConversionUtil.unpackItemIdFromKey(i.getIdentifier()));
 					}
+					
 				}
-				/*
-				 * this is scantron or clicker with only one key in it which is *not* in LearnerKey: an item
-				 */
 				
 				gradeItems.remove(i);
 				i.setPoints(maxPoints);
-				if(i.getIdentifier().startsWith(AppConstants.FAILED_FLAG)) {
-					i.setIdentifier(DataTypeConversionUtil.unpackItemIdFromKey(i.getIdentifier()));
-				}
 				gradeItems.add(i);
 				setupPanel.getItemStore().removeAll();
 				refreshSetupPanel(false);
@@ -861,8 +887,14 @@ public class ImportPanel extends GradebookPanel {
 		card1.setFormPanel(form);
 		
 		wizard.setHeading(i18n.importWizardHeading());
-		wizard.setHeaderTitle(i18n.importPointsConversionTitle());
-		wizard.setFinishButtonText(i18n.importPointsConversionFinish());
+		
+		if (assumeLetterImport && importingIntoLetters ){
+			wizard.setFinishButtonText(i18n.wizardDefaultFinishButton());
+			wizard.setHeaderTitle(i18n.scantronMaxPointsFieldLabel());
+		} else {
+			wizard.setFinishButtonText(i18n.importPointsConversionFinish());
+			wizard.setHeaderTitle(i18n.importPointsConversionTitle());
+		}
 		
 		wizard.show();
 		
