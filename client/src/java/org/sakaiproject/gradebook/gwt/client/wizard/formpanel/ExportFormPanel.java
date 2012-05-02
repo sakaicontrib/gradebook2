@@ -30,6 +30,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCh
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.SectionsComboBox;
 import org.sakaiproject.gradebook.gwt.client.model.key.SectionKey;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
+import org.sakaiproject.gradebook.gwt.client.wizard.formpanel.ExportStructureTypeComboBox.ExportStructureType;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.ModelData;
@@ -44,14 +45,13 @@ public class ExportFormPanel extends FormPanel {
 	public final static Integer COMMENTS_CHECKBOX_VALUE = Integer.valueOf(0);
 	public final static Integer EXPORT_TYPE_VALUE = Integer.valueOf(1);
 	public final static Integer SECTIONS_VAlUE = Integer.valueOf(2);
-	public final static Integer STRUCTURE_CHECKBOX_VALUE = Integer.valueOf(3);
+	public final static Integer INCLUDE_STRUCTURE_VALUE = Integer.valueOf(3);
 	
+	private ExportStructureTypeComboBox exportStructureTypeComboBox;
 	private SectionsComboBox<ModelData> sectionsComboBox;
 	private ComboBox<ModelData> exportTypeComboBox;
 	private CheckBox commentsCheckbox;
-	private CheckBox structureCheckbox;
 	private ToolTipConfig commentsCheckboxToolTipConfig;
-	private ToolTipConfig structureCheckboxToolTipConfig;
 	private GradebookResources resources;
 	private I18nConstants i18n;
 	
@@ -63,6 +63,10 @@ public class ExportFormPanel extends FormPanel {
 		
 		setLabelWidth(200);
 		setFieldWidth(150);
+		
+		// Structure selection
+		exportStructureTypeComboBox = new ExportStructureTypeComboBox();
+		add(exportStructureTypeComboBox);
 		
 		// Section selection
 		sectionsComboBox = new SectionsComboBox<ModelData>();
@@ -84,25 +88,10 @@ public class ExportFormPanel extends FormPanel {
 		commentsCheckbox.addStyleName(resources.css().gbCheckBoxAlignLeft());
 		add(commentsCheckbox);
 		
-		// Include Structure checkbox
-		structureCheckboxToolTipConfig = new ToolTipConfig(i18n.exportIncludeStructure());
-		structureCheckboxToolTipConfig.setDismissDelay(10000);
-		structureCheckbox = new NullSensitiveCheckBox();
-		structureCheckbox.setFieldLabel(i18n.exportIncludeStructure());
-		structureCheckbox.setAutoHeight(false);
-		structureCheckbox.setAutoWidth(false);
-		structureCheckbox.setVisible(true);
-		structureCheckbox.setToolTip(structureCheckboxToolTipConfig);
-		structureCheckbox.setReadOnly(false);
-		structureCheckbox.setValue(Boolean.TRUE);
-		structureCheckbox.addStyleName(resources.css().gbCheckBoxAlignLeft());
-		add(structureCheckbox);
-		
 		// Export As section
 		exportTypeComboBox = new ExportTypeComboBox();
 
 		add(exportTypeComboBox);
-		
 	}
 	
 	public Map<Integer, Object> getValues() {
@@ -110,7 +99,19 @@ public class ExportFormPanel extends FormPanel {
 		Map<Integer, Object> values = new HashMap<Integer, Object>();
 		
 		values.put(COMMENTS_CHECKBOX_VALUE, commentsCheckbox.getValue());
-		values.put(STRUCTURE_CHECKBOX_VALUE, structureCheckbox.getValue());
+		
+		List<ModelData> exportStructureTypeModelData = exportStructureTypeComboBox.getSelection();
+		
+		if(null != exportStructureTypeModelData && exportStructureTypeModelData.size() > 0) {
+			
+			ExportStructureType exportStructureType = exportStructureTypeModelData.get(0).get(ExportStructureTypeComboBox.DISPLAY_VALUE);
+			values.put(INCLUDE_STRUCTURE_VALUE, exportStructureType.hasStructure());
+		}
+		else {
+			
+			// By default we include the structure
+			values.put(INCLUDE_STRUCTURE_VALUE, ExportStructureType.GRADES_AND_STRUCTURE.hasStructure());
+		}
 		
 		List<ModelData> exportTypeModelData = exportTypeComboBox.getSelection();
 		

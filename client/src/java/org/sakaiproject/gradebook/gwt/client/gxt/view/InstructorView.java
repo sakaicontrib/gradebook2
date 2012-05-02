@@ -684,7 +684,7 @@ public class InstructorView extends AppView {
 				exportDetails.setIncludeComments((Boolean) selectedExportValues.get(ExportFormPanel.COMMENTS_CHECKBOX_VALUE));
 				exportDetails.setFileType((FileModel) selectedExportValues.get(ExportFormPanel.EXPORT_TYPE_VALUE));
 				exportDetails.setSectionUid((String) selectedExportValues.get(ExportFormPanel.SECTIONS_VAlUE));
-				Boolean hasStructure = (Boolean)selectedExportValues.get(ExportFormPanel.STRUCTURE_CHECKBOX_VALUE);
+				Boolean hasStructure = (Boolean)selectedExportValues.get(ExportFormPanel.INCLUDE_STRUCTURE_VALUE);
 				exportDetails.setIncludeStructure(DataTypeConversionUtil.checkBoolean(hasStructure));
 				Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), exportDetails);
 			}

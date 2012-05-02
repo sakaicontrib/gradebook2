@@ -504,5 +504,11 @@ public interface I18nConstants extends Constants {
 	String fileFormatNameTemplate();
 	String importFormatFieldEmptyText();
 	String importFormatFieldLabel();
+	
+	// GRBK-1290
+	String exportStructure();
+	String exportStructureOnlyGrades();
+	String exportStrcutureAndGrades();
+	String exportStructureEmptyText();
 
 }
