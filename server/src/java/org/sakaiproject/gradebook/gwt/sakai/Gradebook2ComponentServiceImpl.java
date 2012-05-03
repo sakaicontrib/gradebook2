@@ -6943,15 +6943,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		return (null != status ? status : new FinalGradeSubmissionStatusImpl());
 	}
 
-	private Long gradebookToolServiceCreateCategory(boolean isWeightedCategoriesGradebook, Long gradebookId, String name, Double weight, Integer dropLowest, Boolean equalWeightAssignments, Boolean isUnweighted, Boolean isExtraCredit, Integer categoryOrder, Boolean isEnforcePointWeighting) {		
-		boolean isExtraCreditCategory = isExtraCredit == null ? false : isExtraCredit.booleanValue();
-		
-		//isWeightByPointsAllowed
-		//if this category is an extra credit category, then it cannot be weight by points
-		if (isExtraCreditCategory) {
-			isEnforcePointWeighting = Boolean.FALSE;
-		}
-	
+	private Long gradebookToolServiceCreateCategory(boolean isWeightedCategoriesGradebook, Long gradebookId, String name, Double weight, Integer dropLowest, Boolean equalWeightAssignments, Boolean isUnweighted, Boolean isExtraCredit, Integer categoryOrder, Boolean isEnforcePointWeighting) {
 		boolean isWeightByPointsCategory = isEnforcePointWeighting == null ? false : isEnforcePointWeighting.booleanValue();
 		
 		//isEqualWeightingAllowed
@@ -6960,12 +6952,21 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			equalWeightAssignments = Boolean.FALSE;
 		}
 		
-		boolean isWeightEquallyCategory = equalWeightAssignments != null && equalWeightAssignments.booleanValue();	
+		boolean isExtraCreditCategory = isExtraCredit == null ? false : isExtraCredit.booleanValue();
 		
+		//isWeightByPointsAllowed
+		//if this category is an extra credit category, then it cannot be weight by points
+		if (isExtraCreditCategory) {
+			isEnforcePointWeighting = Boolean.FALSE;
+			isWeightByPointsCategory = isEnforcePointWeighting.booleanValue();  //order above is important to check the current value before possibly resetting it
+		}
+		
+		boolean isWeightEquallyCategory = equalWeightAssignments != null && equalWeightAssignments.booleanValue();	
+				
 		//isDropLowestAllowed
 		//if this category is extra credit or weight by points, then it cannot have drop lowest
 		//and this category must be weight equally to have drop lowest
-		if (!businessLogic.isDropLowestAllowed(true, isExtraCreditCategory, isWeightedCategoriesGradebook, isWeightEquallyCategory, isWeightByPointsCategory )) {
+		if (!businessLogic.isDropLowestAllowed(true, isExtraCreditCategory, isWeightedCategoriesGradebook, isWeightEquallyCategory, isWeightByPointsCategory)) {
 			dropLowest = new Integer(0);
 		}
 		
@@ -6974,20 +6975,20 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	}
 	
 	private void gradebookToolServiceUpdateCategory(Category category) {		
-		boolean isExtraCreditCategory = category.isExtraCredit() == null ? false : category.isExtraCredit().booleanValue();
-		
-		//isWeightByPointsAllowed
-		//if this category is an extra credit category, then it cannot be weight by points
-		if (isExtraCreditCategory) {
-			category.setEnforcePointWeighting(Boolean.FALSE);
-		}
-		
 		boolean isWeightByPointsCategory = category.isEnforcePointWeighting() == null ? false : category.isEnforcePointWeighting().booleanValue();
 		
 		//isEqualWeightingAllowed
 		//if this category is weight by points, then it cannot be weight equally
 		if (isWeightByPointsCategory) {
 			category.setEqualWeightAssignments(Boolean.FALSE);
+		}
+		
+		boolean isExtraCreditCategory = category.isExtraCredit() == null ? false : category.isExtraCredit().booleanValue();
+		
+		//isWeightByPointsAllowed
+		//if this category is an extra credit category, then it cannot be weight by points
+		if (isExtraCreditCategory) {
+			category.setEnforcePointWeighting(Boolean.FALSE);
 		}
 		
 		//isDropLowestAllowed
