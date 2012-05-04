@@ -318,3 +318,9 @@
 	padding-top: 10px !important; 
 	padding-bottom: 10px !important; 
 }
+
+/* GRBK-1290 */
+.exportFormatInformationMessage {
+	padding-top: 10px !important; 
+	padding-bottom: 10px !important; 
+}

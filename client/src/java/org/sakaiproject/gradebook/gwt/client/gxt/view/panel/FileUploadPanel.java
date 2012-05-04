@@ -10,9 +10,9 @@
 * Educational Community License, Version 2.0 (the "License"); you may
 * not use this file except in compliance with the License. You may
 * obtain a copy of the License at
-* 
+*
 * http://www.osedu.org/licenses/ECL-2.0
-* 
+*
 * Unless required by applicable law or agreed to in writing,
 * software distributed under the License is distributed on an "AS IS"
 * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
@@ -60,7 +60,7 @@ import com.google.gwt.user.client.Cookies;
 public class FileUploadPanel extends FormPanel {
 	public final static Integer COMMENTS_CHECKBOX_VALUE = Integer.valueOf(0);
 	public final static Integer EXPORT_TYPE_VALUE = Integer.valueOf(1);
-	
+
 	private final I18nConstants i18n;
 	private final ImportPanel newImportPanel;
 
@@ -71,13 +71,13 @@ public class FileUploadPanel extends FormPanel {
 	private ExportTypeComboBox importTypeComboBox;
 
 	NullSensitiveCheckBox justStructureChoice;
-	
+
 	public FileUploadPanel(final ImportPanel newImportPanel) {
-		
+
 		super();
-		
+
 		GradebookResources resources = Registry.get(AppConstants.RESOURCES);
-	
+
 		this.newImportPanel = newImportPanel;
 		i18n = Registry.get(AppConstants.I18N);
 		Registry.get(AppConstants.I18N_TEMPLATES);
@@ -96,22 +96,22 @@ public class FileUploadPanel extends FormPanel {
 		setMethod(Method.POST);
 		setPadding(4);
 		setButtonAlign(HorizontalAlignment.RIGHT);
-		
+
 		//---------------------------------------------------------------------------
 
 		file = new FileUploadField() {
 			@Override
 			protected void onChange(ComponentEvent ce) {
-				
+
 				super.onChange(ce);
 				ExportType type = ExportType.getExportTypeFromFilename(getValue());
 				importTypeComboBox.setSelectionByExportType(type);
-				
+
 			}
-			
+
 		};
 		file.setValidator(new Validator() {
-			
+
 			@Override
 			public String validate(Field<?> field, String value) {
 				if (value != null) {
@@ -122,9 +122,9 @@ public class FileUploadPanel extends FormPanel {
 					}
 				}
 				StringBuffer sb = new StringBuffer(i18n.importFileTypesWarning());
-				
+
 				for (ExportType type : ExportType.values()) {
-					sb.append(type.getFileExtension()).append(",");	
+					sb.append(type.getFileExtension()).append(",");
 				}
 				sb.deleteCharAt(sb.length()-1); // TODO: multibyte charset aware?
 				return sb.toString();
@@ -140,32 +140,32 @@ public class FileUploadPanel extends FormPanel {
 		gradebookUidField.setName(AppConstants.REQUEST_FORM_FIELD_GBUID);
 		gradebookUidField.setValue(gbModel.getGradebookUid());
 		add(gradebookUidField);
-		
+
 		HiddenField<String> formTokenField = new HiddenField<String>();
 		formTokenField.setName(AppConstants.REQUEST_FORM_FIELD_FORM_TOKEN);
 		formTokenField.setValue(Cookies.getCookie(AppConstants.GB2_TOKEN));
 		add(formTokenField);
 
 		//---invisible combo box set by validator for format combo----------------------
-		
+
 		importTypeComboBox = new ExportTypeComboBox();
 		importTypeComboBox.setName(AppConstants.IMPORT_PARAM_FILETYPE);
 		importTypeComboBox.setAllowBlank(false);
 		importTypeComboBox.setVisible(false);
 
 		//---format combo---------------------------------------------------------------
-				
+
 		importFormatInformationMessage = new Html();
 		importFormatInformationMessage.setHtml(i18n.fileFormatImportMessageFull());
 		importFormatInformationMessage.setStyleName(resources.css().importFormatInformationMessage());
-		
+
 		importFormatComboBox = new FileFormatComboBox();
 		importFormatComboBox.setWidth("50%");
 		importFormatComboBox.setName(AppConstants.IMPORT_PARAM_FILEFORMAT);
 		importFormatComboBox.setEmptyText(i18n.importFormatFieldEmptyText());
 		importFormatComboBox.setAllowBlank(false);
 		importFormatComboBox.setValidator(new Validator() {
-			
+
 			@Override
 			public String validate(Field<?> field, String value) {
 				if (value != null) {
@@ -173,20 +173,20 @@ public class FileUploadPanel extends FormPanel {
 							importFormatComboBox.getValue().get(importFormatComboBox.getValueField()));
 					if (f != null) {
 						importFormatInformationMessage.setHtml(f.getImportMessage(i18n));
-						
+
 						if (f.equals(FileFormat.TEMPLATE) || f.equals(FileFormat.NO_STRUCTURE)
 								|| f.equals(FileFormat.SCANTRON) ) {
-							
+
 							if(justStructureChoice.getValue()) {
-								return i18n.justStructureNotAllowedMessage() 
+								return i18n.justStructureNotAllowedMessage()
 								+ "'" + i18n.justStructureCheckboxLabel() + "'";
 							}
-		
+
 							justStructureChoice.setEnabled(false);
-							
+
 							return null;
 						}
-						
+
 						justStructureChoice.setEnabled(true);
 						return null;
 					}
@@ -195,19 +195,19 @@ public class FileUploadPanel extends FormPanel {
 				return "This should not happen: format dropdown value == null";
 			}
 		});
-		
+
 		importFormatSet = new FieldSet();
 		importFormatSet.setCollapsible(false);
-		importFormatSet.setHeading("Import Format");  
-		importFormatSet.setCheckboxToggle(false);  
+		importFormatSet.setHeading(i18n.importFormatFieldLabel());
+		importFormatSet.setCheckboxToggle(false);
 		importFormatSet.setAutoHeight(true);
 		importFormatSet.setScrollMode(Scroll.AUTO);
 		importFormatSet.setVisible(true);
 		importFormatSet.add(importFormatComboBox);
 		importFormatSet.add(importFormatInformationMessage);
-		
+
 		//---just-structure check-box----------------------------------------------------
-		
+
 		// GRBK-514
 		justStructureChoice = new NullSensitiveCheckBox() {
 
@@ -217,7 +217,7 @@ public class FileUploadPanel extends FormPanel {
 				// hack for setting it Dirty?
 				importFormatComboBox.setSelection(importFormatComboBox.getSelection());
 			}
-			
+
 		};
 		justStructureChoice.setName(AppConstants.IMPORT_PARAM_STRUCTURE);
 		justStructureChoice.setValueAttribute("c");// we just check for ! null server-side
@@ -230,7 +230,7 @@ public class FileUploadPanel extends FormPanel {
 		justStructureChoice.setAutoHeight(false);
 		justStructureChoice.setAutoWidth(false);
 		justStructureChoice.addStyleName(resources.css().gbLeftAlignFlushNoWrapInput());
-		
+
 		addListener(Events.Submit, new Listener<FormEvent>() {
 
 			public void handleEvent(FormEvent fe) {
@@ -254,21 +254,21 @@ public class FileUploadPanel extends FormPanel {
 			submit();
 		}
 	}
-	
+
 	public Map<Integer, Object> getValues() {
-		
+
 		Map<Integer, Object> values = new HashMap<Integer, Object>();
-		
+
 		values.put(COMMENTS_CHECKBOX_VALUE, justStructureChoice.getValue());
-		
+
 		List<ModelData> exportTypeModelData = importTypeComboBox.getSelection();
-		
+
 		if(null != exportTypeModelData && exportTypeModelData.size() > 0) {
-			
+
 			values.put(EXPORT_TYPE_VALUE, exportTypeModelData.get(0).get(ExportType.DISPLAY_VALUE));
 		}
 		else {
-			
+
 			// TODO: We should make a choice mandatory (rather than using this default) after
 			//       we've put the right filetype checks into place.
 			values.put(EXPORT_TYPE_VALUE, ExportType.CSV);

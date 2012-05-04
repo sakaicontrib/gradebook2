@@ -689,7 +689,8 @@ public class InstructorView extends AppView {
 				Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), exportDetails);
 			}
 		});
-		
+
+		exportWizard.setSize(600, 500);
 		exportWizard.show();
 	}
 	

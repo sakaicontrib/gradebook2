@@ -494,14 +494,16 @@ public interface I18nConstants extends Constants {
 	String downloadNewItemTemplateWizardHeading();
 
 	// GRBK-1278
-	String fileFormatImportMessageFull();
-	String fileFormatImportMessageNoStructure();
-	String fileFormatImportMessageScantron();
-	String fileFormatImportMessageTemplate();
 	String fileFormatNameFull();
 	String fileFormatNameNoStructure();
 	String fileFormatNameScantron();
 	String fileFormatNameTemplate();
+	
+	String fileFormatImportMessageFull();
+	String fileFormatImportMessageNoStructure();
+	String fileFormatImportMessageScantron();
+	String fileFormatImportMessageTemplate();
+	
 	String importFormatFieldEmptyText();
 	String importFormatFieldLabel();
 	
@@ -509,9 +511,9 @@ public interface I18nConstants extends Constants {
 	String usersNotFoundInSite();
 	
 	// GRBK-1290
-	String exportStructure();
-	String exportStructureOnlyGrades();
-	String exportStrcutureAndGrades();
-	String exportStructureEmptyText();
-
+	String fileFormatExportMessageFull();
+	String fileFormatExportMessageNoStructure();
+	
+	String exportFormatFieldEmptyText();
+	String exportFormatFieldLabel();
 }

@@ -25,7 +25,7 @@ public enum FileFormat implements FileModel {
 	FULL("full"),
 	TEMPLATE("template"),
 	NO_STRUCTURE("no-structure"),
-	SCANTRON("scantron"); // NO_STRUCTURE DEPRECATED
+	SCANTRON("scantron");
 
 	private String displayName;
 	private String importMessage;
@@ -50,7 +50,7 @@ public enum FileFormat implements FileModel {
 				displayName = i18n.fileFormatNameTemplate();
 				break;
 			case NO_STRUCTURE:
-				displayName = i18n.fileFormatNameNoStructure(); // DEPRECATED
+				displayName = i18n.fileFormatNameNoStructure();
 			}
 		}
 		
@@ -70,7 +70,7 @@ public enum FileFormat implements FileModel {
 				importMessage = i18n.fileFormatImportMessageTemplate();
 				break;
 			case NO_STRUCTURE:
-				importMessage = i18n.fileFormatImportMessageNoStructure(); // DEPRECATED
+				importMessage = i18n.fileFormatImportMessageNoStructure();
 			}
 		}
 

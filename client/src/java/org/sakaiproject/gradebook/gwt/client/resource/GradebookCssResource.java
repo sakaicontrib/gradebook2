@@ -129,5 +129,6 @@ public interface GradebookCssResource extends CssResource {
 	
 	/* GRBK-1278 */
 	String importFormatInformationMessage();
+	String exportFormatInformationMessage();
 
 }
