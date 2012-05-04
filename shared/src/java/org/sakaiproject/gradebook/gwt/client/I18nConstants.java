@@ -505,6 +505,9 @@ public interface I18nConstants extends Constants {
 	String importFormatFieldEmptyText();
 	String importFormatFieldLabel();
 	
+	//GRBK-688
+	String usersNotFoundInSite();
+	
 	// GRBK-1290
 	String exportStructure();
 	String exportStructureOnlyGrades();

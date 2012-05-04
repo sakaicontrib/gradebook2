@@ -239,12 +239,30 @@ public class LearnerImpl extends BaseModel implements Learner, Comparable<Learne
 	public boolean equals(Object obj) {
 		if (obj instanceof Learner) {
 			Learner other = (Learner)obj;
+			
+			if(getIdentifier() == null) {
+				if(other.getIdentifier() == null) {
+					return true;
+				}
+				return false;
+			}
 		
 			return getIdentifier().equals(other.getIdentifier());
 		}
 		return false;
 	}
 
+
+	@Override
+	public int hashCode() {
+		int rv = 1;
+		int p = 24323;
+		rv = p*rv + ((getIdentifier() == null?0:getIdentifier().hashCode()));
+		
+		return rv;
+	}
+	
+	
 	public int compareTo(Learner o) {
 		return getIdentifier().compareTo(o.getIdentifier());
 	}

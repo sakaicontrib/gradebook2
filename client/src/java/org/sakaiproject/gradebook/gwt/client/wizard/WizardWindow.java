@@ -158,6 +158,8 @@ public class WizardWindow extends Window {
 	protected boolean isHeaderPanelHidden = false;
 
 	protected HorizontalAlignment buttonAlignment = HorizontalAlignment.RIGHT;
+
+	private boolean hideCancelButton;
 	
 
 	/**
@@ -318,6 +320,9 @@ public class WizardWindow extends Window {
 		//add(status);
 		
 		buttonBar.setAlignment(buttonAlignment );
+		
+		if(hideCancelButton)
+			cancelBtn.hide();
 
 		super.onRender(parent, pos);
 
@@ -765,6 +770,11 @@ public class WizardWindow extends Window {
 
 	public void pressCancelButton() {
 		onButtonPressed(getCancelButton());
+		
+	}
+
+	public void hideCancelButton(boolean hide) {
+		hideCancelButton = hide;
 		
 	}
 

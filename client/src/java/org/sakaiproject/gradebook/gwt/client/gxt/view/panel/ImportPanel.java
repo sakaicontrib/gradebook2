@@ -57,8 +57,12 @@ import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 import org.sakaiproject.gradebook.gwt.client.wizard.validators.MinMaxDoubleValidator;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.LayoutRegion;
+import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.Style.SortDir;
+import com.extjs.gxt.ui.client.data.BaseListLoader;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
+import com.extjs.gxt.ui.client.data.ListLoadResult;
+import com.extjs.gxt.ui.client.data.MemoryProxy;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.extjs.gxt.ui.client.data.PagingLoader;
@@ -71,14 +75,22 @@ import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.util.Margins;
+import com.extjs.gxt.ui.client.widget.Component;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.Dialog;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
+import com.extjs.gxt.ui.client.widget.VerticalPanel;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.FormPanel.LabelAlign;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
+import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
+import com.extjs.gxt.ui.client.widget.grid.ColumnData;
+import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
+import com.extjs.gxt.ui.client.widget.grid.Grid;
+import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
+import com.extjs.gxt.ui.client.widget.grid.GridView;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayout;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
 import com.extjs.gxt.ui.client.widget.layout.CardLayout;
@@ -86,6 +98,7 @@ import com.extjs.gxt.ui.client.widget.layout.FitData;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
+import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.Response;
@@ -124,6 +137,7 @@ public class ImportPanel extends GradebookPanel {
 	
 	private ImportSettings importSettings = new ImportSettingsModel();
 	private Wizard wizard;
+	private Wizard unMatchedLearnersDisplay;
 		
 	
 	public ImportPanel() {
@@ -345,6 +359,9 @@ public class ImportPanel extends GradebookPanel {
 				
 				refreshSetupPanel(importSettings.isJustStructure());
 				wizard.hide();
+				WidgetInjector injector = Registry.get(AppConstants.WIDGET_INJECTOR);
+				unMatchedLearnersDisplay = injector.getWizardProvider().get();
+				displayAnyUnmatchedLearners(unMatchedLearnersDisplay);
 			}
 			
 			
@@ -364,10 +381,121 @@ public class ImportPanel extends GradebookPanel {
 			}
 		}
 
+
 		if (msgsFromServer != null && msgsFromServer.length() > 0){
 			String severity = hasErrors ? i18n.errorOccurredGeneric() : i18n.exportWarnUserFileCannotBeImportedTitle();
 			Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(severity, msgsFromServer, true, true));
 		}
+	}
+	
+	/*
+	 *  this wipes out the old wizard value to display the list, if any are found,
+	 *  and if the param is null... otherwise it creates the wizard in the supplied param
+	 */
+
+	private void displayAnyUnmatchedLearners(Wizard suppliedWizard) {
+		
+		Wizard theWiz = wizard;
+		List<LearnerModel> unmatched = getUnmatchedLearnerList(upload.getRows());
+		if (unmatched.size() == 0)
+			return;
+		
+		// unmatched users found
+		if (suppliedWizard != null) {
+			theWiz = suppliedWizard;
+		} else {
+			theWiz.reset();
+		}
+		
+		theWiz.setHeading(i18n.usersNotFoundInSite());
+		theWiz.setClosable(false);
+		theWiz.setShowWestImageContainer(false);
+		theWiz.setPanelBackgroundColor("#EEEEEE");
+		theWiz.setContainer(this.getElement());
+		
+		theWiz.setProgressIndicator(Wizard.Indicator.NONE);
+		theWiz.setHidePreviousButtonOnFirstCard(true);
+		
+		theWiz.hideCancelButton(true);
+	    
+	    theWiz.setFinishButtonText(i18n.done());
+	    theWiz.setHideOnFinish(true);
+	    
+	    theWiz.setContainer(this.getElement());
+	    
+	    theWiz.setHideHeaderPanel(true);
+	    
+	    theWiz.setSize(350, 400);
+			    
+	    VerticalPanel layout = new VerticalPanel();
+		    
+	    Card card1 = theWiz.newCard("");
+	    
+	    card1.setLayoutContainer(layout);
+	    
+	    ColumnConfig idCol = new ColumnConfig(LearnerKey.S_UID.name(), i18n.studentPanelHeadingId(), 200);
+
+	    GridCellRenderer<LearnerModel> renderer = new GridCellRenderer<LearnerModel>() {  
+
+			public Object render(LearnerModel model, String property,
+					ColumnData config, int rowIndex, int colIndex,
+					ListStore<LearnerModel> store, Grid<LearnerModel> grid) {
+				return model.getIdentifier();
+			}  
+	    	  };  
+	    idCol.setRenderer(renderer);  
+	    List<ColumnConfig> cc = new ArrayList<ColumnConfig>();
+	    cc.add(idCol);
+	    ColumnModel cm = new ColumnModel(cc);
+	    
+		
+		ListStore<LearnerModel> store = 
+			new ListStore<LearnerModel>(
+					new BaseListLoader<ListLoadResult<LearnerModel>>(
+							new MemoryProxy<LearnerModel>(unmatched)));
+		
+		store.setModelComparer(new EntityModelComparer<LearnerModel>(LearnerKey.S_UID.name()));
+		store.setDefaultSort(LearnerKey.S_UID.name(), SortDir.ASC);
+		
+		
+	    
+	    Grid<LearnerModel> grid = new Grid<LearnerModel>(store, cm);
+	    	    
+	    grid.setHeight(250);
+	    grid.setWidth(250);
+	    grid.getColumnModel().setColumnWidth(0, 250);
+	    
+	    grid.getView().setAutoFill(true);
+	    grid.setView(new GridView() {
+
+			@Override
+			protected Menu createContextMenu(int colIndex) {
+				Menu m = super.createContextMenu(colIndex);
+				Component thing = m.getItem(2);
+				m.remove(thing);
+				return m;
+			}
+	    	
+	    });
+
+	    layout.add(grid);
+	    layout.setScrollMode(Scroll.AUTO);
+	    grid.getStore().getLoader().load();
+
+		
+	    theWiz.show();
+	}
+
+	private List<LearnerModel> getUnmatchedLearnerList(List<Learner> rows) {
+		List<LearnerModel> rv = new ArrayList<LearnerModel>();
+		for (Learner l : rows) {
+			if (l.getUserNotFound()) {
+				rv.add((LearnerModel)l);
+			}
+		}
+		
+		
+		return rv;
 	}
 
 	private void refreshSetupPanel(boolean hideGrid) {

@@ -233,4 +233,10 @@ public class SimpleWizard extends WizardWindow implements Wizard  {
 		super.pressCancelButton();
 	}
 
+	@Override
+	public void hideCancelButton(boolean hide) {
+		super.hideCancelButton(hide);
+		
+	}
+
 }

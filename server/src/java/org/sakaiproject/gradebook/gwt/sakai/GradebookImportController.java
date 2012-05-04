@@ -170,7 +170,7 @@ public class GradebookImportController extends SimpleFormController implements O
 						String id = student.getIdentifier();
 						if (null == id)
 							continue;
-						if (studentIds.contains(id)) {
+						if (studentIds.contains(id) && !student.getUserNotFound()) {
 							dupsFound = true;
 							if (null == msg) {
 								msg = new StringBuffer(i18n.getString("importDuplicateStudentsFound", 

@@ -123,4 +123,8 @@ public interface Wizard {
 	
 	public void pressCancelButton();
 	
+	public void hideCancelButton(boolean hide);
+	
+	
+	
 }

@@ -2129,7 +2129,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		// GRBK-1105 - We need to do this error checking if it is scantron 
 		// but not percentages mode as the client side stuff only works if the 
 		// wizard code is called, and that only happens for percentages... 
-		if (! (ieInfo.getImportsettings().isScantron() && GradeType.PERCENTAGES == gradeType) ){
+		if (! (ieInfo.getImportSettings().isScantron() && GradeType.PERCENTAGES == gradeType) ){
 			if (GradeType.PERCENTAGES == gradeType)
 			{
 				double d = Double.parseDouble(rowData[colIdx]);
@@ -2207,6 +2207,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			learnerRow.setStudentDisplayId(userDereference.getDisplayId());
 			learnerRow.setUserNotFound(Boolean.FALSE);
 		} else {
+			learnerRow.setIdentifier(userImportId);
 			learnerRow.setLastNameFirst("User not found");
 			learnerRow.setUserNotFound(Boolean.TRUE);
 			ieInfo.setUserNotFound(true);
@@ -2773,7 +2774,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 		CategoryType categoryType = gradebookItemModel.getCategoryType();
 		String itemName = header.getHeaderName();
 		
-		FileFormat format = FileFormat.valueOf(ieInfo.getImportsettings().getFileFormatName());
+		FileFormat format = FileFormat.valueOf(ieInfo.getImportSettings().getFileFormatName());
 		
 		boolean treatAllItemsAsNewItems = 
 			       format.equals(FileFormat.SCANTRON)
@@ -2789,9 +2790,9 @@ private GradeItem buildNewCategory(String curCategoryString,
 		boolean isNewItem = false;
 		if (itemModel == null || treatAllItemsAsNewItems) {
 			isNewItem = true;
-			if (treatAllItemsAsNewItems && !ieInfo.getImportsettings().isNameUniquenessCheckDone()) {
+			if (treatAllItemsAsNewItems && !ieInfo.getImportSettings().isNameUniquenessCheckDone()) {
 				try {
-					header.setHeaderName(getUniqueItemName(header.getHeaderName(), ieInfo.getImportsettings().getGradebookUid()));
+					header.setHeaderName(getUniqueItemName(header.getHeaderName(), ieInfo.getImportSettings().getGradebookUid()));
 				} catch (GradebookImportException e) {
 					throw new ImportFormatException(e.getMessage());
 				}
@@ -2902,7 +2903,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 		/*
 		 * For templates, scantrons... we assume all items are new items
 		 */
-		FileFormat f = FileFormat.valueOf(ieInfo.getImportsettings().getFileFormatName());
+		FileFormat f = FileFormat.valueOf(ieInfo.getImportSettings().getFileFormatName());
 		
 		if (f.equals(FileFormat.SCANTRON) || f.equals(FileFormat.TEMPLATE)) {
 			return new CategoryItemPair( ieInfo.getCategoryIdItemMap().get("-1"), null);
@@ -3016,7 +3017,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 		// this is just housekeeping and may not be immediately necessary
 		importFile.getImportSettings().setScantron(rawData.isScantronFile());
 		importFile.getImportSettings().setJustStructure(rawData.isJustStructure());
-		ieInfo.setImportsettings(rawData.getImportSettings());
+		ieInfo.setImportSettings(rawData.getImportSettings());
 		//
 		
 		
@@ -3061,7 +3062,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 				// file
 				adjustGradebookItemModel(ieInfo);
 				
-				if(!ieInfo.getImportsettings().isJustStructure()) {// GRBK-514
+				if(!ieInfo.getImportSettings().isJustStructure()) {// GRBK-514
 					readInGradeDataFromImportFile(rawData, ieInfo, userDereferenceMap, importRows, structureStop, service);
 				}
 				
@@ -3610,14 +3611,6 @@ private GradeItem buildNewCategory(String curCategoryString,
 	}
 
 
-	public void setTemplateIgnoreColumns(String[] templateIgnoreColumns) {
-	}
-
-
-	public void setTemplateStudentIdHeader(String templateStudentIdHeader) {
-	}
-
-
 
 }
 
@@ -3641,7 +3634,7 @@ class ImportExportInformation
 	List<CategoryPosition> categoryPositions; 
 	Item gradebookItemModel;
 	
-	ImportSettings importsettings = null;
+	ImportSettings importSettings = null;
 	
 	
 	public ImportExportInformation() 
@@ -3652,6 +3645,7 @@ class ImportExportInformation
 		categoryIdItemMap = new HashMap<String, GradeItem>();
 
 		activeHeaderIndexes = new LinkedList<Integer>();
+		importSettings = new ImportSettingsImpl();
 	}
 
 	public void trackActiveHeaderIndex(int index) {
@@ -3714,12 +3708,12 @@ class ImportExportInformation
 		this.categoryIdItemMap = categoryIdItemMap;
 	}
 	
-	public ImportSettings getImportsettings() {
-		return importsettings;
+	public ImportSettings getImportSettings() {
+		return importSettings;
 	}
 
-	public void setImportsettings(ImportSettings importsettings) {
-		this.importsettings = importsettings;
+	public void setImportSettings(ImportSettings importSettings) {
+		this.importSettings = importSettings;
 	}
 
 	public ImportHeader[] findActiveHeaders() {
