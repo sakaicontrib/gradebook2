@@ -69,6 +69,7 @@ import org.sakaiproject.gradebook.gwt.client.api.ImportSettings;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
+import org.sakaiproject.gradebook.gwt.client.gxt.type.ExportType;
 import org.sakaiproject.gradebook.gwt.client.gxt.type.FileFormat;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader.Field;
@@ -1023,11 +1024,11 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		Workbook wb = null; 
 		final String unexpectedTypeErrorMessage = i18n.getString("expectedFormat" + settings.getExportTypeName(), 
 				"The file format did not match your selection: " 
-				+ settings.getExportTypeName());
+				+ lookupI18nExportType(settings.getExportTypeName()));
 		
 		final String unexpectedFormatErrorMessage = i18n.getString("expectedFormat" + settings.getFileFormatName(), 
 				"The file format did not match your selection: " 
-				+ settings.getFileFormatName());
+				+ lookupI18nFileFormat(settings.getFileFormatName()));
 		
 		Upload rv = new UploadImpl();
 		try {
@@ -1106,7 +1107,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		
 		final String unexpectedFormatErrorMessage = i18n.getString("expectedFormat" + settings.getFileFormatName(), 
 				"The file format did not match your selection: " 
-				+ settings.getFileFormatName());
+				+ lookupI18nFileFormat(settings.getFileFormatName()));
 		
 		
 		
@@ -1423,7 +1424,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			FileFormat fileFormatChosen = FileFormat.valueOf(settings.getFileFormatName());
 			final String unexpectedFormatErrorMessage = i18n.getString("expectedFormat" + fileFormatChosen.name(), 
 					"The file format did not match your selection: " 
-					+ fileFormatChosen.name());
+					+ lookupI18nFileFormat(fileFormatChosen.name()));
 			
 			
 			boolean mismatch = false;
@@ -3243,10 +3244,10 @@ private GradeItem buildNewCategory(String curCategoryString,
 		String errorMessage = "";
 		final String unexpectedTypeErrorMessage = i18n.getString("expectedFormat" + importSettings.getExportTypeName(), 
 				"The file format did not match your selection: " 
-				+ importSettings.getExportTypeName());
+				+ lookupI18nExportType(importSettings.getExportTypeName()));
 		final String unexpectedFormatErrorMessage = i18n.getString("expectedFormat" + importSettings.getFileFormatName(), 
 				"The file format did not match your selection: " 
-				+ importSettings.getFileFormatName());
+				+ lookupI18nFileFormat(importSettings.getFileFormatName()));
 		
 		String suffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf('.'));
 		
@@ -3610,7 +3611,78 @@ private GradeItem buildNewCategory(String curCategoryString,
 		this.service = service;
 	}
 
+	public void setTemplateIgnoreColumns(String[] templateIgnoreColumns) {
+	}
 
+
+	public void setTemplateStudentIdHeader(String templateStudentIdHeader) {
+	}
+
+	/*
+	 * Method that looks up the ExportType ENUM name and returns
+	 * the proper i18n strings
+	 */
+	private String lookupI18nExportType(String exportType) {
+		
+		if(null == exportType || "".equals(exportType)) {
+			
+			return "";
+		}
+		
+		if(exportType.equals(ExportType.CSV.name())) {
+			
+			return i18n.getString("exportTypeCSV");
+		}
+		else if(exportType.equals(ExportType.XLSX.name())) {
+			
+			return i18n.getString("exportTypeXLSX");
+		}
+		else if(exportType.equals(ExportType.XLS97.name())) {
+			
+			return i18n.getString("exportTypeXLS");
+		}
+		else {
+			
+			log.error("ERROR: Did not recoginize ExportType = " + exportType); 
+		}
+		
+		return "";
+	}
+	
+	/*
+	 * Method that looks up the FileFormat ENUM name and returns
+	 * the proper i18n strings
+	 */
+	private String lookupI18nFileFormat(String fileFormat) {
+		
+		if(null == fileFormat || "".equals(fileFormat)) {
+			
+			return "";
+		}
+		
+		if(fileFormat.equals(FileFormat.FULL.name())) {
+			
+			return i18n.getString("fileFormatNameFull");
+		}
+		else if(fileFormat.equals(FileFormat.NO_STRUCTURE.name())) {
+			
+			return i18n.getString("fileFormatNameNoStructure");
+		}
+		else if(fileFormat.equals(FileFormat.TEMPLATE.name())) {
+			
+			return i18n.getString("fileFormatNameTemplate");
+		}
+		else if(fileFormat.equals(FileFormat.SCANTRON.name())) {
+			
+			return i18n.getString("fileFormatNameScantron");
+		}
+		else {
+			
+			log.error("ERROR: Did not recoginize FileFormat = " + fileFormat); 
+		}
+		
+		return "";
+	}
 
 }
 
