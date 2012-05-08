@@ -60,6 +60,8 @@ import org.springframework.web.multipart.support.ByteArrayMultipartFileEditor;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.SimpleFormController;
 
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
+
 public class GradebookImportController extends SimpleFormController implements OpenController {
 
 	private static final Log log = LogFactory.getLog(GradebookImportController.class);
@@ -192,7 +194,7 @@ public class GradebookImportController extends SimpleFormController implements O
 					
 				}
 			}
-			writer.write(toJson(importFile)); 
+			writer.write(SafeHtmlUtils.htmlEscape(toJson(importFile))); 
 			writer.flush();
 			writer.close();
 		}

@@ -331,7 +331,7 @@ public class ImportPanel extends GradebookPanel {
 
 			// Getting the JSON from REST call and create an UploadModel
 			
-			EntityOverlay overlay = JsonUtil.toOverlay(result);
+			EntityOverlay overlay = JsonUtil.toOverlay(unescapeHtml(result));
 			upload = new UploadModel(overlay);
 			hasErrors = upload.hasErrors(); 
 			
@@ -1086,5 +1086,10 @@ public class ImportPanel extends GradebookPanel {
 		}
 		
 	}
+	
+	private native String unescapeHtml(String input) /*-{
+		return unescape(input);
+	
+	}-*/;
 
 }
