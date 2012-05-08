@@ -75,7 +75,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 
 					StringBuilder builder = new StringBuilder();
 					builder.append("There is already an existing category called \"").append(name).append("\" ").append("in this gradebook. ")
-					.append("Please enter a different name for this category.");
+					.append("(Remember names are case-insensitive.) Please enter a different name for this category.");
 
 					throw new BusinessRuleException(builder.toString(), BusinessLogicCode.NoDuplicateCategoryNamesRule);
 				} // if
@@ -96,7 +96,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 
 					StringBuilder builder = new StringBuilder();
 					builder.append("There is already an existing item called \"").append(name).append("\" ").append("in this gradebook. ")
-					.append("Please enter a different name for the grade item.");
+					.append("(Remember names are case-insensitive.) Please enter a different name for the grade item.");
 
 					throw new BusinessRuleException(builder.toString(), BusinessLogicCode.NoDuplicateItemNamesRule);
 				}
@@ -116,7 +116,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 
 					StringBuilder builder = new StringBuilder();
 					builder.append("There is already an existing item called \"").append(name).append("\" ").append("in this gradebook. ")
-					.append("Please enter a different name for the grade item.");
+					.append("(Remember names are case-insensitive.) Please enter a different name for the grade item.");
 
 					throw new BusinessRuleException(builder.toString(), BusinessLogicCode.NoImportedDuplicateItemNamesRule);
 				}
@@ -136,7 +136,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 
 					StringBuilder builder = new StringBuilder();
 					builder.append("There is already an existing item called \"").append(name).append("\" ").append("in this category. ")
-					.append("Please enter a different name for the grade item.");
+					.append("(Remember names are case-insensitive.) Please enter a different name for the grade item.");
 
 					throw new BusinessRuleException(builder.toString(), BusinessLogicCode.NoDuplicateItemNamesWithinCategoryRule);
 				}
@@ -156,7 +156,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 
 					StringBuilder builder = new StringBuilder();
 					builder.append("There is already an existing item called \"").append(name).append("\" ").append("in this category. ")
-					.append("Please enter a different name for the grade item.");
+					.append("(Remember names are case-insensitive.) Please enter a different name for the grade item.");
 
 					throw new BusinessRuleException(builder.toString(), BusinessLogicCode.NoImportedDuplicateItemNamesWithinCategoryRule);
 				}
