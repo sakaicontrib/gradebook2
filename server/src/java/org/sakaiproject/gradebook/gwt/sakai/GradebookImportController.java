@@ -125,7 +125,7 @@ public class GradebookImportController extends SimpleFormController implements O
 					fileTypeFromFileExt = FileType.getTypeFromExtension(origName.substring(theLastDot));
 					if (!fileTypeFromFileExt.equals(FileType.valueOf(fileTypeNameFromClient))){
 						importFile = new UploadImpl();
-						importFile.setNotes(i18n.getString("filetypeExtensionMismatch"));
+						importFile.setNotes(i18n.getString("filetypeExtensionMismatch") + fileTypeNameFromClient);
 						importFile.setErrors(true);
 					}
 				} else {//client should be preventing this as of SAK-1221

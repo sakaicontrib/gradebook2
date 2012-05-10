@@ -1022,13 +1022,13 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	private Upload handleJExcelAPISpreadSheet(InputStream is,
 			String fileName, boolean isNewAssignmentByFileName, ImportSettings settings) throws InvalidInputException, FatalException, IOException {
 		Workbook wb = null; 
-		final String unexpectedTypeErrorMessage = i18n.getString("expectedFormat" + settings.getExportTypeName(), 
-				"The file format did not match your selection: " 
-				+ lookupI18nExportType(settings.getExportTypeName()));
+		final String unexpectedTypeErrorMessage = i18n.getString("filetypeExtensionMismatch", 
+				"jexcel ")
+				+ lookupI18nExportType(settings.getExportTypeName());
 		
-		final String unexpectedFormatErrorMessage = i18n.getString("expectedFormat" + settings.getFileFormatName(), 
-				"The file format did not match your selection: " 
-				+ lookupI18nFileFormat(settings.getFileFormatName()));
+		final String unexpectedFormatErrorMessage = i18n.getString("expectedFormat", 
+				"The file content did not match your selection: ")
+				+ lookupI18nFileFormat(settings.getFileFormatName());
 		
 		Upload rv = new UploadImpl();
 		try {
@@ -1105,9 +1105,9 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		ImportExportDataFile raw = new ImportExportDataFile(); 
 		int numRows; 
 		
-		final String unexpectedFormatErrorMessage = i18n.getString("expectedFormat" + settings.getFileFormatName(), 
-				"The file format did not match your selection: " 
-				+ lookupI18nFileFormat(settings.getFileFormatName()));
+		final String unexpectedFormatErrorMessage = i18n.getString("expectedFormat", 
+				"The file format did not match your selection: ")
+				+ lookupI18nFileFormat(settings.getFileFormatName());
 		
 		
 		
@@ -1422,9 +1422,9 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			org.apache.poi.ss.usermodel.Sheet cur = inspread.getSheetAt(0);
 			ImportExportDataFile ret = null;
 			FileFormat fileFormatChosen = FileFormat.valueOf(settings.getFileFormatName());
-			final String unexpectedFormatErrorMessage = i18n.getString("expectedFormat" + fileFormatChosen.name(), 
-					"The file format did not match your selection: " 
-					+ lookupI18nFileFormat(fileFormatChosen.name()));
+			final String unexpectedFormatErrorMessage = i18n.getString("expectedFormat", 
+					"The file format did not match your selection: ")
+					+ lookupI18nFileFormat(fileFormatChosen.name());
 			
 			
 			boolean mismatch = false;
@@ -3242,12 +3242,12 @@ private GradeItem buildNewCategory(String curCategoryString,
 		boolean typeOK = true;
 		final FileType type = FileType.valueOf(importSettings.getExportTypeName());
 		String errorMessage = "";
-		final String unexpectedTypeErrorMessage = i18n.getString("expectedFormat" + importSettings.getExportTypeName(), 
-				"The file format did not match your selection: " 
-				+ lookupI18nExportType(importSettings.getExportTypeName()));
-		final String unexpectedFormatErrorMessage = i18n.getString("expectedFormat" + importSettings.getFileFormatName(), 
-				"The file format did not match your selection: " 
-				+ lookupI18nFileFormat(importSettings.getFileFormatName()));
+		final String unexpectedTypeErrorMessage = i18n.getString("filetypeExtensionMismatch", 
+				"top.")
+				+ lookupI18nExportType(importSettings.getExportTypeName());
+		final String unexpectedFormatErrorMessage = i18n.getString("expectedFormat", 
+				"The file format did not match your selection: ")
+				+ lookupI18nFileFormat(importSettings.getFileFormatName());
 		
 		String suffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf('.'));
 		
