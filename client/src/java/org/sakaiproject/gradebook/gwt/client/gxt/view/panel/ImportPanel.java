@@ -1087,8 +1087,16 @@ public class ImportPanel extends GradebookPanel {
 		
 	}
 	
-	private native String unescapeHtml(String input) /*-{
-		return unescape(input);
+	private String unescapeHtml(String input) {
+		return filterTextThroughTextAreaDOMElement(input);
+	
+	};
+	
+	private native String filterTextThroughTextAreaDOMElement(String input) /*-{
+		var y = document.createElement('textarea');
+		y.innerHTML = input;
+		return y.value;
+	
 	
 	}-*/;
 
