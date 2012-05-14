@@ -921,7 +921,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		{
 			String curAssignmentName = curAssignment.getName(); 
 			log.debug("curAssignmentName=" + curAssignmentName);
-			if (curAssignment.getName().equals(fileName))
+			if (curAssignment.getName().equalsIgnoreCase((fileName)))
 			{
 				return true; 
 			}
