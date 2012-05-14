@@ -1643,6 +1643,10 @@ public class ItemFormPanel extends GradebookPanel {
 														r.beginEdit();
 
 													if (btn.getItemId().equals(Dialog.CANCEL)) {
+														setChanges();
+														Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType());
+														if (close)
+															Dispatcher.forwardEvent(GradebookEvents.UnmaskMultiGradeGrid.getEventType());
 														return;
 													} else if (btn.getItemId().equals(Dialog.YES)) {
 														r.set(ItemKey.B_RECALC_PTS.name(), Boolean.TRUE);
