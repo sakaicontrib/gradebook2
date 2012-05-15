@@ -174,8 +174,7 @@ public class FileUploadPanel extends FormPanel {
 					if (f != null) {
 						importFormatInformationMessage.setHtml(f.getImportMessage(i18n));
 
-						if (f.equals(FileFormat.TEMPLATE) || f.equals(FileFormat.NO_STRUCTURE)
-								|| f.equals(FileFormat.SCANTRON) ) {
+						if (!f.equals(FileFormat.FULL) ) {
 
 							if(justStructureChoice.getValue()) {
 								return i18n.justStructureNotAllowedMessage()

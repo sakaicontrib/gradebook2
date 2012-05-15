@@ -21,7 +21,8 @@ package org.sakaiproject.gradebook.gwt.client.gxt.type;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 
 public enum FileFormat implements FileModel { 
-	
+
+	CLICKER("clicker"),
 	FULL("full"),
 	TEMPLATE("template"),
 	NO_STRUCTURE("no-structure"),
@@ -40,6 +41,9 @@ public enum FileFormat implements FileModel {
 	public String getDisplayName(I18nConstants i18n) {
 		if (null == displayName) {
 			switch(this) {
+			case CLICKER:
+				displayName = i18n.fileFormatNameClicker();
+				break;
 			case FULL:
 				displayName = i18n.fileFormatNameFull();
 				break;
@@ -60,6 +64,9 @@ public enum FileFormat implements FileModel {
 	public String getImportMessage(I18nConstants i18n) {
 		if (null == importMessage) {
 			switch(this) {
+			case CLICKER:
+				importMessage = i18n.fileFormatImportMessageClicker();
+				break;
 			case FULL:
 				importMessage = i18n.fileFormatImportMessageFull();
 				break;

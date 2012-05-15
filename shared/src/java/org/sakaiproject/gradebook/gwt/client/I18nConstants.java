@@ -494,11 +494,13 @@ public interface I18nConstants extends Constants {
 	String downloadNewItemTemplateWizardHeading();
 
 	// GRBK-1278
+	String fileFormatNameClicker();
 	String fileFormatNameFull();
 	String fileFormatNameNoStructure();
 	String fileFormatNameScantron();
 	String fileFormatNameTemplate();
 	
+	String fileFormatImportMessageClicker();
 	String fileFormatImportMessageFull();
 	String fileFormatImportMessageNoStructure();
 	String fileFormatImportMessageScantron();

@@ -1130,7 +1130,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		}
 		boolean shouldBeFullGradebook = FileFormat.FULL.name().equals(settings.getFileFormatName());
 		boolean isTemplate = couldBeNewItemTemplate(raw);
-		boolean shouldBeTemplate = FileFormat.TEMPLATE.name().equals(settings.getFileFormatName());
+		boolean shouldBeTemplate = FileFormat.TEMPLATE.name().equals(settings.getFileFormatName()) || FileFormat.CLICKER.name().equals(settings.getFileFormatName());
 		boolean isBadFormat = !isTemplate && shouldBeTemplate
 				|| isTemplate && !shouldBeTemplate
 				|| shouldBeFullGradebook && 
@@ -1440,7 +1440,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 					mismatch  = true;	
 				}
 			} else 
-				if (FileFormat.TEMPLATE.equals(fileFormatChosen)) {
+				if (FileFormat.TEMPLATE.equals(fileFormatChosen)  || FileFormat.CLICKER.equals(fileFormatChosen)   ) {
 					if (couldBeNewItemTemplate(cur)) {
 						ret = processNormalXls(cur, settings);
 						ret.setScantronFile(false);
@@ -2778,7 +2778,8 @@ private GradeItem buildNewCategory(String curCategoryString,
 		FileFormat format = FileFormat.valueOf(ieInfo.getImportSettings().getFileFormatName());
 		
 		boolean treatAllItemsAsNewItems = 
-			       format.equals(FileFormat.SCANTRON)
+			       format.equals(FileFormat.CLICKER)
+				|| format.equals(FileFormat.SCANTRON)
 				|| format.equals(FileFormat.TEMPLATE);
 		
 		if (header.getField() == Field.S_ITEM) {
@@ -2906,7 +2907,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 		 */
 		FileFormat f = FileFormat.valueOf(ieInfo.getImportSettings().getFileFormatName());
 		
-		if (f.equals(FileFormat.SCANTRON) || f.equals(FileFormat.TEMPLATE)) {
+		if (f.equals(FileFormat.CLICKER) || f.equals(FileFormat.SCANTRON) || f.equals(FileFormat.TEMPLATE)) {
 			return new CategoryItemPair( ieInfo.getCategoryIdItemMap().get("-1"), null);
 		}
 
@@ -3403,7 +3404,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 							rawData.setNewAssignment(itemNameFromFile.equalsIgnoreCase(newItemName));
 						}
 						
-					} else if (FileFormat.TEMPLATE.equals(FileFormat.valueOf(importSettings.getFileFormatName()))) {
+					} else if (FileFormat.TEMPLATE.equals(FileFormat.valueOf(importSettings.getFileFormatName())) || FileFormat.CLICKER.equals(FileFormat.valueOf(importSettings.getFileFormatName()))) {
 						if(!couldBeNewItemTemplate(rawData)) {
 							typeOK = false;
 						} else {
@@ -3660,7 +3661,11 @@ private GradeItem buildNewCategory(String curCategoryString,
 			return "";
 		}
 		
-		if(fileFormat.equals(FileFormat.FULL.name())) {
+		if(fileFormat.equals(FileFormat.CLICKER.name())) {
+			
+			return i18n.getString("fileFormatNameClicker");
+			
+		} else if(fileFormat.equals(FileFormat.FULL.name())) {
 			
 			return i18n.getString("fileFormatNameFull");
 		}
