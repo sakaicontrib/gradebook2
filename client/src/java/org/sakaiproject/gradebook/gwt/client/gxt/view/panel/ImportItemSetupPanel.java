@@ -79,7 +79,8 @@ public class ImportItemSetupPanel extends GradebookPanel {
 		textField.addInputStyleName(resources.css().gbTextFieldInput());
 		CellEditor textCellEditor = new CellEditor(textField);
 
-
+		setHeading(i18n.navigationPanelImportHeader());
+		
 		columnConfigName = new ColumnConfig(ItemKey.S_NM.name(), i18n.importSetupGridItemHeader(), 200);
 		columnConfigName.setEditor(textCellEditor);
 		itemColumns.add(columnConfigName);
