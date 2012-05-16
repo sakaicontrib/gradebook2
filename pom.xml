@@ -53,6 +53,10 @@
 		<gb2.jackson.version>1.9.2</gb2.jackson.version> 
 		<gb2.jersey.version>1.11</gb2.jersey.version>
 	</properties>
+
+	<scm>
+	  <developerConnection>scm:svn:https://source.sakaiproject.org/contrib/gradebook2/trunk</developerConnection>
+	</scm>
 	
 	<build>
 		<plugins>
