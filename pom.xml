@@ -54,6 +54,18 @@
 		<gb2.jersey.version>1.11</gb2.jersey.version>
 	</properties>
 	
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+        		<artifactId>maven-release-plugin</artifactId>
+        		<version>2.3</version>
+        		<configuration>
+          			<tagBase>https://source.sakaiproject.org/contrib/gradebook2/tags</tagBase>
+        		</configuration>
+			</plugin>
+		</plugins>
+	</build>
 	<profiles>
 		<profile>
 			<id>sakai2.9</id>
