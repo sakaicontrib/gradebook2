@@ -3433,9 +3433,12 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 					if (! Util.isNotNullOrEmpty(studentUid))
 						continue;
 
-					UserRecord userRecord = userRecordByStudentId.get(studentUid);
+					UserRecord userRecord = userRecordByStudentId.get(studentUid); 
 
-					Map<Long, AssignmentGradeRecord> gradeRecordMap = userRecord == null ? null : userRecord.getGradeRecordMap();
+					if (null == userRecord)
+						continue;
+
+					Map<Long, AssignmentGradeRecord> gradeRecordMap = userRecord.getGradeRecordMap();
 
 					// This is the value stored on the client
 					Object v = student.get(id);
