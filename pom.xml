@@ -57,20 +57,61 @@
 	<scm>
 	  <developerConnection>scm:svn:https://source.sakaiproject.org/contrib/gradebook2/trunk</developerConnection>
 	</scm>
-	
-	<build>
-		<plugins>
+	<profiles>
+
+	    <profile>
+		<id>branch</id>
+		<activation>
+		    <property>
+			<name>branchName</name>
+		    </property>
+		</activation>
+		<build>
+		    <plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-        		<artifactId>maven-release-plugin</artifactId>
-        		<version>2.3</version>
-        		<configuration>
-          			<tagBase>https://source.sakaiproject.org/contrib/gradebook2/tags</tagBase>
-        		</configuration>
+			<artifactId>maven-release-plugin</artifactId>
+			<version>2.3</version>
+			<configuration>
+				<branchBase>https://source.sakaiproject.org/contrib/gradebook2/branches</branchBase>
+				<autoVersionSubmodules>true</autoVersionSubmodules>
+				<suppressCommitBeforeBranch>true</suppressCommitBeforeBranch>
+				<remoteTagging>false</remoteTagging>
+				<updateBranchVersions>true</updateBranchVersions>
+				<updateWorkingCopyVersions>false</updateWorkingCopyVersions>
+				<tagBase>https://source.sakaiproject.org/contrib/gradebook2/tags</tagBase>
+			</configuration>
 			</plugin>
-		</plugins>
-	</build>
-	<profiles>
+		    </plugins>
+		</build>
+	    </profile>
+
+	    <profile>
+		<id>tag</id>
+		<activation>
+		    <property>
+			<name>tagName</name>
+		    </property>
+		</activation>
+		<build>
+		    <plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-release-plugin</artifactId>
+			<version>2.3</version>
+			<configuration>
+				<autoVersionSubmodules>true</autoVersionSubmodules>
+				<suppressCommitBeforeTag>true</suppressCommitBeforeTag>
+				<remoteTagging>false</remoteTagging>
+				<updateTagVersions>true</updateTagVersions>
+				<updateWorkingCopyVersions>false</updateWorkingCopyVersions>
+				<tagBase>https://source.sakaiproject.org/contrib/gradebook2/tags</tagBase>
+			</configuration>
+			</plugin>
+		    </plugins>
+		</build>
+	    </profile>
+
 		<profile>
 			<id>sakai2.9</id>
 			<activation>
