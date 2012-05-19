@@ -9,6 +9,9 @@ find . -name pom.xml | xargs sed -i -e 's/<old version>/<new version>/g'
 e.g.
 find . -name pom.xml | xargs sed -i -e 's/1.4.0-SNAPSHOT/1.4.0/g'
 
+Set the property gb2.ui.version during a build to specify a version string that the build will display in the UI. If the property is not set, the value will default to 'trunk'.
+The file VERSION.txt in the rool of the src tree is copied and filtered to the location server/src/java/org/sakaiproject/gradebook/gwt/server/VERSION.txt
+
 
 
 =====================================================

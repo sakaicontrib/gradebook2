@@ -1,7 +1,14 @@
 <project name="CheckVersion" default="build" basedir=".">
 
 	<target name="MoveVersionFile">
-		<copy file="../VERSION.txt" tofile="src/java/org/sakaiproject/gradebook/gwt/server/VERSION.txt"/>
+		<condition property="gb2.ui.version" value="${gb2.ui.version}" else="trunk">
+		    <isset property="gb2.ui.version" />
+		</condition>
+		<copy file="../VERSION.txt" tofile="src/java/org/sakaiproject/gradebook/gwt/server/VERSION.txt">
+		<filterset begintoken="@" endtoken="@">
+		      <filter token="gb2.ui.version" value="${gb2.ui.version}"/>
+	        </filterset>
+		</copy>
 	</target>
 
 	<target name="build" description="Build this project">
@@ -9,3 +16,4 @@
 	</target>
 	
 </project>
+
