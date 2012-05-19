@@ -3441,7 +3441,10 @@ private GradeItem buildNewCategory(String curCategoryString,
 			FileFormat format = null;
 			try {
 				format = FileFormat.valueOf(importSettings.getFileFormatName());
-				rv.getImportSettings().setScantron(!format.equals(FileFormat.FULL));
+				rv.getImportSettings().setScantron(
+						format.equals(FileFormat.CLICKER) 
+						|| format.equals(FileFormat.SCANTRON)
+						|| format.equals(FileFormat.TEMPLATE));
 			} catch (Exception e) {
 				rv = emptyUploadFileWithNotes(unexpectedFormatErrorMessage);
 			}
