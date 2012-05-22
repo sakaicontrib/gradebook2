@@ -213,8 +213,18 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			clickerIgnoreSet.add(clickerIgnoreColumns[i].toLowerCase());
 		}
 		
-		/// The order is important here
-		this.templateHeaderColumnSet = new ArrayList<String>();
+		/// The case is not important here
+		this.templateHeaderColumnSet = new ArrayList<String>() {
+		    @Override
+		    public boolean contains(Object o) {
+		        String paramStr = (String)o;
+		        for (String s : this) {	
+		            if (paramStr.equalsIgnoreCase(s)) return true;
+		            }
+		        return false;
+		        }
+		    };
+		    
 		templateHeaderColumnSet.add(i18n.getString("exportColumnHeaderStudentId").trim());
 		templateHeaderColumnSet.add(i18n.getString("exportColumnHeaderStudentName").trim());
 		
@@ -1325,7 +1335,9 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			for (Row row : sheet) {
 				for (org.apache.poi.ss.usermodel.Cell cell : row) {
 					if (!"".equals(cell.getStringCellValue().trim())) {
-						return couldBeNewItemTemplateHeaderRow(row);
+						if(couldBeNewItemTemplateHeaderRow(row)) {
+							return !hasTooManyItems(row, FileFormat.TEMPLATE);
+						}
 					}
 				}
 			}
@@ -1333,6 +1345,9 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		return false; /// empty sheet
 	}
 	
+
+	
+
 
 	private boolean couldBeNewItemTemplateHeaderRow(Row row) {
 		boolean isTemplate = templateHeaderColumnSet.size()>0 
@@ -3532,10 +3547,51 @@ private GradeItem buildNewCategory(String curCategoryString,
 				rowLowerCase.add(cell.trim().toLowerCase());
 			}
 			// accept first qualified match
-			if (couldBeNewItemTemplateHeaderRow(rowLowerCase))
-				return true;
+			if (couldBeNewItemTemplateHeaderRow(rowLowerCase)) {
+				
+				return !hasTooManyItems(row, FileFormat.TEMPLATE);
+			}
+				
 		}
 		return false;
+	}
+
+/*
+ * this method is to detect more than one item which is not yet supported
+ */
+	private boolean hasTooManyItems(String[] row, FileFormat format) {
+		boolean rv = false;
+		boolean oneItemFound = false;
+	
+		
+		switch (format) {
+		case TEMPLATE:
+			for (String s:row) {
+				/* contains is overriden to be case-insensitive)*/
+				if (null==s || templateHeaderColumnSet.contains(s) || "".equals(s.trim()) ) 
+					continue;
+				
+				
+				if (!oneItemFound)
+					oneItemFound = true;
+				else
+					 return true;
+			}
+			
+		default:
+			return rv;
+		}
+		
+		
+	}
+	
+	private boolean hasTooManyItems(Row row, FileFormat format) {
+		String[] cells = new String[row.getPhysicalNumberOfCells()];
+		int i=0;
+		for (org.apache.poi.ss.usermodel.Cell cell : row) {
+			cells[i++]=cell.getStringCellValue().trim();
+		}
+		return hasTooManyItems(cells, format);
 	}
 
 
