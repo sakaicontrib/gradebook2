@@ -3418,6 +3418,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		if (idKeySet != null) {
 
 			List<Learner> rows = upload.getRows();
+			List<UserDereference> siteUsers = findAllUserDereferences();
 
 			for (String id : idKeySet) {
 				Assignment assignment = idToAssignmentMap.get(id);
@@ -3435,10 +3436,11 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 					UserRecord userRecord = userRecordByStudentId.get(studentUid); 
 
-					if (null == userRecord)
+					// GRBK-1319, GRBK-1315
+					if(!siteUsers.contains(new UserDereference(studentUid)))
 						continue;
 
-					Map<Long, AssignmentGradeRecord> gradeRecordMap = userRecord.getGradeRecordMap();
+					Map<Long, AssignmentGradeRecord> gradeRecordMap = null == userRecord ? null : userRecord.getGradeRecordMap();
 
 					// This is the value stored on the client
 					Object v = student.get(id);

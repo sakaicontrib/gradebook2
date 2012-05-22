@@ -26,6 +26,9 @@ package org.sakaiproject.gradebook.gwt.sakai.model;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 public class UserDereference implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -125,5 +128,33 @@ public class UserDereference implements Serializable {
 	public void setLastNameFirst(String lastNameFirst) {
 		this.lastNameFirst = lastNameFirst;
 	}
+	
+	public boolean equals(Object o) {
+		
+		 if (o instanceof UserDereference == false) {
+		     return false;
+		   }
+		 
+		   if (this == o) {
+		     return true;
+		   }
+		   
+		   UserDereference rhs = (UserDereference)o;
+		   
+		   return new EqualsBuilder()
+           .append(userUid, rhs.getUserUid())
+           .isEquals();
+	
+		   
+		   
+	}
+	
+	 public int hashCode() {
+	     return new HashCodeBuilder(933, 31735).
+	       append(userUid)
+	       .toHashCode();
+	 }
+	       
+	
 
 }
