@@ -1,6 +1,16 @@
 /*
  * Gradebook specific css
  */
+ 
+ /*
+  * GRBK-1314 Fix, which addresses Chrome 19+ table cell alignment issue
+  */
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+	table
+	{
+	table-layout: auto !important;
+	}
+}
 
 #cardLayoutContainer {
 	z-index: 5;
