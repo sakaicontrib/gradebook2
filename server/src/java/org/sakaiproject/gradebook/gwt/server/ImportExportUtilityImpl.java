@@ -2117,19 +2117,21 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		boolean isFailure = false;
 		
 		// GRBK-668 : For a letter grade type gradebook, we convert all numeric grades into letter grades
-		String grade = rowData[colIdx];
-		if(GradeType.LETTERS == gradeType && Util.isNumeric(grade)) {
-			BigDecimal numericGrade = new BigDecimal(grade);
+		// GRBK-1322 : spaces around letter grades cause failures ... should never be null, but just in case, null-check
+		rowData[colIdx] = null == rowData[colIdx] ? null : rowData[colIdx].trim();
+		String originalGrade = rowData[colIdx];
+		if(GradeType.LETTERS == gradeType && Util.isNumeric(originalGrade)) {
+			BigDecimal numericGrade = new BigDecimal(originalGrade);
 			String letterGrade = gradeCalculations.convertPercentageToLetterGrade(numericGrade);
 			rowData[colIdx] = letterGrade;
 			learnerRow.set(id, rowData[colIdx]);
-			learnerRow.set(id + AppConstants.ACTUAL_SCORE_SUFFIX, grade);
+			learnerRow.set(id + AppConstants.ACTUAL_SCORE_SUFFIX, originalGrade);
 			learnerRow.set(Util.buildConvertedMessageKey(id), "Converted numeric to letter grade");
-			learnerRow.set(Util.buildConvertedGradeKey(id), grade);
-			log.debug("#####: Converting numberic grade [" + grade + "] to a letter grade [" + letterGrade + "]");
+			learnerRow.set(Util.buildConvertedGradeKey(id), originalGrade);
+			log.debug("#####: Converting numberic grade [" + originalGrade + "] to a letter grade [" + letterGrade + "]");
 			return;
 		}
-		else if(GradeType.LETTERS == gradeType && !Util.isNumeric(grade)) {
+		else if(GradeType.LETTERS == gradeType && !Util.isNumeric(originalGrade)) {
 		
 			if(!service.isValidLetterGrade(rowData[colIdx])) {
 				ieInfo.setInvalidScore(true);
