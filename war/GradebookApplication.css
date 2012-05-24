@@ -3,14 +3,18 @@
  */
  
  /*
-  * GRBK-1314 Fix, which addresses Chrome 19+ table cell alignment issue
+  * GRBK-1314 : START
   */
-@media screen and (-webkit-min-device-pixel-ratio:0) {
-	table
-	{
-	table-layout: auto !important;
-	}
+@media screen and (-webkit-min-device-pixel-ratio:0) { 
+    .x-grid3-row td.x-grid3-cell 
+    { 
+        padding-left: 0 !important; 
+        padding-right: 0 !important; 
+    } 
 }
+ /*
+  * GRBK-1314 : END
+  */
 
 #cardLayoutContainer {
 	z-index: 5;
