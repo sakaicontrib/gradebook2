@@ -869,12 +869,7 @@ public class ImportPanel extends GradebookPanel {
 		 */
 		final ItemModel i = gradeItems.get(0);
 		Double minScore = getMinScoreForItem(i, rows);
-		final Double maxScore = getMaxScoreForItem(i, rows);
-		
-		card1.setHtmlText(i18n.importPromptScantronMaxPoints() 
-				+ "<br/>"
-				+ i18nTemplates.importDataMinValue("" + minScore.intValue())
-				+ i18nTemplates.importDataMaxValue("" + maxScore.intValue()));
+		Double maxScoreFromFile = getMaxScoreForItem(i, rows);		
 		
 		card1.setTitle(i18n.importWizardCardTitlePointsPossible());
 		FormPanel form = new FormPanel();
@@ -896,20 +891,31 @@ public class ImportPanel extends GradebookPanel {
 		// scan the rows and see if the first non null value is a letter or a number
 		boolean importingLetters = false;
 		for (Learner l: rows) {
-			String o = l.get(i.getIdentifier());
+			String o = l.get(i.getIdentifier() + AppConstants.ACTUAL_SCORE_SUFFIX);
+			if (null == o)
+				o = l.get(i.getIdentifier());
 			if (null == o)
 				continue;
 			
-			if (o.trim().matches("^\\w")) {
+			if (o.trim().matches("^[A-Za-z]")) {
 				importingLetters = true;
 				break;
 			}
 		}
-		final boolean assumeLetterImport = importingLetters;
-		final boolean importingIntoLetters = gradebookItemModel.getGradeType() == GradeType.LETTERS;
-		
+		StringBuffer cardInfo = new StringBuffer(i18n.importPromptScantronMaxPoints() + "<br/>");
 
+		if (!importingLetters) {
+			cardInfo.append(i18nTemplates.importDataMinValue(""+minScore.intValue()))
+			        .append(i18nTemplates.importDataMaxValue("" + maxScoreFromFile.intValue()));
+		} else {
+			cardInfo.append(i18n.gradeTypeLetters());
+			maxScoreFromFile = 1d;
+		}
+			
+		card1.setHtmlText(cardInfo.toString());
+		final Double maxScore = maxScoreFromFile;
 		
+		final boolean assumeLetterImport = importingLetters;
 		maxPointsNumberField.setName(ItemKey.D_PNTS.name());
 		maxPointsNumberField.setEmptyText(i18nTemplates.pointsFieldEmptyText(maxScore.toString()));
 		maxPointsNumberField.setFieldLabel(i18n.scantronMaxPointsFieldLabel());
@@ -935,9 +941,9 @@ public class ImportPanel extends GradebookPanel {
 				else 
 					maxPoints = Double.valueOf(entry.doubleValue());
 								// TODO: i18n (Decimal format symbol)
-				importSettings.setScantronMaxPoints(maxPoints.toString().substring(0, maxPoints.toString().indexOf(".")));
+				//importSettings.setScantronMaxPoints(maxPoints.toString().substring(0, maxPoints.toString().indexOf(".")));
 				
-				if(!assumeLetterImport || !importingIntoLetters) { 
+				if(!assumeLetterImport) { 
 					
 					for (Learner row : rows) {
 						// GRBK-1105
@@ -1016,7 +1022,7 @@ public class ImportPanel extends GradebookPanel {
 		
 		wizard.setHeading(i18n.importWizardHeading());
 		
-		if (assumeLetterImport && importingIntoLetters ){
+		if (assumeLetterImport){
 			wizard.setFinishButtonText(i18n.wizardDefaultFinishButton());
 			wizard.setHeaderTitle(i18n.scantronMaxPointsFieldLabel());
 		} else {
