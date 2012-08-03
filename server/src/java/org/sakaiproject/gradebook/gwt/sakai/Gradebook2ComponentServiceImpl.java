@@ -188,42 +188,19 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		public int compare(String o1, String o2) {
 
-			if (o1.toLowerCase().charAt(0) == o2.toLowerCase().charAt(0)) {
+			if (o1.length() == 1) {
 
-				if (o1.length() == 2 && o2.length() == 2) {
-
-					if (o1.charAt(1) == '+')
-						return 0;
-					else
-						return 1;
-
-				}
-
-				if (o1.length() == 1 && o2.length() == 2) {
-
-					if (o2.charAt(1) == '+')
-						return 1;
-					else
-						return 0;
-				}
-
-				if (o1.length() == 2 && o2.length() == 1) {
-
-					if (o1.charAt(1) == '+')
-						return 0;
-					else
-						return 1;
-				}
-
-				return 0;
-
-			} else {
-
-				return o1.toLowerCase().compareTo(o2.toLowerCase());
+				o1 = new StringBuilder(o1).append(',').toString();
 			}
+			
+			if (o2.length() == 1) {
+
+				o2 = new StringBuilder(o2).append(',').toString();
+			}
+			
+			return o1.toLowerCase().compareTo(o2.toLowerCase());
 		}
 	};
-
 
 	static final String[] orderedPassNoPassGrades = { "P", "NP", "S", "U", "IP", "I", "Y", "NS", "NG" };
 	static final Comparator<String> PASS_NOPASS_COMPARATOR = new Comparator<String>() {
