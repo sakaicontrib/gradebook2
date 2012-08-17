@@ -11,7 +11,7 @@
 	<name>Sakai Gradebook2 Project</name>
 	<groupId>org.sakaiproject.gradebook2</groupId>
 	<artifactId>gradebook2-base</artifactId>
-	<version>1.8.0-SNAPSHOT</version>
+	<version>1.9.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<repositories>
@@ -49,7 +49,7 @@
 	</repositories>
 
 	<properties>
-		<gb2.version>1.8.0-SNAPSHOT</gb2.version>
+		<gb2.version>1.9.0-SNAPSHOT</gb2.version>
 		<gxt.version>2.2.5-gwt22</gxt.version>
 		<gxt3.version>3.0.1</gxt3.version>
 		<gwt.version>2.5.0-rc1</gwt.version>
