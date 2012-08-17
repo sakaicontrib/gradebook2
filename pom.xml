@@ -41,17 +41,23 @@
 			<id>ibiblio</id>
 			<url>http://mirrors.ibiblio.org/pub/mirrors/maven2</url>
 		</repository>
+		<repository>
+		    <id>sencha-commercial-release</id>
+		    <name>Sencha commercial releases</name>
+		    <url>https://maven.sencha.com/repo/commercial-release/</url>
+		</repository>
 	</repositories>
 
 	<properties>
 		<gb2.version>1.8.0-SNAPSHOT</gb2.version>
 		<gxt.version>2.2.5-gwt22</gxt.version>
-		<gwt.version>2.4.0</gwt.version>
+		<gxt3.version>3.0.1</gxt3.version>
+		<gwt.version>2.5.0-rc1</gwt.version>
 		<!-- following fix for bug in gwt 2.3.0 poms (should've been included in those but were not) -->
 		<javax.validation.version>1.0.0.GA</javax.validation.version>
 		<gb2.commons.logging.version>1.0.4</gb2.commons.logging.version>
-		<gb2.jackson.version>1.9.2</gb2.jackson.version> 
-		<gb2.jersey.version>1.11</gb2.jersey.version>
+		<gb2.jackson.version>1.9.9</gb2.jackson.version> 
+		<gb2.jersey.version>1.13</gb2.jersey.version>
 	</properties>
 
 	<scm>
@@ -594,6 +600,13 @@
 			<artifactId>gxt</artifactId>
 			<version>${gxt.version}</version>
 			<scope>provided</scope>
+		</dependency>
+		
+		<dependency>
+		    <groupId>com.sencha.gxt</groupId>
+		    <artifactId>gxt</artifactId>
+		    <version>${gxt3.version}</version>
+		    <scope>provided</scope>
 		</dependency>
     
     	<!-- Gradebook1 Dependencies -->

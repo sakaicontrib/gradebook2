@@ -16,6 +16,9 @@
 	<!-- Inherit the Ext-GWT Toolkit library -->
 	<inherits name='com.extjs.gxt.ui.GXT'/>
 	
+	<!-- Inherit the Sencha GXT v3+ -->
+	<inherits name='com.sencha.gxt.ui.GXT' />
+	
 	<!-- GIN -->
 	<inherits name="com.google.gwt.inject.Inject"/>
 	
@@ -39,6 +42,6 @@
 	<extend-property name="locale" values="nl_NL"/>
 	-->
 
-	<set-property-fallback name="locale" value="default"/>
+	<set-property-fallback name="locale" value="default"/>s
 
 </module>
