@@ -5,12 +5,11 @@
  /*
   * GRBK-1314 : START
   */
-@media screen and (-webkit-min-device-pixel-ratio:0) { 
-    .x-grid3-row td.x-grid3-cell 
-    { 
-        padding-left: 0 !important; 
-        padding-right: 0 !important; 
-    } 
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  .x-grid3-cell
+  {
+    box-sizing: border-box;
+  }
 }
  /*
   * GRBK-1314 : END
