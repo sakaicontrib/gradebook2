@@ -783,16 +783,25 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 							// GRBK-784 - we need a count of items in this thing. 
 							totalUnexcusedItems++; 
 							gradeRecordUnits.add(gradeRecordUnit);
-						} else {  
-							// GRBK 483 - we deduct this assignment weight
-							myTotalCategoryPercent = subtract(myTotalCategoryPercent, multiply(assignmentWeight, BIG_DECIMAL_100));
+						} else {
+							
+							// GRBK-1345
+							if(null != assignmentWeight) {
+							
+								// GRBK 483 - we deduct this assignment weight
+							
+								myTotalCategoryPercent = subtract(myTotalCategoryPercent, multiply(assignmentWeight, BIG_DECIMAL_100));
+							}
 						}
 					}
 					else						
 					{						
+						// GRBK-1354 - added assignmentWeight null check
 						// GRBK 483 - we deduct this assignment weight
-						if (!isExtraCreditItem)
+						if (!isExtraCreditItem && null != assignmentWeight) {
+						
 							myTotalCategoryPercent = subtract(myTotalCategoryPercent, multiply(assignmentWeight, BIG_DECIMAL_100));
+						}
 						
 						// GRBK-784 - we need a count of items in this thing. 
 						if (!isExcused(assignmentGradeRecord))
