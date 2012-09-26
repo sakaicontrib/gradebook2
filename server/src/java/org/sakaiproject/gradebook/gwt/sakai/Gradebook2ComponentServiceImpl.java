@@ -956,6 +956,20 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		return gradeEvents;
 	}
 
+	private static Comparator<String> getLetterValueComparator(final Map<String,Double> map) {
+		return new Comparator<String>() {
+			public int compare(String o1, String o2) {
+				if (o1 == null || o2 == null) return 0;
+				if (map.get(o1)>map.get(o2)) return -1;
+				if (map.get(o2)>map.get(o1)) return 1;
+				return 0;
+			}
+		};
+	}
+	
+	/*
+	 * GRBK-1349 : Added specific "letter grades" and "value" comparators
+	 */
 	public List<Map<String,Object>> getGradeMaps(String gradebookUid) throws SecurityException {
 
 		if (!authz.isUserAbleToEditAssessments(gradebookUid))
@@ -967,11 +981,19 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		List<String> letterGradesList = new ArrayList<String>(gradeMapping.getGradeMap().keySet());
 
-		if (gradeMapping.getName().equalsIgnoreCase("Pass / Not Pass")) 
+		if (gradeMapping.getName().equalsIgnoreCase("Pass / Not Pass")) {
+			
 			Collections.sort(letterGradesList, PASS_NOPASS_COMPARATOR);
-		else
+		}
+		else if (gradeMapping.getName().toLowerCase().startsWith("letter grades")) {
+			
 			Collections.sort(letterGradesList, LETTER_GRADE_COMPARATOR);
-
+		}
+		else {
+			
+			Collections.sort(letterGradesList, getLetterValueComparator(gradeMapping.getGradeMap()));
+		}
+		
 		Double upperScale = null;
 
 		for (String letterGrade : letterGradesList) {
