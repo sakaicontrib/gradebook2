@@ -62,4 +62,10 @@ public class ToolManagerMock implements ToolManager {
 	public boolean isVisible(Site arg0, ToolConfiguration arg1) {
 		return true;
 	}
+
+	@Override
+	public String getLocalizedToolProperty(String arg0, String arg1) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

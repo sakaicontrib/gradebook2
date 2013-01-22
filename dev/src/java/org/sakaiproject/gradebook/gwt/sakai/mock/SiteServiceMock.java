@@ -2,10 +2,6 @@ package org.sakaiproject.gradebook.gwt.sakai.mock;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-
 import org.sakaiproject.authz.api.AuthzGroupService;
 import org.sakaiproject.authz.api.FunctionManager;
 import org.sakaiproject.authz.api.SecurityService;
@@ -21,6 +17,7 @@ import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.exception.IdUsedException;
 import org.sakaiproject.exception.PermissionException;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.id.api.IdManager;
 import org.sakaiproject.memory.api.MemoryService;
 import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
@@ -30,9 +27,9 @@ import org.sakaiproject.site.api.ToolConfiguration;
 import org.sakaiproject.site.impl.BaseSiteService;
 import org.sakaiproject.thread_local.api.ThreadLocalManager;
 import org.sakaiproject.time.api.TimeService;
+import org.sakaiproject.tool.api.ActiveToolManager;
 import org.sakaiproject.tool.api.SessionManager;
 import org.sakaiproject.user.api.UserDirectoryService;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class SiteServiceMock extends BaseSiteService {
@@ -280,11 +277,11 @@ public class SiteServiceMock extends BaseSiteService {
 
 	}
 
-	public String archive(String arg0, Document arg1, Stack arg2, String arg3,
-			List arg4) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+//	public String archive(String arg0, Document arg1, Stack arg2, String arg3,
+//			List arg4) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
 
 	public Entity getEntity(Reference arg0) {
 		// TODO Auto-generated method stub
@@ -321,11 +318,11 @@ public class SiteServiceMock extends BaseSiteService {
 		return null;
 	}
 
-	public String merge(String arg0, Element arg1, String arg2, String arg3,
-			Map arg4, Map arg5, Set arg6) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+//	public String merge(String arg0, Element arg1, String arg2, String arg3,
+//			Map arg4, Map arg5, Set arg6) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
 
 	public boolean parseEntityReference(String arg0, Reference arg1) {
 		// TODO Auto-generated method stub
@@ -405,6 +402,19 @@ public class SiteServiceMock extends BaseSiteService {
 
 	@Override
 	protected UserDirectoryService userDirectoryService() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+
+	protected ActiveToolManager activeToolManager() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	protected IdManager idManager() {
 		// TODO Auto-generated method stub
 		return null;
 	}

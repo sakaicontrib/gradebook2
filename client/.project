@@ -1,6 +1,6 @@
 <projectDescription>
   <name>gradebook2-client</name>
-  <comment/>
+  <comment>Sonatype helps open source projects to set up Maven repositories on https://oss.sonatype.org/</comment>
   <projects>
     <project>gradebook2-api</project>
     <project>gradebook2-model</project>

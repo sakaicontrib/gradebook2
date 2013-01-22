@@ -263,19 +263,19 @@ public class GradebookExternalAssessmentServiceMock extends HibernateDaoSupport
 
 	}
 
-	public void updateExternalAssessmentScores(String arg0, String arg1,
-			Map arg2) throws GradebookNotFoundException,
-			AssessmentNotFoundException {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void updateExternalAssessmentScoresString(String arg0, String arg1,
-			Map arg2) throws GradebookNotFoundException,
-			AssessmentNotFoundException {
-		// TODO Auto-generated method stub
-
-	}
+//	public void updateExternalAssessmentScores(String arg0, String arg1,
+//			Map arg2) throws GradebookNotFoundException,
+//			AssessmentNotFoundException {
+//		// TODO Auto-generated method stub
+//
+//	}
+//
+//	public void updateExternalAssessmentScoresString(String arg0, String arg1,
+//			Map arg2) throws GradebookNotFoundException,
+//			AssessmentNotFoundException {
+//		// TODO Auto-generated method stub
+//
+//	}
 
 	@Override
 	public boolean isExternalAssignmentGrouped(String arg0, String arg1)
@@ -300,6 +300,29 @@ public class GradebookExternalAssessmentServiceMock extends HibernateDaoSupport
 
 	@Override
 	public void unregisterExternalAssignmentProvider(String arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Map<String, String> getExternalAssignmentsForCurrentUser(String arg0)
+			throws GradebookNotFoundException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void updateExternalAssessmentScores(String arg0, String arg1,
+			Map<String, Double> arg2) throws GradebookNotFoundException,
+			AssessmentNotFoundException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void updateExternalAssessmentScoresString(String arg0, String arg1,
+			Map<String, String> arg2) throws GradebookNotFoundException,
+			AssessmentNotFoundException {
 		// TODO Auto-generated method stub
 		
 	}
