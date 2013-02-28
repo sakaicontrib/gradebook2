@@ -63,6 +63,7 @@ import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
 import org.sakaiproject.gradebook.gwt.sakai.calculations.BigDecimalCalculationsWrapper;
+import org.sakaiproject.gradebook.gwt.sakai.calculations.BigDecimalFactory;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeStatistics;
@@ -141,6 +142,8 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	
 	private final static int COMMENT_MAX_LENGHT = 255;
 
+	private BigDecimalFactory bdf = new BigDecimalFactory();
+	
 	static final Comparator<UserRecord> DEFAULT_ID_COMPARATOR = new Comparator<UserRecord>() {
 
 		public int compare(UserRecord o1, UserRecord o2) {
@@ -998,7 +1001,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		for (String letterGrade : letterGradesList) {
 
-			upperScale = (null == upperScale) ? new Double(100d) : upperScale.equals(Double.valueOf(0d)) ? Double.valueOf(0d) : ( subtract(new BigDecimal(Double.toString(upperScale)), BIG_DECIMAL_0_01) ).doubleValue();
+			upperScale = (null == upperScale) ? new Double(100d) : upperScale.equals(Double.valueOf(0d)) ? Double.valueOf(0d) : ( subtract(bdf.sameBigDecimal(upperScale), BIG_DECIMAL_0_01) ).doubleValue();
 
 			Map<String,Object> gradeScaleModel = new HashMap<String,Object>();
 			gradeScaleModel.put(GradeMapKey.S_ID.name(), letterGrade);
@@ -2806,7 +2809,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		for (String letterGrade : letterGradesList) {
 			BigDecimal bigOldUpperScale = upperScale == null ? BigDecimal.valueOf(200d) : BigDecimal.valueOf(upperScale.doubleValue());
 
-			upperScale = (null == upperScale) ? new Double(100d) : upperScale.equals(Double.valueOf(0d)) ? Double.valueOf(0d) : ( subtract(new BigDecimal(Double.toString(upperScale)), BIG_DECIMAL_0_01) ).doubleValue();
+			upperScale = (null == upperScale) ? new Double(100d) : upperScale.equals(Double.valueOf(0d)) ? Double.valueOf(0d) : ( subtract(bdf.sameBigDecimalToString(upperScale), BIG_DECIMAL_0_01) ).doubleValue();
 
 			if (affectedLetterGrade.equals(letterGrade)) {
 				Double oldValue = gradeMapping.getGradeMap().get(letterGrade);
@@ -3552,12 +3555,12 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 								if(null != value) {
 
-									newLetterGrade = gradeCalculations.convertPercentageToLetterGrade(new BigDecimal(String.valueOf(value)));
+									newLetterGrade = gradeCalculations.convertPercentageToLetterGrade(bdf.sameBigDecimalToString(value));
 								}
 
 								if(null != oldValue) {
 
-									oldLetterGrade = gradeCalculations.convertPercentageToLetterGrade(new BigDecimal(String.valueOf(oldValue)));
+									oldLetterGrade = gradeCalculations.convertPercentageToLetterGrade(bdf.sameBigDecimalToString(oldValue));
 								}
 
 								propertyMap.put(AppConstants.HISTORY_SCORE, newLetterGrade);
@@ -3697,7 +3700,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 					categoryOrder = categories == null || categories.isEmpty() ? Integer.valueOf(0) : Integer.valueOf(categories.size());
 			}
 
-			double w = weight == null ? 0d : (multiply(new BigDecimal(Double.toString(weight)), BIG_DECIMAL_0_01)).doubleValue();
+			double w = weight == null ? 0d : (multiply(bdf.sameBigDecimalToString(weight), BIG_DECIMAL_0_01)).doubleValue();
 
 			if (hasCategories) {
 				int dropLowestInt = dropLowest == null ? 0 : dropLowest.intValue();
@@ -4656,7 +4659,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		GradeItem model = new GradeItemImpl();
 
-		double assignmentWeight = assignment.getAssignmentWeighting() == null ? 0d : (multiply(new BigDecimal(Double.toString(assignment.getAssignmentWeighting())), BIG_DECIMAL_100)).doubleValue();
+		double assignmentWeight = assignment.getAssignmentWeighting() == null ? 0d : (multiply(bdf.sameBigDecimalToString(assignment.getAssignmentWeighting()), BIG_DECIMAL_100)).doubleValue();
 		Boolean isAssignmentIncluded = Boolean.valueOf(assignment.isCounted());
 		Boolean isAssignmentExtraCredit = assignment.isExtraCredit() == null ? Boolean.FALSE : assignment.isExtraCredit();
 		Boolean isAssignmentReleased = Boolean.valueOf(assignment.isReleased());
@@ -4804,7 +4807,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		boolean isDefaultCategory = category.getName().equalsIgnoreCase(AppConstants.DEFAULT_CATEGORY_NAME);
 
-		double categoryWeight = category.getWeight() == null ? 0d : (multiply(new BigDecimal(Double.toString(category.getWeight())), BIG_DECIMAL_100)).doubleValue();
+		double categoryWeight = category.getWeight() == null ? 0d : (multiply(bdf.sameBigDecimal(category.getWeight()), BIG_DECIMAL_100)).doubleValue();
 		boolean isIncluded = category.isUnweighted() == null ? !isDefaultCategory : !isDefaultCategory && !category.isUnweighted().booleanValue();
 
 		boolean hasWeights = true;
@@ -5030,7 +5033,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			if (itemOrder == null)
 				itemOrder = assignments == null || assignments.isEmpty() ? Integer.valueOf(0) : Integer.valueOf(assignments.size());
 
-				double w = weight == null ? 0d : (multiply(new BigDecimal(Double.toString(weight)), BIG_DECIMAL_0_01)).doubleValue();
+				double w = weight == null ? 0d : (multiply(bdf.sameBigDecimalToString(weight), BIG_DECIMAL_0_01)).doubleValue();
 
 				assignmentId = gbService.createAssignmentForCategory(gradebook.getId(), categoryId, name, points, Double.valueOf(w), dueDate, Boolean.valueOf(!Util.checkBoolean(isIncluded)), isExtraCredit, !(isIncluded == null ? Boolean.FALSE : isIncluded),
 						isReleased, itemOrder, isNullsAsZeros);
@@ -5776,7 +5779,8 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 					boolean isUnweighted = category.isUnweighted() != null && category.isUnweighted().booleanValue();
 
 					if (!category.isRemoved() || isNotInCategoryMode) {
-						double categoryWeight = category.getWeight() == null ? 0d : ( multiply(new BigDecimal(Double.toString(category.getWeight())), BIG_DECIMAL_100)).doubleValue();
+						//double categoryWeight = category.getWeight() == null ? 0d : ( multiply(bdf.sameBigDecimal(Double.toString(category.getWeight())), BIG_DECIMAL_100)).doubleValue();
+						double categoryWeight = category.getWeight() == null ? 0d : ( multiply(bdf.sameBigDecimalToString(category.getWeight()), BIG_DECIMAL_100)).doubleValue();
 
 						List<Assignment> items = getUncheckedAssignmentList(category);
 						GradeItem categoryGradeItem = createGradeItem(gradebook, category, items);
@@ -5837,7 +5841,8 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 					boolean isRemoved = Util.checkBoolean(categoryGradeItem.getRemoved());
 
 					if (!isRemoved || isNotInCategoryMode) {
-						double categoryWeight = categoryGradeItem.getWeighting() == null ? 0d : ( multiply(new BigDecimal(Double.toString(categoryGradeItem.getWeighting())), BIG_DECIMAL_100)).doubleValue();
+						double categoryWeight = categoryGradeItem.getWeighting() == null ? 0d : ( multiply(bdf.sameBigDecimalToString(categoryGradeItem.getWeighting()), BIG_DECIMAL_100)).doubleValue();
+						//double categoryWeight = categoryGradeItem.getWeighting() == null ? 0d : ( multiply(bdf.sameBigDecimal(Double.toString(categoryGradeItem.getWeighting())), BIG_DECIMAL_100)).doubleValue();
 
 						List<GradeItem> items = categoryGradeItem.getChildren();
 
@@ -6111,7 +6116,8 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 						}
 
 						// Convert  the item weight from Double to BigDecimal
-						BigDecimal assignmentWeighting = new BigDecimal(assignment.getAssignmentWeighting().toString());
+						//BigDecimal assignmentWeighting = bdf.sameBigDecimal(assignment.getAssignmentWeighting().toString());
+						BigDecimal assignmentWeighting = bdf.sameBigDecimalToString(assignment.getAssignmentWeighting());
 
 						// GRBK-862 : keep track of smallest item weight scale
 						if(scale > assignmentWeighting.scale()) {
@@ -6214,7 +6220,8 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 				boolean isUnweighted = Util.checkBoolean(category.isUnweighted());
 
 				// Don't count unweighed, null weighted or 0 weighted categories
-				if (isUnweighted || category.getWeight() == null || new BigDecimal(category.getWeight().toString()).compareTo(BigDecimal.ZERO) == 0)
+				//if (isUnweighted || category.getWeight() == null || bdf.sameBigDecimal(category.getWeight().toString()).compareTo(BigDecimal.ZERO) == 0)
+				if (isUnweighted || category.getWeight() == null || bdf.sameBigDecimalToString(category.getWeight()).compareTo(BigDecimal.ZERO) == 0)
 					continue;
 
 				boolean isExtraCredit = Util.checkBoolean(category.isExtraCredit());
@@ -6233,7 +6240,8 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 					continue;
 
 				// Assuming it does add up, we need to check that it's contribution to the overall grade adds up
-				BigDecimal bigCategoryWeight = new BigDecimal(category.getWeight().toString());
+				//BigDecimal bigCategoryWeight = bdf.sameBigDecimal(category.getWeight().toString());
+				BigDecimal bigCategoryWeight = bdf.sameBigDecimalToString(category.getWeight());
 				gradebookWeightSum = add(gradebookWeightSum, bigCategoryWeight);
 			}
 
@@ -6384,7 +6392,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 				assignmentGradeRecord.setLetterEarned("");
 			}
 			else {
-				assignmentGradeRecord.setLetterEarned(gradeCalculations.convertPercentageToLetterGrade(new BigDecimal(Double.toString(value))));
+				assignmentGradeRecord.setLetterEarned(gradeCalculations.convertPercentageToLetterGrade(bdf.sameBigDecimalToString(value)));
 			}
 		case GradebookService.GRADE_TYPE_PERCENTAGE:
 
@@ -6780,7 +6788,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		if (catAssignments != null && catAssignments.size() > 0)
 		{
-			BigDecimal weight = divide(BigDecimal.ONE, new BigDecimal(catAssignments.size())); 
+			BigDecimal weight = divide(BigDecimal.ONE, bdf.sameBigDecimal(catAssignments.size())); 
 			
 			for (Assignment a : catAssignments)
 			{

@@ -30,7 +30,7 @@ import org.sakaiproject.tool.gradebook.Gradebook;
 public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper implements GradeCalculations {
 
 	private static final Log log = LogFactory.getLog(GradeCalculationsImpl.class);
-
+	
 	/* a BigDecimal for percentage calculations. scale = 5 */
 	private final static BigDecimal BIG_DECIMAL_100 = new BigDecimal("100");
 
@@ -86,6 +86,8 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 	 * This is the letter grade map injected by Spring holding the static letter to percent mappings
 	 */
 	private Map<String, Double> letterGradeMap;
+	
+	private BigDecimalFactory bdf = new BigDecimalFactory();
 
 	// Constructor
 	public GradeCalculationsImpl() {
@@ -101,29 +103,29 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 	// Spring IoC init
 	public void init() {
 
-		two = new BigDecimal("2");
-		three = new BigDecimal("3"); 
+		two = bdf.sameBigDecimal("2");
+		three = bdf.sameBigDecimal("3");
 		oneThird = divide(BigDecimal.ONE, three); 
 		twoThirds = divide(two, three);
 
-		gradeAplus = new BigDecimal(add(new BigDecimal("96"), twoThirds).toPlainString().substring(0, PRECISION));
-		gradeA = new BigDecimal(add(new BigDecimal("93"), oneThird).toPlainString().substring(0, PRECISION));
-		gradeAminus = new BigDecimal("90");
+		gradeAplus = bdf.sameBigDecimal(add(bdf.sameBigDecimal("96"), twoThirds).toPlainString().substring(0, PRECISION));
+		gradeA = bdf.sameBigDecimal(add(bdf.sameBigDecimal("93"), oneThird).toPlainString().substring(0, PRECISION));
+		gradeAminus = bdf.sameBigDecimal("90");
 
-		gradeBplus = new BigDecimal(add(new BigDecimal("86"), twoThirds).toPlainString().substring(0, PRECISION));
-		gradeB = new BigDecimal(add(new BigDecimal("83"), oneThird).toPlainString().substring(0, PRECISION));
-		gradeBminus = new BigDecimal("80");
+		gradeBplus = bdf.sameBigDecimal(add(bdf.sameBigDecimal("86"), twoThirds).toPlainString().substring(0, PRECISION));
+		gradeB = bdf.sameBigDecimal(add(bdf.sameBigDecimal("83"), oneThird).toPlainString().substring(0, PRECISION));
+		gradeBminus = bdf.sameBigDecimal("80");
 
-		gradeCplus = new BigDecimal(add(new BigDecimal("76"), twoThirds).toPlainString().substring(0, PRECISION));
-		gradeC = new BigDecimal(add(new BigDecimal("73"), oneThird).toPlainString().substring(0, PRECISION));
-		gradeCminus = new BigDecimal("70");
+		gradeCplus = bdf.sameBigDecimal(add(bdf.sameBigDecimal("76"), twoThirds).toPlainString().substring(0, PRECISION));
+		gradeC = bdf.sameBigDecimal(add(bdf.sameBigDecimal("73"), oneThird).toPlainString().substring(0, PRECISION));
+		gradeCminus = bdf.sameBigDecimal("70");
 
 
-		gradeDplus = new BigDecimal(add(new BigDecimal("66"), twoThirds).toPlainString().substring(0, PRECISION));
-		gradeD = new BigDecimal(add(new BigDecimal("63"), oneThird).toPlainString().substring(0, PRECISION));
-		gradeDminus = new BigDecimal("60");
+		gradeDplus = bdf.sameBigDecimal(add(bdf.sameBigDecimal("66"), twoThirds).toPlainString().substring(0, PRECISION));
+		gradeD = bdf.sameBigDecimal(add(bdf.sameBigDecimal("63"), oneThird).toPlainString().substring(0, PRECISION));
+		gradeDminus = bdf.sameBigDecimal("60");
 
-		gradeF = new BigDecimal("60");
+		gradeF = bdf.sameBigDecimal("60");
 
 	}
 
@@ -131,7 +133,7 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 		if (numberOfItems <= 1)
 			return Double.valueOf(1d);
 
-		BigDecimal result = divide(BigDecimal.ONE, BigDecimal.valueOf(numberOfItems) );
+		BigDecimal result = divide(BigDecimal.ONE, bdf.sameBigDecimal(String.valueOf(numberOfItems)));
 
 		return Double.valueOf(result.doubleValue());
 	}
@@ -141,9 +143,11 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 
 		// Obviously, if the user asks for a non-null value, give it to them
 		if (requestedItemWeight != null)
-			weight = BigDecimal.valueOf(requestedItemWeight.doubleValue());
-		else
-			weight = BigDecimal.valueOf(requestedItemPoints.doubleValue());
+			weight = bdf.sameBigDecimalToString(requestedItemWeight.doubleValue());
+			//weight = bdf.sameBigDecimal(String.valueOf(requestedItemWeight.doubleValue()));
+		else 
+			weight = bdf.sameBigDecimalToString(requestedItemPoints.doubleValue());
+		//weight = bdf.sameBigDecimal(String.valueOf(requestedItemPoints.doubleValue()));
 
 		BigDecimal result = divide(weight, BIG_DECIMAL_100);
 
@@ -410,7 +414,7 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 					if (s.compareTo(BigDecimal.ZERO) == 0)
 						median = BigDecimal.ZERO;
 					else
-						median = divide(s, new BigDecimal("2"));
+						median = divide(s, bdf.sameBigDecimal("2"));
 				} else {
 					// If we have an odd number of elements, simply choose the middle one
 					median = gradeList.get(middle).getScore();
@@ -475,7 +479,7 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 
 		if (percentage != null) {
 
-			percentage = new BigDecimal(percentage.toPlainString(), new MathContext(6, RoundingMode.HALF_UP));
+			percentage = bdf.sameBigDecimal(percentage.toPlainString(), new MathContext(6, RoundingMode.HALF_UP));
 
 			if (percentage.compareTo(BigDecimal.ZERO) == 0)
 				return ZERO;
@@ -554,7 +558,8 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 		case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
 			if (null == category.getWeight() || isUnweighted(category))
 				return null;
-			categoryWeight = new BigDecimal(category.getWeight().toString());
+			//categoryWeight = bdf.sameBigDecimal(category.getWeight().toString());
+			categoryWeight = bdf.sameBigDecimalToString(category.getWeight());
 			break;
 		default:
 			categoryWeight = BigDecimal.ZERO;
@@ -758,8 +763,10 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 						// Make sure it's not excused
 						if (!isExcused(assignmentGradeRecord)) {
 
-							BigDecimal pointsEarned = !isGraded ? BigDecimal.ZERO : new BigDecimal(assignmentGradeRecord.getPointsEarned().toString());
-							BigDecimal pointsPossible = new BigDecimal(assignment.getPointsPossible().toString());
+							//BigDecimal pointsEarned = !isGraded ? BigDecimal.ZERO : bdf.sameBigDecimal(assignmentGradeRecord.getPointsEarned().toString());
+							BigDecimal pointsEarned = !isGraded ? BigDecimal.ZERO : bdf.sameBigDecimalToString(assignmentGradeRecord.getPointsEarned());
+							//BigDecimal pointsPossible = bdf.sameBigDecimal(assignment.getPointsPossible().toString());
+							BigDecimal pointsPossible = bdf.sameBigDecimalToString(assignment.getPointsPossible());
 
 							Boolean isExtraCredit = Boolean.valueOf(isExtraCreditItemOrCategory);
 
@@ -862,8 +869,10 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 					
 					if (isNullsAsZeros || isGraded) {
 
-						BigDecimal pointsEarned = !isGraded ? BigDecimal.ZERO : new BigDecimal(assignmentGradeRecord.getPointsEarned().toString());
-						BigDecimal pointsPossible = new BigDecimal(assignment.getPointsPossible().toString());
+						//BigDecimal pointsEarned = !isGraded ? BigDecimal.ZERO : bdf.sameBigDecimal(assignmentGradeRecord.getPointsEarned().toString());
+						BigDecimal pointsEarned = !isGraded ? BigDecimal.ZERO : bdf.sameBigDecimalToString(assignmentGradeRecord.getPointsEarned());
+						//BigDecimal pointsPossible = bdf.sameBigDecimal(assignment.getPointsPossible().toString());
+						BigDecimal pointsPossible = bdf.sameBigDecimalToString(assignment.getPointsPossible());
 						
 						Boolean isExtraCredit = Boolean.valueOf(isExtraCreditItemOrCategory);
 						GradeRecordCalculationUnit gradeRecordUnit = new GradeRecordCalculationUnitImpl(pointsEarned, pointsPossible, assignmentWeight, isExtraCredit, getScale());
@@ -979,8 +988,10 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 						// Make sure it's not excused
 						if (!isExcused(assignmentGradeRecord)) {
 
-							BigDecimal pointsEarned = !isGraded ? BigDecimal.ZERO : new BigDecimal(assignmentGradeRecord.getPointsEarned().toString());
-							BigDecimal pointsPossible = new BigDecimal(assignment.getPoints().toString());
+							//BigDecimal pointsEarned = !isGraded ? BigDecimal.ZERO : bdf.sameBigDecimal(assignmentGradeRecord.getPointsEarned().toString());
+							BigDecimal pointsEarned = !isGraded ? BigDecimal.ZERO : bdf.sameBigDecimalToString(assignmentGradeRecord.getPointsEarned());
+							//BigDecimal pointsPossible = bdf.sameBigDecimal(assignment.getPoints().toString());
+							BigDecimal pointsPossible = bdf.sameBigDecimalToString(assignment.getPoints());
 
 							Boolean isExtraCredit = Boolean.valueOf(isExtraCreditItemOrCategory);
 
@@ -1037,14 +1048,17 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 
 	public BigDecimal getNewPointsGrade(Double pointValue, Double maxPointValue, Double maxPointStartValue) {
 
-		BigDecimal max = new BigDecimal(maxPointValue.toString());
-		BigDecimal maxStart = new BigDecimal(maxPointStartValue.toString());
+		//BigDecimal max = bdf.sameBigDecimal(maxPointValue.toString());
+		BigDecimal max = bdf.sameBigDecimalToString(maxPointValue);
+		//BigDecimal maxStart = bdf.sameBigDecimal(maxPointStartValue.toString());
+		BigDecimal maxStart = bdf.sameBigDecimalToString(maxPointStartValue);
 		BigDecimal ratio = BigDecimal.ZERO; 
 		if (maxStart.compareTo(BigDecimal.ZERO) != 0)
 		{
 			ratio = divide(max, maxStart);
 		}
-		BigDecimal points = new BigDecimal(pointValue.toString());
+		//BigDecimal points = bdf.sameBigDecimal(pointValue.toString());
+		BigDecimal points = bdf.sameBigDecimalToString(pointValue);
 
 		return multiply(points, ratio);
 	}
@@ -1053,8 +1067,10 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 		BigDecimal pointsEarned = null;
 
 		if (percentage != null) {
-			BigDecimal percent = new BigDecimal(percentage.toString());
-			BigDecimal maxPoints = new BigDecimal(assignment.getPointsPossible().toString());
+			//BigDecimal percent = bdf.sameBigDecimal(percentage.toString());
+			BigDecimal percent = bdf.sameBigDecimalToString(percentage);
+			//BigDecimal maxPoints = bdf.sameBigDecimal(assignment.getPointsPossible().toString());
+			BigDecimal maxPoints = bdf.sameBigDecimalToString(assignment.getPointsPossible());
 			pointsEarned = multiply(divide(percent, BIG_DECIMAL_100), maxPoints);
 		}
 
@@ -1070,9 +1086,11 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 			return percentageEarned;
 		}
 
-		pointsEarned = new BigDecimal(assignmentGradeRecord.getPointsEarned().toString());
+		//pointsEarned = bdf.sameBigDecimal(assignmentGradeRecord.getPointsEarned().toString());
+		pointsEarned = bdf.sameBigDecimalToString(assignmentGradeRecord.getPointsEarned());
 		if (assignment.getPointsPossible() != null) {
-			pointsPossible = new BigDecimal(assignment.getPointsPossible().toString());
+			//pointsPossible = bdf.sameBigDecimal(assignment.getPointsPossible().toString());
+			pointsPossible = bdf.sameBigDecimalToString(assignment.getPointsPossible());
 			percentageEarned = divide(multiply(pointsEarned, BIG_DECIMAL_100), pointsPossible);
 		}
 		return percentageEarned;
@@ -1108,8 +1126,10 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 		if (doublePointsPossible == null || doublePercentEarned == null)
 			return null;
 
-		BigDecimal pointsPossible = new BigDecimal(doublePointsPossible.toString());
-		BigDecimal percentEarned = new BigDecimal(doublePercentEarned.toString());
+//		BigDecimal pointsPossible = bdf.sameBigDecimal(doublePointsPossible.toString());
+		BigDecimal pointsPossible = bdf.sameBigDecimalToString(doublePointsPossible);
+		BigDecimal percentEarned = bdf.sameBigDecimalToString(doublePercentEarned);
+//		BigDecimal percentEarned = bdf.sameBigDecimal(doublePercentEarned.toString());
 		BigDecimal equivPoints = multiply(pointsPossible, divide(percentEarned, BIG_DECIMAL_100));
 		return new Double(equivPoints.doubleValue());
 	}
@@ -1160,13 +1180,15 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 		case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
 			if (null == assignment.getAssignmentWeighting() || isUnweighted(assignment)) 
 				return null;
-			assignmentWeight = new BigDecimal(assignment.getAssignmentWeighting().toString());
+			//assignmentWeight = bdf.sameBigDecimal(assignment.getAssignmentWeighting().toString());
+			assignmentWeight = bdf.sameBigDecimalToString(assignment.getAssignmentWeighting());
 			break;
 		default:
 			if (null == assignment.getPointsPossible())
 				return null;
 
-			assignmentWeight = new BigDecimal(assignment.getPointsPossible().toString());
+			//assignmentWeight = bdf.sameBigDecimal(assignment.getPointsPossible().toString());
+			assignmentWeight = bdf.sameBigDecimalToString(assignment.getPointsPossible());
 			break;
 		}
 
@@ -1185,13 +1207,15 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 		case WEIGHTED_CATEGORIES:
 			if (null == assignment.getWeighting() || !Util.checkBoolean(assignment.getIncluded())) 
 				return null;
-			assignmentWeight = new BigDecimal(assignment.getWeighting().toString());
+			//assignmentWeight = bdf.sameBigDecimal(assignment.getWeighting().toString());
+			assignmentWeight = bdf.sameBigDecimalToString(assignment.getWeighting());
 			break;
 		default:
 			if (null == assignment.getPoints())
 				return null;
 
-			assignmentWeight = new BigDecimal(assignment.getPoints().toString());
+			//assignmentWeight = bdf.sameBigDecimal(assignment.getPoints().toString());
+			assignmentWeight = bdf.sameBigDecimalToString(assignment.getPoints());
 			break;
 		}
 
