@@ -929,7 +929,6 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	}
 
 	public org.sakaiproject.gradebook.gwt.client.model.Gradebook getGradebook(String uid) {
-
 		Gradebook gradebook = gbService.getGradebook(uid);
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
 		List<Category> categories = null;

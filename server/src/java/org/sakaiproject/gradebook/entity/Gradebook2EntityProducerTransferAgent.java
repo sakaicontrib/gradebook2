@@ -140,9 +140,8 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 			
 		
 		} catch (GradebookNotFoundException noGB) {
-			msg = "Error archiving gradebook2 from site (no gradebook found): " + siteId + " " + noGB.toString() + "\n";
-			log.error(noGB);
-			noGB.printStackTrace();
+			msg = "Unable to archive gradebook2 for site " + siteId +" because no gradebook exists.\n";
+			log.info(msg);
 			results.append(msg);
 		} catch (IOException io ){
 			msg = "IO Error archiving gradebook2 from site: " + siteId + " " + io.toString() + "\n";
