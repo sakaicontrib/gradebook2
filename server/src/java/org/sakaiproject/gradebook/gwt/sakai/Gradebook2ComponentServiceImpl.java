@@ -118,6 +118,10 @@ import org.sakaiproject.util.ResourceLoader;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.config.CacheConfiguration;
+import net.sf.ehcache.Element;
+import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
 
 public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrapper implements Gradebook2ComponentService, ApplicationContextAware {
 
@@ -141,6 +145,17 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	private final static BigDecimal BIG_DECIMAL_0_01 = new BigDecimal("0.01");
 	
 	private final static int COMMENT_MAX_LENGHT = 255;
+	
+	// cache settings
+	protected Cache cache;
+	
+	public Cache getCache() {
+		return cache;
+	}
+
+	public void setCache(Cache cache) {
+		this.cache = cache;
+	}
 
 	private BigDecimalFactory bdf = new BigDecimalFactory();
 	
@@ -1883,6 +1898,44 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		return gradeFrequencies;
 	}
+	
+	protected class CacheAllGradeRecordsWrapper {
+		private Map<String, Map<Long, AssignmentGradeRecord>> studentGradeRecordMap;
+		private List<String> gradedStudentUids;
+		private Map<Long, BigDecimal> assignmentSumMap;
+		private Map<Long, List<StudentScore>> assignmentGradeListMap;
+		
+		protected CacheAllGradeRecordsWrapper(
+				Map<String, Map<Long, AssignmentGradeRecord>> studentGradeRecordMap,
+				List<String> gradedStudentUids,
+				Map<Long, BigDecimal> assignmentSumMap,
+				Map<Long, List<StudentScore>> assignmentGradeListMap){
+			
+			this.studentGradeRecordMap = studentGradeRecordMap;
+			this.gradedStudentUids = gradedStudentUids;
+			this.assignmentSumMap = assignmentSumMap;
+			this.assignmentGradeListMap = assignmentGradeListMap;
+		}
+
+		protected Map<String, Map<Long, AssignmentGradeRecord>> getStudentGradeRecordMap() {
+			return this.studentGradeRecordMap;
+		}
+
+		protected List<String> getGradedStudentUids() {
+			return this.gradedStudentUids;
+		}
+
+		protected Map<Long, BigDecimal> getAssignmentSumMap() {
+			return this.assignmentSumMap;
+		}
+
+		protected Map<Long, List<StudentScore>> getAssignmentGradeListMap() {
+			return this.assignmentGradeListMap;
+		}
+		
+
+	}
+
 
 	/*
 	 * @deprecated since v1.3.0
@@ -2099,7 +2152,11 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		String[] learnerRoleNames = getLearnerRoleNames();
 
-		List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebook.getId(), realmIds, learnerRoleNames);
+		// get all the assignment grade records, possibly from a cache.
+		List<AssignmentGradeRecord> allGradeRecords;
+		allGradeRecords = cachedAllAssignmentGradeRecords(gradebookId,
+				gradebook, realmIds, learnerRoleNames);
+		
 		Map<String, Map<Long, AssignmentGradeRecord>> studentGradeRecordMap = new HashMap<String, Map<Long, AssignmentGradeRecord>>();
 
 		List<String> gradedStudentUids = new ArrayList<String>();
@@ -2107,78 +2164,81 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		Map<Long, BigDecimal> assignmentSumMap = new HashMap<Long, BigDecimal>();
 		Map<Long, List<StudentScore>> assignmentGradeListMap = new HashMap<Long, List<StudentScore>>();
 
+		// calculate and cache information from grade records.
+		String cacheKey_allGradeRecords =  "gb2_allGradeRecords" + gradebookId + "_" + concatenateStringArrayValues(realmIds)
+				+ "_" + concatenateStringArrayValues(learnerRoleNames);
+		
 		if (allGradeRecords != null) {
-			for (AssignmentGradeRecord gradeRecord : allGradeRecords) {
-				gradeRecord.setUserAbleToView(true);
-				String studentUid = gradeRecord.getStudentId();
-				Map<Long, AssignmentGradeRecord> studentMap = studentGradeRecordMap.get(studentUid);
-				if (studentMap == null) {
-					studentMap = new HashMap<Long, AssignmentGradeRecord>();
-				}
-				GradableObject go = gradeRecord.getGradableObject();
-				studentMap.put(go.getId(), gradeRecord);
-
-				BigDecimal value = null;
-				if (gradeRecord.getPointsEarned() != null) {
-					Assignment assignment = (Assignment) gradeRecord.getGradableObject();
-					switch (gradeType) {
-					case GradebookService.GRADE_TYPE_POINTS:
-						value = BigDecimal.valueOf(gradeRecord.getPointsEarned().doubleValue());
-						break;
-					case GradebookService.GRADE_TYPE_PERCENTAGE:
-					case GradebookService.GRADE_TYPE_LETTER:
-						value = gradeCalculations.getPointsEarnedAsPercent(assignment, gradeRecord);
-						break;
-					}
-
-					if (value != null && assignment != null) {
-						Long assignmentId = assignment.getId();
-						List<StudentScore> gradeList = assignmentGradeListMap.get(assignmentId);
-						if (gradeList == null) {
-							gradeList = new ArrayList<StudentScore>();
-							assignmentGradeListMap.put(assignmentId, gradeList);
-						}
-
-						gradeList.add(new StudentScore(gradeRecord.getStudentId(), value));
-
-						BigDecimal itemSum = assignmentSumMap.get(assignmentId);
-						if (itemSum == null)
-							itemSum = BigDecimal.ZERO;
-						itemSum = add(itemSum, value);
-						assignmentSumMap.put(assignmentId, itemSum);
-					}
-
-				}
-				studentGradeRecordMap.put(studentUid, studentMap);
-
-				if (!gradedStudentUids.contains(studentUid))
-					gradedStudentUids.add(studentUid);
-			}
+			CacheAllGradeRecordsWrapper agrw = summarizeAllGradeRecords(cacheKey_allGradeRecords,gradeType, allGradeRecords,
+					studentGradeRecordMap, gradedStudentUids, assignmentSumMap,
+					assignmentGradeListMap);
+			studentGradeRecordMap = agrw.getStudentGradeRecordMap();
+			gradedStudentUids = agrw.getGradedStudentUids();
+			assignmentSumMap = agrw.getAssignmentSumMap();
+			assignmentGradeListMap = agrw.getAssignmentGradeListMap();
 		}
 
 		// Now we can calculate the mean course grade
 		List<StudentScore> courseGradeList = new ArrayList<StudentScore>();
 		BigDecimal sumCourseGrades = BigDecimal.ZERO;
-		for (String studentUid : gradedStudentUids) {
-			Map<Long, AssignmentGradeRecord> studentMap = studentGradeRecordMap.get(studentUid);
-			BigDecimal courseGrade = null;
-
-			boolean isScaledExtraCredit = Util.checkBoolean(gradebook.isScaledExtraCredit());
-			switch (gradebook.getCategory_type()) {
-			case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
-				courseGrade = gradeCalculations.getCourseGrade(gradebook, assignments, studentMap, isScaledExtraCredit);
-				break;
-			default:
-				courseGrade = gradeCalculations.getCourseGrade(gradebook, categories, studentMap, isScaledExtraCredit);
+		String cacheKey_courseGradeList = "gb2_courseGradeList_" + gradebookId;
+		String cacheKey_sumCourseGrades = "gb2_sumCourseGrades_" + gradebookId;
+		synchronized (this)
+		{
+			if (cache != null)
+			{
+				// try get it from cache first
+				
+				Element e_courseGradeList = cache.get(cacheKey_courseGradeList);
+				if (e_courseGradeList != null) {
+					log.debug("getLearnerStatistics cache hit for:" + cacheKey_courseGradeList);					
+					courseGradeList = (List<StudentScore>) e_courseGradeList.getObjectValue();
+				}
+				else {
+					log.debug("getLearnerStatistics cache miss for:" + cacheKey_courseGradeList);					
+				}
+				
+				Element e_sumCourseGrades = cache.get(cacheKey_sumCourseGrades);
+				if (e_sumCourseGrades != null) {
+					log.debug("getLearnerStatistics cache hit for:" + cacheKey_sumCourseGrades);
+					sumCourseGrades = (BigDecimal) e_sumCourseGrades.getObjectValue();
+				}
+				else {
+					log.debug("getLearnerStatistics cache miss for:" + cacheKey_sumCourseGrades);	
+				}
 			}
-
-			if (courseGrade != null) {
-				sumCourseGrades = add(sumCourseGrades, courseGrade);
-				courseGradeList.add(new StudentScore(studentUid, courseGrade));
+			
+			if (courseGradeList.size() == 0 || sumCourseGrades == BigDecimal.ZERO)
+			{
+				for (String studentUid : gradedStudentUids) {
+					Map<Long, AssignmentGradeRecord> studentMap = studentGradeRecordMap.get(studentUid);
+					BigDecimal courseGrade = null;
+		
+					boolean isScaledExtraCredit = Util.checkBoolean(gradebook.isScaledExtraCredit());
+					switch (gradebook.getCategory_type()) {
+					case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
+						courseGrade = gradeCalculations.getCourseGrade(gradebook, assignments, studentMap, isScaledExtraCredit);
+						break;
+					default:
+						courseGrade = gradeCalculations.getCourseGrade(gradebook, categories, studentMap, isScaledExtraCredit);
+					}
+		
+					if (courseGrade != null) {
+						sumCourseGrades = add(sumCourseGrades, courseGrade);
+						courseGradeList.add(new StudentScore(studentUid, courseGrade));
+					}
+				}
+				
+				// put into cache
+				if (cache != null)
+				{
+					cache.put(new Element(cacheKey_courseGradeList, courseGradeList));
+					cache.put(new Element(cacheKey_sumCourseGrades, sumCourseGrades));
+				}
 			}
-		} 
+		}
 
-		GradeStatistics courseGradeStatistics = gradeCalculations.calculateStatistics(courseGradeList, sumCourseGrades, learnerId);
+		GradeStatistics courseGradeStatistics = gradeCalculations.calculateStatistics(gradebookId.toString(), courseGradeList, sumCourseGrades, learnerId);
 
 		List<Statistics> statsList = new ArrayList<Statistics>();
 
@@ -2202,7 +2262,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 								GradeStatistics assignmentStatistics = null;
 								if (gradeList != null && sum != null) {
-									assignmentStatistics = gradeCalculations.calculateStatistics(gradeList, sum, learnerId);
+									assignmentStatistics = gradeCalculations.calculateStatistics(assignmentId.toString(), gradeList, sum, learnerId);
 								}
 
 								statsList.add(getStatisticsMap(gradebook, name, assignmentStatistics, Long.valueOf(id), assignmentId, learnerId));
@@ -2222,7 +2282,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 					GradeStatistics assignmentStatistics = null;
 					if (gradeList != null && sum != null) {
-						assignmentStatistics = gradeCalculations.calculateStatistics(gradeList, sum, learnerId);
+						assignmentStatistics = gradeCalculations.calculateStatistics(assignmentId.toString(), gradeList, sum, learnerId);
 					}
 
 					statsList.add(getStatisticsMap(gradebook, name, assignmentStatistics, Long.valueOf(id), assignmentId, learnerId));
@@ -2234,6 +2294,135 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		return statsList;
 	}
 
+	// Get all the assignment grade records from the service using a cached value as possible. This 
+	// cache is helpful when many students are requesting their grades at the same time.
+	// The caching is done here and not in the service to prevent the cache from affecting any other use of the values.  
+	// Caching the information when a grader wants to change it would be bad.
+	
+	protected synchronized List<AssignmentGradeRecord> cachedAllAssignmentGradeRecords(
+			Long gradebookId, Gradebook gradebook, String[] realmIds,
+			String[] learnerRoleNames) {
+		
+		List<AssignmentGradeRecord> allGradeRecords = null;
+		// check cache settings first
+		String cacheKey = "gb2_all_assignment_grade_records" + gradebookId + concatenateStringArrayValues(realmIds) + "_" + concatenateStringArrayValues(learnerRoleNames);
+ 		if (cache != null)
+ 		{	
+			//check with cache first
+ 			Element e = cache.get(cacheKey);
+ 			if (e != null) {
+ 				log.debug("getAllAssignmentGradeRecord cache hit for :" + cacheKey);
+ 				allGradeRecords = (List<AssignmentGradeRecord>) e.getObjectValue();
+ 			}
+ 			else {
+ 				log.debug("getAllAssignmentGradeRecord cache miss for :" + cacheKey);
+ 			}
+		
+ 			allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebook.getId(), realmIds, learnerRoleNames);
+
+ 			// put it into cache
+ 			if (cache != null)
+ 			{
+ 				cache.put(new Element(cacheKey, allGradeRecords));
+ 			}
+ 		}
+		return allGradeRecords;
+	}
+
+	/* Extract and cache the user invariant summary information from all grade records. 
+	 * Calculates and returns all of them in a block.  This is particularly useful for caching
+	 * since all these related values can be found with a single cache key.
+	 */
+	 
+	//log.debug("getLearnerStatistics cache miss for :" + cacheKey_courseGradeList + " and " + cacheKey_sumCourseGrades);
+
+	
+	protected synchronized CacheAllGradeRecordsWrapper summarizeAllGradeRecords(
+			String cacheKey,
+			int gradeType,
+			List<AssignmentGradeRecord> allGradeRecords,
+			Map<String, Map<Long, AssignmentGradeRecord>> studentGradeRecordMap,
+			List<String> gradedStudentUids,
+			Map<Long, BigDecimal> assignmentSumMap,
+			Map<Long, List<StudentScore>> assignmentGradeListMap) {
+		
+
+		if (cache != null) {
+			Element e_AllGradeRecords = cache.get(cacheKey);
+			if (e_AllGradeRecords != null && e_AllGradeRecords.getObjectValue() != null) {
+				log.debug("summarizeAllGradeRecords cache hit for:" + cacheKey);
+				return (CacheAllGradeRecordsWrapper)e_AllGradeRecords.getObjectValue();
+			}
+			log.debug("summarizeAllGradeRecords cache miss for:" + cacheKey);
+		}
+		
+		for (AssignmentGradeRecord gradeRecord : allGradeRecords) {
+			gradeRecord.setUserAbleToView(true);
+			String studentUid = gradeRecord.getStudentId();
+			Map<Long, AssignmentGradeRecord> studentMap = studentGradeRecordMap.get(studentUid);
+			if (studentMap == null) {
+				studentMap = new HashMap<Long, AssignmentGradeRecord>();
+			}
+			GradableObject go = gradeRecord.getGradableObject();
+			studentMap.put(go.getId(), gradeRecord);
+
+			BigDecimal value = null;
+			if (gradeRecord.getPointsEarned() != null) {
+				Assignment assignment = (Assignment) gradeRecord.getGradableObject();
+				switch (gradeType) {
+				case GradebookService.GRADE_TYPE_POINTS:
+					value = BigDecimal.valueOf(gradeRecord.getPointsEarned().doubleValue());
+					break;
+				case GradebookService.GRADE_TYPE_PERCENTAGE:
+				case GradebookService.GRADE_TYPE_LETTER:
+					value = gradeCalculations.getPointsEarnedAsPercent(assignment, gradeRecord);
+					break;
+				}
+
+				if (value != null && assignment != null) {
+					Long assignmentId = assignment.getId();
+					List<StudentScore> gradeList = assignmentGradeListMap.get(assignmentId);
+					if (gradeList == null) {
+						gradeList = new ArrayList<StudentScore>();
+						assignmentGradeListMap.put(assignmentId, gradeList);
+					}
+
+					gradeList.add(new StudentScore(gradeRecord.getStudentId(), value));
+
+					BigDecimal itemSum = assignmentSumMap.get(assignmentId);
+					if (itemSum == null)
+						itemSum = BigDecimal.ZERO;
+					itemSum = add(itemSum, value);
+					assignmentSumMap.put(assignmentId, itemSum);
+				}
+
+			}
+			studentGradeRecordMap.put(studentUid, studentMap);
+
+			if (!gradedStudentUids.contains(studentUid))
+				gradedStudentUids.add(studentUid);
+		}
+		
+		CacheAllGradeRecordsWrapper agrw = new CacheAllGradeRecordsWrapper(studentGradeRecordMap,gradedStudentUids,assignmentSumMap,assignmentGradeListMap);
+		
+		if (cache != null) {
+			cache.put(new Element(cacheKey,agrw));
+		}
+		
+		return agrw;
+	}
+
+	private String concatenateStringArrayValues(String[] strings) {
+		StringBuffer rv = new StringBuffer();
+		for(int i=0; i<strings.length; i++)
+		{
+			rv.append(strings[i]).append("_");
+		}
+		
+		return rv.toString();
+	}
+
+	
 	public List<Statistics> getGraderStatistics(String gradebookUid, Long gradebookId, String sectionId) throws SecurityException {
 
 		// First, we need to check if a single section or all sections were selected
@@ -3888,7 +4077,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		// GRBK-721 : Only call getCalculatedGrade(...) once
 		BigDecimal calculatedGrade = null;
-		BigDecimal fullPrecisionCalculatedGrade = getCalculatedGrade(gradebook, assignments, categories, studentGradeMap);
+		BigDecimal fullPrecisionCalculatedGrade = getCalculatedGrade(gradebook, assignments, categories, userRecord.getUserUid(), studentGradeMap);
 		
 		if(null != fullPrecisionCalculatedGrade) {
 			userRecord.setCalculatedGrade(fullPrecisionCalculatedGrade);
@@ -5187,7 +5376,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			List<Assignment> assignments, List<Category> categories,
 			UserRecord record, boolean isLetterGradeMode) {
 		
-		BigDecimal fullPrecisionCalculatedGrade = getCalculatedGrade(gradebook, assignments, categories, record.getGradeRecordMap());
+		BigDecimal fullPrecisionCalculatedGrade = getCalculatedGrade(gradebook, assignments, categories, record.getUserUid(), record.getGradeRecordMap());
 
 		BigDecimal grade = null;
 		
@@ -5527,7 +5716,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		return true;
 	}
 
-	private BigDecimal getCalculatedGrade(Gradebook gradebook, List<Assignment> assignments, List<Category> categories, Map<Long, AssignmentGradeRecord> studentGradeMap) {
+	private BigDecimal getCalculatedGrade(Gradebook gradebook, List<Assignment> assignments, List<Category> categories, String studentId, Map<Long, AssignmentGradeRecord> studentGradeMap) {
 		BigDecimal autoCalculatedGrade = null;
 
 		boolean isScaledExtraCredit = Util.checkBoolean(gradebook.isScaledExtraCredit());

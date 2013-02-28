@@ -131,7 +131,9 @@
 			</map>
 		</property>
 		<property name="scale" value="50"/>
-		
+		<!-- cache -->
+		<property name="cache" ref="org.sakaiproject.gradebook.gwt.sakai.gradebookservice.cache" />
+		<property name="configService" ref="org.sakaiproject.component.api.ServerConfigurationService" />
 	</bean>
 
 	

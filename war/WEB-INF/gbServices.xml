@@ -2,7 +2,23 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
 <beans>
-	
+	<!-- the Gradebook2 service cache bean -->
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.gradebookservice.cache"
+		class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+		<property name="cacheManager">
+			<ref bean="org.sakaiproject.memory.api.MemoryService.cacheManager"/>
+		</property>
+		<property name="cacheName">
+			<value>org.sakaiproject.gradebook.gwt.sakai.gradebookservice.cache</value>
+		</property>
+		<property name="maxElementsInMemory" value="100000" />
+		<property name="diskPersistent" value="false" />
+		<property name="eternal" value="false" />
+		<!-- default is to expire elements in cache after 300 seconds -->
+		<property name="timeToLive" value="300" />
+		<property name="timeToIdle" value="300" />
+    </bean>
+    
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService" 
 		class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentServiceImpl"
 		init-method="init">
@@ -21,8 +37,9 @@
 		<property name="eventTrackingService" ref="org.sakaiproject.event.api.EventTrackingService" />
 		<property name="i18n" ref="gradebook2.I18N" />
 		<property name="scale" value="50"/>
+		<!-- cache -->
+		<property name="cache" ref="org.sakaiproject.gradebook.gwt.sakai.gradebookservice.cache" />
 	</bean>
-
 	
 	<!-- Tool Service -->
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService" parent="alt.gradebookTxTemplate">

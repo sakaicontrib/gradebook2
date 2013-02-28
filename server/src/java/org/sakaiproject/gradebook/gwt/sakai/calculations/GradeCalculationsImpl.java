@@ -26,6 +26,12 @@ import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.AssignmentGradeRecord;
 import org.sakaiproject.tool.gradebook.Category;
 import org.sakaiproject.tool.gradebook.Gradebook;
+import org.sakaiproject.component.api.ServerConfigurationService;
+
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.config.CacheConfiguration;
+import net.sf.ehcache.Element;
+import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
 
 public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper implements GradeCalculations {
 
@@ -81,6 +87,26 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 	private final static String D_MINUS = "D-";
 	private final static String F = "F";
 	private final static String ZERO = "0";
+	
+	// cache settings
+	protected Cache cache;
+	public Cache getCache() {
+		return cache;
+	}
+
+	public void setCache(Cache cache) {
+		this.cache = cache;
+	}
+	
+	private ServerConfigurationService configService = null;
+	
+	public ServerConfigurationService getConfigService() {
+		return configService;
+	}
+
+	public void setConfigService(ServerConfigurationService configService) {
+		this.configService = configService;
+	}
 
 	/*
 	 * This is the letter grade map injected by Spring holding the static letter to percent mappings
@@ -298,18 +324,69 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 
 	public GradeStatistics calculateStatistics(List<StudentScore> gradeList, BigDecimal sum, String rankStudentId) {
 		GradeStatistics statistics = new GradeStatistics();
-		List<BigDecimal> modeList = null; 
 		if (gradeList == null || gradeList.isEmpty())
 			return statistics;
 
+		// general statistics
+		statistics = calculateGeneralStatistics(statistics, gradeList, sum);
+
+		// user rank statistics
+		statistics = calculateUserRankStatistics(statistics, gradeList, rankStudentId);
+		
+		return statistics;
+	}
+	
+	public GradeStatistics calculateStatistics(String context, List<StudentScore> gradeList, BigDecimal sum, String rankStudentId) {
+		GradeStatistics statistics = new GradeStatistics();
+		if (gradeList == null || gradeList.isEmpty())
+			return statistics;
+		
+		// use cache
+		String cacheKey = "gb2_calculateStatistics_" + context + "_" + gradeList.size() + "_" + sum.toString();
+		if (cache != null)
+		{	
+			// deal with cache
+			statistics = cacheCalculateGeneralStatistics(statistics, gradeList, sum, cacheKey);
+		}
+		else
+		{
+			statistics = calculateGeneralStatistics(statistics, gradeList, sum);
+		}
+		
+		// user rank statistics
+		statistics = calculateUserRankStatistics(statistics, gradeList, rankStudentId);
+		
+		return statistics;
+	}
+
+	private synchronized GradeStatistics cacheCalculateGeneralStatistics(GradeStatistics statistics, List<StudentScore> gradeList, BigDecimal sum, String cacheKey) {
+		//check with cache first
+		Element e = cache.get(cacheKey);
+		if (e != null) {
+			log.debug("calculateGeneralStatistics cache hit for:" + cacheKey);
+			statistics = (GradeStatistics) e.getObjectValue();
+		}
+		else
+		{
+			// cache miss
+			statistics = calculateGeneralStatistics(statistics, gradeList, sum);
+			cache.put(new Element(cacheKey, statistics));
+			log.debug("calculateGeneralStatistics cache miss for:" + cacheKey);
+		}
+
+		return statistics;
+	}
+
+	private GradeStatistics calculateGeneralStatistics(GradeStatistics statistics, List<StudentScore> gradeList, BigDecimal sum) {
+		List<BigDecimal> modeList = null; 
 		int n = 0;
 		BigDecimal count = BigDecimal.valueOf(gradeList.size());
 		BigDecimal mean = null; 
 		BigDecimal variance = null;
-
+	
 		if (count.compareTo(BigDecimal.ZERO) != 0)
 			mean = divide(sum, count); /// first estimate the mean
-
+	
 		List<FrequencyScore> frequencies = new ArrayList<FrequencyScore>();
 		Map<BigDecimal, Integer> frequencyMap = new HashMap<BigDecimal, Integer>();
 		BigDecimal standardDeviation = null;
@@ -320,47 +397,47 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 			for (StudentScore rec : gradeList) {
 				n++;
 				BigDecimal courseGrade = rec.getScore(); 
-
+	
 				BigDecimal roundedCourseGrade = courseGrade.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.DISPLAY_ROUNDING);
 				 
 				BigDecimal difference = subtract(courseGrade, mean);
 				
-
+	
 				mean = add(mean,divide(difference, BigDecimal.valueOf(n))); // new mean value
 				
 				sumOfSquareOfDifferences = // summation using new mean value
 					add(sumOfSquareOfDifferences, multiply(difference, subtract(courseGrade, mean))); 
-
+	
 				Integer frequency = frequencyMap.get(roundedCourseGrade);
 				if (frequency == null)
 					frequency = Integer.valueOf(1);
 				else
 					frequency = Integer.valueOf(1 + frequency.intValue());
-
+	
 				frequencyMap.put(roundedCourseGrade, frequency);
-
+	
 			}
 			
-
+	
 			if (frequencyMap.size() > 0) 
 			{
 				modeList = new ArrayList<BigDecimal>(); 
-
+	
 				Set<BigDecimal> keys = frequencyMap.keySet(); 
-
+	
 				for (BigDecimal k : keys)
 				{
 					FrequencyScore sc = new FrequencyScore();
 					Integer frequency = frequencyMap.get(k);
-
+	
 					sc.setFrequency(frequency);
 					sc.setScore(k); 
 					frequencies.add(sc);
 				}
-
+	
 				Collections.sort(frequencies); 
 				Collections.reverse(frequencies);
-
+	
 				boolean first = true; 
 				Iterator<FrequencyScore> it = frequencies.iterator();
 				FrequencyScore largest = null; 
@@ -386,9 +463,9 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 				{
 					modeList.clear();
 				}
-
+	
 			}
-
+	
 			if (count.compareTo(BigDecimal.ZERO) != 0) {
 				variance = divide(sumOfSquareOfDifferences, count);
 				if (variance != null)
@@ -396,7 +473,7 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 				
 			}
 		}
-
+	
 		BigDecimal median = null;
 		if (gradeList != null && gradeList.size() > 0) {
 			if (gradeList.size() == 1) {
@@ -408,9 +485,9 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 					// If we have an even number of elements then grab the middle two
 					BigDecimal first = gradeList.get(middle - 1).getScore();
 					BigDecimal second = gradeList.get(middle).getScore();
-
+	
 					BigDecimal s = add(first, second);
-
+	
 					if (s.compareTo(BigDecimal.ZERO) == 0)
 						median = BigDecimal.ZERO;
 					else
@@ -420,58 +497,65 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 					median = gradeList.get(middle).getScore();
 				}
 			}
-
-			if (rankStudentId != null && gradeList != null && gradeList.size() > 0)
-			{
-
-
-				Iterator<StudentScore> it = gradeList.iterator();
-				StudentScore targ = null; 
-				while (it.hasNext())
-				{
-					StudentScore s = it.next(); 
-					log.debug("rankStudentId: " + rankStudentId);
-					log.debug("sgetUserUid(): " + s.getUserUid());
-					if (s.getUserUid().equals(rankStudentId))
-					{
-						targ = s; 
-					}
-				}
-
-				if (targ != null)
-				{
-					Collections.reverse(gradeList); 
-
-					for (int i = 0; i < gradeList.size() ; i++)
-					{
-						StudentScore cur = gradeList.get(i); 
-
-						if (targ.getScore().equals(cur.getScore()))
-						{
-							statistics.setRank(i+1);
-							statistics.setStudentTotal(gradeList.size()); 
-
-						}
-					}
-				}
-				else
-				{
-					statistics.setRank(-1);
-					statistics.setStudentTotal(gradeList.size());
-				}
-			}
 		}
-
-
+	
 		//scale and round the output...
 		// here at the end of the process, we are using half_up
-
+	
 		statistics.setStudentTotal(gradeList.size()); 
 		statistics.setMean(null != mean ? mean.setScale(getScale(), RoundingMode.HALF_UP) : null);
 		statistics.setMedian(median);
 		statistics.setModeList(modeList);
 		statistics.setStandardDeviation(null != standardDeviation ? standardDeviation.setScale(getScale(), RoundingMode.HALF_UP) : null);
-
+		return statistics;
+	}
+	
+	/**
+	 * calculate the user rank and insert into statistics object
+	 * @param statistics
+	 * @param gradeList
+	 * @param rankStudentId
+	 */
+	private GradeStatistics calculateUserRankStatistics(GradeStatistics statistics, List<StudentScore> gradeList, String rankStudentId) {
+		if (rankStudentId != null && gradeList != null && gradeList.size() > 0)
+		{
+			Collections.sort(gradeList);
+			Iterator<StudentScore> it = gradeList.iterator();
+			StudentScore targ = null; 
+			while (it.hasNext())
+			{
+				StudentScore s = it.next(); 
+				//log.debug("rankStudentId: " + rankStudentId);
+				//log.debug("getUserUid(): " + s.getUserUid());
+				if (s.getUserUid().equals(rankStudentId))
+				{
+					targ = s; 
+				}
+			}
+	
+			if (targ != null)
+			{
+				Collections.reverse(gradeList); 
+	
+				for (int i = 0; i < gradeList.size() ; i++)
+				{
+					StudentScore cur = gradeList.get(i); 
+	
+					if (targ.getScore().equals(cur.getScore()))
+					{
+						statistics.setRank(i+1);
+						statistics.setStudentTotal(gradeList.size()); 
+	
+					}
+				}
+			}
+			else
+			{
+				statistics.setRank(-1);
+				statistics.setStudentTotal(gradeList.size());
+			}
+		}
+		
 		return statistics;
 	}
 
@@ -581,6 +665,7 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 
 	@SuppressWarnings("unchecked")
 	public BigDecimal getCourseGrade(Gradebook gradebook, Collection<?> items, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap, boolean isExtraCreditScaled) {
+		BigDecimal rv = null;
 		boolean isWeighted = true;
 		switch (gradebook.getCategory_type()) {
 		case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
@@ -590,7 +675,7 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 		case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
 			return getCategoriesCourseGrade((Collection<Category>)items, assignmentGradeRecordMap, isWeighted, isExtraCreditScaled);
 		}
-
+		
 		return null;
 	}
 

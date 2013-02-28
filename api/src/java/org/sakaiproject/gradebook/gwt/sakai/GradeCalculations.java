@@ -241,6 +241,16 @@ public interface GradeCalculations {
 	 * @return GradeStatistics
 	 */
 	public GradeStatistics calculateStatistics(List<StudentScore> gradeList, BigDecimal sum, String rankStudentId);
+	
+	/**
+	 * similar to calculateStatistics, this method has an extra field to capture the context, e.g. assignement id for assignment grade statistics; gradebook id for course statistics
+	 * @param context
+	 * @param gradeList
+	 * @param sum
+	 * @param rankStudentId
+	 * @return GradeStatistics
+	 */
+	public GradeStatistics calculateStatistics(String context, List<StudentScore> gradeList, BigDecimal sum, String rankStudentId);
 
 	/**
 	 * Points Possible = assignment.getPointsPossible()
