@@ -1,5 +1,6 @@
 package org.sakaiproject.gradebook.gwt.sakai.mock;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -325,6 +326,13 @@ public class GradebookExternalAssessmentServiceMock extends HibernateDaoSupport
 			AssessmentNotFoundException {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public Map<String, List<String>> getVisibleExternalAssignments(String arg0,
+			Collection<String> arg1) throws GradebookNotFoundException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

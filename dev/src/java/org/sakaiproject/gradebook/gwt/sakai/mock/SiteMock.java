@@ -569,4 +569,16 @@ public class SiteMock implements Site {
 		return null;
 	}
 
+	@Override
+	public String getHtmlDescription() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getHtmlShortDescription() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
