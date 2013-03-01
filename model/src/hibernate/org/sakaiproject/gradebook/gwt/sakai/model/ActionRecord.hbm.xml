@@ -41,7 +41,7 @@
   		<map name="propertyMap" table="GB_ACTION_RECORD_PROPERTY_T" cascade="all" lazy="false">
 			<key column="ACTION_RECORD_ID"/>
 			<index column="PROPERTY_NAME" type="string"/>
-			<element column="PROPERTY_VALUE" type="string"/>
+			<element column="PROPERTY_VALUE" type="string" length="2000"/>
 		</map>
   
   	</class>
