@@ -90,8 +90,8 @@
 	<classpathentry kind="var" path="M2_REPO/org/apache/xmlbeans/xmlbeans/2.3.0/xmlbeans-2.3.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/google/gwt/google-apis/gwt-visualization/1.1.2/gwt-visualization-1.1.2.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/sencha/gxt/gxt/3.0.1/gxt-3.0.1.jar"/>
-	<classpathentry kind="var" path="M2_REPO/com/google/gwt/gwt-servlet/2.5.0-rc1/gwt-servlet-2.5.0-rc1.jar"/>
-	<classpathentry kind="var" path="M2_REPO/com/google/gwt/gwt-user/2.5.0-rc1/gwt-user-2.5.0-rc1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/google/gwt/gwt-servlet/2.5.0/gwt-servlet-2.5.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/google/gwt/gwt-user/2.5.0/gwt-user-2.5.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/net/sf/ehcache/ehcache-core/2.5.1/ehcache-core-2.5.1.jar"/>
 	<classpathentry kind="lib" path="dev/src/lib/slf4j-api-1.6.2.jar"/>
 	<classpathentry kind="lib" path="dev/src/lib/slf4j-log4j12-1.6.2.jar"/>
