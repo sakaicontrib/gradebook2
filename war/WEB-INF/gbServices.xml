@@ -17,6 +17,7 @@
 		<!-- default is to expire elements in cache after 300 seconds -->
 		<property name="timeToLive" value="300" />
 		<property name="timeToIdle" value="300" />
+		<property name="overflowToDisk" value="false" />
     </bean>
     
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService" 
