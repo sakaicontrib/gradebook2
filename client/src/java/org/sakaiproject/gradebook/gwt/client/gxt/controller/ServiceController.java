@@ -739,8 +739,38 @@ public class ServiceController extends Controller {
 			isReleaseGradesUpdated = changes != null && changes.get(ItemKey.B_REL_GRDS.name()) != null;
 			isReleaseItemsUpdated = changes != null && changes.get(ItemKey.B_REL_ITMS.name()) != null;
 			isExtraCreditScaled = changes != null && changes.get(ItemKey.B_SCL_X_CRDT.name()) != null;
+			
+			ItemModel item = (ItemModel) event.record.getModel();
+			ModelData returnedItem = null;
+			if (!changes.isEmpty()){
+				ItemModel i = result;
+				if (!i.getChildren().isEmpty()) {
+					List<ModelData> l = i.getChildren();   ///gradebook item
+					//GWT.log("record (gb): " + l.indexOf(item));
+					for (ModelData d:l) {                 ///categories
+						if (!((ItemModel)d).getChildren().isEmpty()) {
+							List<ModelData> ll =((ItemModel)d).getChildren();
+							int index = ll.indexOf(item);
+							if (index >= 0) {
+								returnedItem = ll.get(index);
+								break;
+							}
+						}
+					}
+				}
+				
+			}
+			if( null == returnedItem ) {
+				///send notification for alert
+			} else {
+				item.setProperties(returnedItem.getProperties());
+			}
+			
 
 			event.record.commit(false);
+		} else {
+			//// I think this needs a user notification or some other check to make sure that the state is right.
+			//// 
 		}
 
 		switch (result.getItemType()) {
@@ -837,6 +867,8 @@ public class ServiceController extends Controller {
 				Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates.getEventType(), selectedGradebook);
 				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
 				Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType());
+				if(!event.close)
+					Dispatcher.forwardEvent(GradebookEvents.StartEditItem.getEventType(),itemModel);
 			}
 		});
 	}

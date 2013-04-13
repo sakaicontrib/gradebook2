@@ -39,6 +39,7 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 
 public class GradebookModel extends EntityModel implements IsSerializable, Gradebook {
 
+
 	private static final long serialVersionUID = 1L;
 	
 	public GradebookModel() {
@@ -283,4 +284,12 @@ public class GradebookModel extends EntityModel implements IsSerializable, Grade
 		
 		return null;
 	}
+	
+	public String toString() {
+		
+		return getJSON();
+	}
+	
+
+
 }

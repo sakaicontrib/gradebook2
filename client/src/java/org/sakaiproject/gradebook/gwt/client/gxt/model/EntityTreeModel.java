@@ -151,5 +151,11 @@ public class EntityTreeModel extends BaseTreeModel implements EntityOverlayOwner
 	public ModelData newChildModel(String property, EntityOverlay overlay) {
 		return new BaseModel();
 	}
+	
+	public String toString() {
+		
+		return getJSON();
+		
+	}
 
 }

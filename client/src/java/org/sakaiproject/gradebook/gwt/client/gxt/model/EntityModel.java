@@ -168,4 +168,10 @@ public class EntityModel extends BaseModel implements EntityOverlayOwner {
 		 return new BaseModel();
 	 }
 	 
+	 public String toString() {
+		 
+		 return getJSON();
+		 
+	 }
+	 
 }

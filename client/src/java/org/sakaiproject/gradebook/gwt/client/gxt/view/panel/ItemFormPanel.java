@@ -655,7 +655,6 @@ public class ItemFormPanel extends GradebookPanel {
 
 		if (itemModel != null) {
 			ItemType itemType = itemModel.getItemType();
-			clearChanges();
 			formBindings.addListener(Events.Bind, bindListener);
 			formBindings.bind(itemModel);
 			initState(itemType, itemModel, false, doEnableButtons);
@@ -702,6 +701,7 @@ public class ItemFormPanel extends GradebookPanel {
 			doEditItemButtons(selectedItemModel);
 
 		formPanel.show();
+		clearChanges(); /// this only works if the panel is rendered
 		nameField.focus();
 	}
 
@@ -780,6 +780,8 @@ public class ItemFormPanel extends GradebookPanel {
 				}
 			}
 		}
+		
+		this.selectedItemModel = (ItemModel) rootItemModel.getChild(0); 
 	}
 
 	public void onNewCategory(final ItemModel itemModel) {
@@ -1606,9 +1608,10 @@ public class ItemFormPanel extends GradebookPanel {
 							break;
 						case SAVECLOSE:
 							close = true;
+							
+						case SAVE:
 							Dispatcher.forwardEvent(GradebookEvents.MaskMultiGradeGrid.getEventType());
 							hideFormPanel();
-						case SAVE:
 							if(close) {
 								hasUnprocessedSaveState = false;
 							}
