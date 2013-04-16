@@ -25,6 +25,7 @@ package org.sakaiproject.gradebook.gwt.client.gxt.controller;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -770,7 +771,7 @@ public class ServiceController extends Controller {
 			event.record.commit(false);
 		} else {
 			//// I think this needs a user notification or some other check to make sure that the state is right.
-			//// 
+			GWT.log("!!!! swallowed error!!!!\nevent.record="+event.record +"\nevent.record.isEditing()="+ event.record.isEditing() + "\n"+ new Date());
 		}
 
 		switch (result.getItemType()) {
@@ -867,8 +868,9 @@ public class ServiceController extends Controller {
 				Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates.getEventType(), selectedGradebook);
 				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
 				Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType());
-				if(!event.close)
-					Dispatcher.forwardEvent(GradebookEvents.StartEditItem.getEventType(),itemModel);
+				if(!event.close) {
+					Dispatcher.forwardEvent(GradebookEvents.StartEditItem.getEventType(),event.item);
+				}
 			}
 		});
 	}
