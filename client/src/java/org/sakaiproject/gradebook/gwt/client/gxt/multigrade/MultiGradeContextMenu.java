@@ -46,6 +46,7 @@ import org.sakaiproject.gradebook.gwt.client.util.Base64;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Scroll;
+import com.extjs.gxt.ui.client.data.BaseListLoadResult;
 import com.extjs.gxt.ui.client.data.BaseListLoader;
 import com.extjs.gxt.ui.client.data.DataReader;
 import com.extjs.gxt.ui.client.data.HttpProxy;
@@ -101,9 +102,10 @@ public class MultiGradeContextMenu extends Menu {
 	
 	 
 	protected final GradebookResources resources = Registry.get(AppConstants.RESOURCES);
-	private FormPanel historyCardForm;
+	private FormPanel commentCardForm;
 	private BaseListLoader<ListLoadResult<ModelData>> loader;
-	private Text status;
+	private Text commentUpdateStatus;
+	private Text historyLoadStatus;
 	private boolean modified;
 	
 	
@@ -178,7 +180,7 @@ public class MultiGradeContextMenu extends Menu {
     			editCommentTextArea.setOriginalValue(editCommentTextArea.getValue());
     		}
     		public void onError(GradeRecordUpdate update) {
-    			status.setText(i18n.errorOccurredGeneric());
+    			commentUpdateStatus.setText(i18n.errorOccurredGeneric());
     			GWT.log("error saving comment");
     		}
     	});
@@ -250,7 +252,7 @@ public class MultiGradeContextMenu extends Menu {
 				super.onKeyUp(fe);
 				
 				submit.setEnabled(editCommentTextArea.isDirty());
-				status.setText(editCommentTextArea.isDirty() || !modified ? "" : i18n.saved());
+				commentUpdateStatus.setText(editCommentTextArea.isDirty() || !modified ? "" : i18n.saved());
 			}
 
 			@Override
@@ -272,33 +274,39 @@ public class MultiGradeContextMenu extends Menu {
 		
 		editCommentContainer.add(editCommentTextArea);		
 	    
-		historyCardForm = new FormPanel();
+		commentCardForm = new FormPanel();
 		FormLayout flayout = new FormLayout();
 		flayout.setLabelAlign(LabelAlign.TOP);
-		historyCardForm.setLayout(flayout);
+		commentCardForm.setLayout(flayout);
 			
 		commentsCard.setTitle(i18n.editCommentsMenu());
 		historyCard.setTitle(i18n.headerHistory());
 		
 		wizard.setHeaderTitle(data.getDisplayName() + " - '" + owner.getSelectedColumnHeader() + "'");
 		
-		historyCardForm.add(editCommentTextArea, new FormData("100% 85%"));
+		commentCardForm.add(editCommentTextArea, new FormData("100% 85%"));
 		
-		status = new Text();
-		historyCardForm.add(status);
-		historyCardForm.addButton(submit);
+		commentUpdateStatus = new Text();
+		commentCardForm.add(commentUpdateStatus);
+		commentCardForm.addButton(submit);
 		
-		commentsCard.setFormPanel(historyCardForm);
+		commentsCard.setFormPanel(commentCardForm);
 		
 		
 		/// ----- start setup for the grade history grid
 		
+		historyLoadStatus = new Text(i18n.applicationLoading());
+		historyLoadStatus.setStyleAttribute("font-size", "12");
+		
 		RestBuilder builder = RestBuilder.getInstance(Method.GET, GWT.getModuleBaseURL(),
 				AppConstants.REST_FRAGMENT, AppConstants.GRADE_EVENT_FRAGMENT);
 		
-		HttpProxy<String> proxy = new HttpProxy<String>(builder) {
-			
-			public void load(final DataReader<String> reader, final Object loadConfig, final AsyncCallback<String> callback) {
+		HttpProxy<BaseListLoadResult<String>> proxy = new HttpProxy<BaseListLoadResult<String>>(builder) {
+
+			@Override
+			public void load(DataReader<BaseListLoadResult<String>> reader,
+					Object loadConfig,
+					final AsyncCallback<BaseListLoadResult<String>> callback) {
 				ModelData learner = owner.getSelectedModel();
 				if (learner == null)
 					return;
@@ -309,10 +317,27 @@ public class MultiGradeContextMenu extends Menu {
 				initUrl = RestBuilder.buildInitUrl(GWT.getModuleBaseURL(),
 						AppConstants.REST_FRAGMENT, AppConstants.GRADE_EVENT_FRAGMENT,
 						Base64.encode(learnerUid), String.valueOf(selectedAssignment));
+				
+				
 
-				super.load(reader, loadConfig, callback);
+				super.load(reader, loadConfig, new AsyncCallback<BaseListLoadResult<String>>() {
+				
+					@Override
+					public void onFailure(Throwable caught) {
+						historyLoadStatus.setText(i18n.errorOccurredGeneric());
+				        callback.onFailure(caught);
+				      }
+
+					@Override
+					public void onSuccess(BaseListLoadResult<String> result) {
+						historyLoadStatus.setText(i18n.historyLoaded());
+						callback.onSuccess(result);
+						
+					}
+				    
+				});
 			}
-			
+					
 		};  
 
 		ModelType type = new ModelType();
@@ -369,19 +394,20 @@ public class MultiGradeContextMenu extends Menu {
 		viewGradeHistoryGrid = new Grid<GradeEventModel>(store, cm);
 		viewGradeHistoryGrid.setBorders(true);
 		viewGradeHistoryGrid.setWidth(400);
-		viewGradeHistoryGrid.setHeight(325);
+		viewGradeHistoryGrid.setHeight(290);
 		viewGradeHistoryGrid.getView().setAutoFill(true);
 		
 		LayoutContainer layoutContainer = new LayoutContainer();
 		layoutContainer.setLayout(new FitLayout());
-		layoutContainer.add(viewGradeHistoryGrid, new FormData("100% 80%") );
+		layoutContainer.add(viewGradeHistoryGrid);//, new FormData("100% 75%") );
 		layoutContainer.setScrollMode(Scroll.AUTO);
+		layoutContainer.add(historyLoadStatus);
 		
 		historyCard.setLayoutContainer(layoutContainer);
 				
 	}
 	protected void setSavedText() {
-		status.setText(i18n.saved());
+		commentUpdateStatus.setText(i18n.saved());
 	}
 
 	protected void setModified(boolean b) {

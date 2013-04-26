@@ -523,4 +523,5 @@ public interface I18nConstants extends Constants {
 	String noCommentsYet();
 	String editCommentsMenu();
 	String saved();
+	String historyLoaded();
 }
