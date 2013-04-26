@@ -219,6 +219,8 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	
 	protected boolean refreshOnShow; 
 	protected RefreshData refreshData; 
+	
+	private String selectedColumnHeader = null;
 
 	public MultiGradeContentPanel(ListStore<ModelData> store, boolean isImport) {
 		super();
@@ -627,6 +629,8 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 							break;
 						case PERCENTAGES:
 							name.append(i18n.columnSuffixPercentages());
+						default:
+							break;
 						}
 						column.setHeader(name.toString());
 						queueDeferredRefresh(RefreshAction.REFRESHLOCALCOLUMNS);
@@ -723,21 +727,37 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		};
 
 		gridEventListener = new Listener<GridEvent<ModelData>>() {
-
+			int activeRowIndex = -1;
+			int activeColIndex = -1;
+			
 			public void handleEvent(GridEvent<ModelData> ge) {
 
+				
 				if (ge.getType().equals(Events.CellClick)) {
+					activeRowIndex = ge.getRowIndex();
+					activeColIndex = ge.getColIndex();
+					commentingStudentModel = newStore().getAt(activeRowIndex);
+					ge.getGrid().getSelectionModel().select(activeRowIndex, false);
 					if (!isImport) {
-						if (ge.getColIndex() == 0 || ge.getColIndex() == 1 || ge.getColIndex() == 2) {
-							ModelData selectedLearner = newStore().getAt(ge.getRowIndex());
-							Dispatcher.forwardEvent(GradebookEvents.SingleGrade.getEventType(), selectedLearner);
-							ge.getGrid().getSelectionModel().select(ge.getRowIndex(), false);
-						}
+						if (ge.getColIndex() == 0 || ge.getColIndex() == 1 || ge.getColIndex() == 2) { 
+							
+							Dispatcher.forwardEvent(GradebookEvents.SingleGrade.getEventType(), getSelectedModel());
+							}
+												
 					}
 				} else if (ge.getType().equals(Events.ContextMenu)) {
-					if (ge.getRowIndex() >= 0 && ge.getColIndex() >= 0) {
+					if (!grid.isEditing()) {
+						commentingStudentModel = null;
+						activeRowIndex = ge.getRowIndex();
+						activeColIndex = ge.getColIndex();
+						ge.getGrid().getSelectionModel().select(ge.getRowIndex(), false);
+					}
+					
+					if (activeRowIndex >= 0 && activeColIndex >= 0) {
+						commentingStudentModel = newStore().getAt(activeRowIndex);
 						ColumnConfig c = grid.getColumnModel().getColumn(
-								ge.getColIndex());
+								activeColIndex);
+						setSelectedColumnHeader(c.getHeader());
 						String assignIdStr = c.getId();
 						long assignId;
 
@@ -747,33 +767,22 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 							ge.stopEvent();
 							// GRBK-575 : disabling all context menu items if the user clicks
 							// on a none grade item cell
-							contextMenu.enableAddComment(false);
+							//contextMenu.enableAddComment(false);
 							contextMenu.enableEditComment(false);
 							contextMenu.enableViewGradeHistory(false);
 							return;
 						}
-						commentingStudentModel = newStore().getAt(ge.getRowIndex());
 						commentingAssignmentId = Long.valueOf(assignId);
 
-						String commentedKey = DataTypeConversionUtil.buildCommentKey(commentingAssignmentId.toString());
+						//String commentedKey = DataTypeConversionUtil.buildCommentKey(commentingAssignmentId.toString());
 
-						Boolean commentFlag = (Boolean) commentingStudentModel
-						.get(commentedKey);
+						//Boolean commentFlag = (Boolean) commentingStudentModel.get(commentedKey);
 
-						boolean isCommented = commentFlag != null
-						&& commentFlag.booleanValue();
+						contextMenu.enableEditComment(true);
+						
+						boolean isGraded = commentingStudentModel.get(assignIdStr) != null; 
 
-						if (isCommented) {
-							contextMenu.enableAddComment(false);
-							contextMenu.enableEditComment(true);
-						} else {
-							contextMenu.enableAddComment(true);
-							contextMenu.enableEditComment(false);
-						}
-
-						boolean isGraded = true; 
-
-						contextMenu.enableViewGradeHistory(isGraded);
+						contextMenu.enableViewGradeHistory(null != commentingStudentModel && isGraded);
 					} else
 						ge.stopEvent();
 				}
@@ -988,7 +997,15 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	}
 
 	protected Menu newContextMenu() {
-		contextMenu = new MultiGradeContextMenu(this);
+		contextMenu = new MultiGradeContextMenu(this) {
+
+			@Override
+			protected void onShow() {
+				enableEditComment(getSelectedModel() != null);
+				super.onShow();
+			}
+			
+		};
 		return contextMenu;
 	}
 
@@ -1199,6 +1216,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 					be.setCancelled(true);
 				}
 				
+				
 				 //GRBK-992
 				String assignmentId = grid.getColumnModel().getColumn(be.getColIndex()).getId();
 				
@@ -1285,9 +1303,8 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	protected boolean isOriginalValueNull(GridEvent be) {
 			Record r = be.getRecord();
 			String assignIdStr = grid.getColumnModel().getColumn(be.getColIndex()).getId();
-			long assignId = -100;
 			try {
-				assignId = Long.parseLong(assignIdStr);
+				Long.parseLong(assignIdStr);
 			} catch (NumberFormatException e) {
 				GWT.log("assignment id for clicked cell not a parsable long");
 			}
@@ -1305,6 +1322,8 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			break;
 		case REFRESHCOLUMNS:
 			actualAction = RefreshAction.REFRESHCOLUMNSANDDATA;	
+			break;
+		default:
 			break;
 		}
 		refreshGrid(actualAction, configModel, staticColumns, gradebookItemModel);
@@ -1405,6 +1424,8 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			case LETTERS:
 				columnNameBuilder.append(i18n.columnSuffixLetterGrades());
 				break;
+			default:
+				break;
 			}
 		} else {
 			GWT.log("Grade Type is null for some reason", null);
@@ -1462,6 +1483,8 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 						config.setRenderer(extraCreditTextCellRenderer);
 
 					break;
+				default:
+					break;
 				}
 			} else {
 				GWT.log("Grade Type is null for some reason", null);
@@ -1480,6 +1503,8 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			if (!isIncluded)
 				config.setRenderer(unweightedTextCellRenderer);
 
+			break;
+		default:
 			break;
 		}
 
@@ -1521,6 +1546,8 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 				case ITEM:
 					configs.add(buildColumn(configModel, gradeType, child));
 					break;
+				default:
+					break;
 				}
 			}
 		}
@@ -1550,6 +1577,8 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			return i18n.gradeTypePercentages();
 		case LETTERS:
 			return i18n.gradeTypeLetters();
+		default:
+			break;
 		}
 
 		return "N/A";
@@ -1626,6 +1655,8 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			case REFRESHCOLUMNS:
 				this.refreshAction = RefreshAction.REFRESHCOLUMNSANDDATA;
 				break;
+			default:
+				break;
 			}
 			break;
 		case REFRESHLOCALCOLUMNS:
@@ -1636,6 +1667,8 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			case REFRESHLOCALCOLUMNS:
 			case REFRESHCOLUMNS:
 				this.refreshAction = RefreshAction.REFRESHCOLUMNS;
+				break;
+			default:
 				break;
 			}
 			break;
@@ -1648,7 +1681,11 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			case REFRESHCOLUMNS:
 				this.refreshAction = RefreshAction.REFRESHCOLUMNS;
 				break;
+			default:
+				break;
 			}
+			break;
+		default:
 			break;
 		}
 	}
@@ -1746,6 +1783,8 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		case ITEM:
 			toggleItem(m, isHidden);
 			break;
+		default:
+			break;
 		}
 		grid.show();
 		grid.getView().layout();
@@ -1761,6 +1800,8 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 					break;
 				case ITEM:
 					toggleItem(child, isHidden);
+					break;
+				default:
 					break;
 				}
 			}
@@ -1872,4 +1913,12 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		
 		grid.el().unmask();
 	}
+
+	public String getSelectedColumnHeader() {
+		return selectedColumnHeader;
+	}
+	public void setSelectedColumnHeader(String name) {
+		this.selectedColumnHeader = name;
+	}
+	
 }

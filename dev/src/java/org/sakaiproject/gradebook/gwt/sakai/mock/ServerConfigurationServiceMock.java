@@ -1,6 +1,7 @@
 package org.sakaiproject.gradebook.gwt.sakai.mock;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.sakaiproject.component.api.ServerConfigurationService;
@@ -203,6 +204,42 @@ public class ServerConfigurationServiceMock implements ServerConfigurationServic
 	public void registerListener(ConfigurationListener arg0) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public List<String> getCategoryGroups(String arg0) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Locale getLocaleFromString(String arg0) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Locale[] getSakaiLocales() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<String> getToolGroup(String arg0) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean toolGroupIsRequired(String arg0, String arg1) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean toolGroupIsSelected(String arg0, String arg1) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

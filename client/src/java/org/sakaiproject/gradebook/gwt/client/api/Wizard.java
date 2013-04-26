@@ -6,6 +6,7 @@ import java.util.List;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.widget.Layout;
 import com.google.gwt.user.client.Element;
 
 public interface Wizard {
@@ -125,6 +126,14 @@ public interface Wizard {
 	
 	public void hideCancelButton(boolean hide);
 	
+	public void setLayout(Layout layout);
 	
+
+	
+	//GRBK-817
+	
+	public boolean isHideFinishButtonOnLastCard();
+	
+	public void setHideFinishButtonOnLastCard(boolean hide);
 	
 }

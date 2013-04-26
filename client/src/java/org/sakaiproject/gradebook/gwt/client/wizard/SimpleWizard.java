@@ -14,6 +14,7 @@ import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.widget.Layout;
 import com.google.gwt.user.client.Element;
 
 
@@ -74,6 +75,7 @@ public class SimpleWizard extends WizardWindow implements Wizard  {
 	
 	public void setResizable(boolean resizable) {
 		super.setResizable(resizable);
+		super.setMonitorWindowResize(resizable);
 	}
 
 	public void onRender(Element parent, int pos) {
@@ -233,9 +235,27 @@ public class SimpleWizard extends WizardWindow implements Wizard  {
 		super.pressCancelButton();
 	}
 
-	@Override
 	public void hideCancelButton(boolean hide) {
 		super.hideCancelButton(hide);
+		
+	}
+	
+	public void setLayout(Layout layout) {
+		super.setLayout(layout);
+	}
+
+	
+	@Override
+	public boolean isHideFinishButtonOnLastCard() {
+		
+		return super.isHideFinishButtonOnLastCard();
+	}
+
+	
+	@Override
+	public void setHideFinishButtonOnLastCard(boolean hide) {
+		
+		super.setHideFinishButtonOnLastCard(hide);
 		
 	}
 

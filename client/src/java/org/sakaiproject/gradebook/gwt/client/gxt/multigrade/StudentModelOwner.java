@@ -25,6 +25,7 @@ package org.sakaiproject.gradebook.gwt.client.gxt.multigrade;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.grid.EditorGrid;
+import com.google.gwt.user.client.Element;
 
 public interface StudentModelOwner {
 
@@ -35,5 +36,12 @@ public interface StudentModelOwner {
 	public EditorGrid<ModelData> getGrid();
 	
 	public ListStore<ModelData> getStore();
+
+	public Element getElement();
+	
+	public String getSelectedColumnHeader();
+	
+	public void setSelectedColumnHeader(String name);
+
 	
 }

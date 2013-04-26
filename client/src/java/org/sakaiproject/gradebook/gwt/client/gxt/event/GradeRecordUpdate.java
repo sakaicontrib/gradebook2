@@ -53,4 +53,12 @@ public class GradeRecordUpdate {
 		this.value = value;
 	}
 	
+	public void onSuccess (GradeRecordUpdate update) {
+		
+	}
+	public void onError (GradeRecordUpdate update) {
+		
+	}
+	
+	
 }

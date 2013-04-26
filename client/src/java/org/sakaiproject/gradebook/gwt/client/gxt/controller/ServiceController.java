@@ -411,6 +411,7 @@ public class ServiceController extends Controller {
 		String message = new StringBuilder().append(i18n.gradeUpdateFailedException()).append(" ").append(record.get(LearnerKey.S_DSPLY_NM.name())).append(". ").toString();
 
 		Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught, message));
+		event.onError(event);
 	}
 
 	private void setFailedFlag(Record record, String property, String message) {
@@ -504,6 +505,7 @@ public class ServiceController extends Controller {
 		}
 
 		Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent("Success", message));
+		event.onSuccess(event);
 	}
 
 	private void onUpdateGradeMap(final GradeMapUpdate event) {

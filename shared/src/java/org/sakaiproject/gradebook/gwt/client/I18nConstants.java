@@ -518,4 +518,9 @@ public interface I18nConstants extends Constants {
 	
 	String exportFormatFieldEmptyText();
 	String exportFormatFieldLabel();
+	
+	// GRBK-817
+	String noCommentsYet();
+	String editCommentsMenu();
+	String saved();
 }

@@ -160,6 +160,8 @@ public class WizardWindow extends Window {
 	protected HorizontalAlignment buttonAlignment = HorizontalAlignment.RIGHT;
 
 	private boolean hideCancelButton;
+
+	private boolean hideFinishButtonOnLastCard;
 	
 
 	/**
@@ -262,8 +264,10 @@ public class WizardWindow extends Window {
 
 		if (currentStep + 1 == cards.size()) {
 			nextBtn.setText(finishButtonText);
+			nextBtn.setVisible(hideFinishButtonOnLastCard);
 		}
 		else {
+			nextBtn.setVisible(true);
 			nextBtn.setText(nextButtonText);
 		}
 
@@ -776,6 +780,14 @@ public class WizardWindow extends Window {
 	public void hideCancelButton(boolean hide) {
 		hideCancelButton = hide;
 		
+	}
+
+	public boolean isHideFinishButtonOnLastCard() {
+		return this.hideFinishButtonOnLastCard;
+	}
+
+	public void setHideFinishButtonOnLastCard(boolean hide) {
+		this.hideFinishButtonOnLastCard = hide;
 	}
 
 }

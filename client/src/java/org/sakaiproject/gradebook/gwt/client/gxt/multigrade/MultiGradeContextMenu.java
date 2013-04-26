@@ -28,16 +28,22 @@ import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
+import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
+import org.sakaiproject.gradebook.gwt.client.api.Card;
+import org.sakaiproject.gradebook.gwt.client.api.Wizard;
+import org.sakaiproject.gradebook.gwt.client.gin.WidgetInjector;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.GradeEventModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.LearnerModel;
 import org.sakaiproject.gradebook.gwt.client.model.key.GradeEventKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
+import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 import org.sakaiproject.gradebook.gwt.client.util.Base64;
-
+import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.data.BaseListLoader;
@@ -45,30 +51,39 @@ import com.extjs.gxt.ui.client.data.DataReader;
 import com.extjs.gxt.ui.client.data.HttpProxy;
 import com.extjs.gxt.ui.client.data.JsonLoadResultReader;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
-import com.extjs.gxt.ui.client.data.ListLoader;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.ModelType;
+import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
-import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FieldEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.MenuEvent;
+import com.extjs.gxt.ui.client.event.MessageBoxEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
+import com.extjs.gxt.ui.client.util.Util;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.Dialog;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
+import com.extjs.gxt.ui.client.widget.MessageBox;
+import com.extjs.gxt.ui.client.widget.Text;
 import com.extjs.gxt.ui.client.widget.button.Button;
+import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.TextArea;
+import com.extjs.gxt.ui.client.widget.form.FormPanel.LabelAlign;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.extjs.gxt.ui.client.widget.layout.FormData;
+import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.TextBox;
 
 public class MultiGradeContextMenu extends Menu {
 
@@ -76,91 +91,207 @@ public class MultiGradeContextMenu extends Menu {
 	private MenuItem contextMenuEditCommentItem;
 	private MenuItem contextMenuViewGradeLogItem;
 	
-	private Menu contextMenuAddSubMenu;
-	private Menu contextMenuEditSubMenu;
-	private Menu contextMenuViewSubMenu;
-	
-	private TextArea addCommentTextArea;
 	private TextArea editCommentTextArea;
 	private Grid<GradeEventModel> viewGradeHistoryGrid;
+	private Wizard wizard;
+	private I18nConstants i18n;
+	
+	Text student = new Text();
+	Text assignment = new Text();
+	
+	 
+	protected final GradebookResources resources = Registry.get(AppConstants.RESOURCES);
+	private FormPanel historyCardForm;
+	private BaseListLoader<ListLoadResult<ModelData>> loader;
+	private Text status;
+	private boolean modified;
+	
+	
 
 	
 	public MultiGradeContextMenu(final StudentModelOwner owner) {
 		super();
 		
-		contextMenuAddCommentItem = new MenuItem("Add Comment");
-		contextMenuEditCommentItem = new MenuItem("Edit Comment");
-		contextMenuViewGradeLogItem = new MenuItem("View Grade History");
+		this.i18n = Registry.get(AppConstants.I18N);
 		
-		ContentPanel addCommentContainer = new ContentPanel();
-		addCommentContainer.setHeaderVisible(false);
-		addCommentTextArea = new TextArea() {
-			
-			@Override
-			protected void onKeyPress(FieldEvent fe) {
-			    super.onKeyPress(fe);
+		contextMenuEditCommentItem = new MenuItem(i18n.editCommentsMenu());
+		
+		
+		contextMenuViewGradeLogItem = new MenuItem("View Grade History"); //TODO: I18N
+		
+		add(contextMenuEditCommentItem);
+		
+		contextMenuEditCommentItem.addSelectionListener(new SelectionListener<MenuEvent>() {
 
-			    switch (fe.getKeyCode()) {
-			    case KeyCodes.KEY_ENTER:
-			    	addComment(owner, getValue());
-			    	break;
-			    }
-			    
-			}
-			
-		};
-		addCommentTextArea.setSize(200, 150);
-		// GBRK-199 MJW - IE needs the container size to be set as well. 
-		addCommentContainer.setSize(200, 150); 
-		addCommentContainer.add(addCommentTextArea);
-		addCommentContainer.addButton(new Button("Submit", new SelectionListener<ButtonEvent>() {
-			
 			@Override
-			public void componentSelected(ButtonEvent be) {
-				addComment(owner, addCommentTextArea.getValue());
+			public void componentSelected(MenuEvent ce) {
+				prepareDialog(owner);
+				showDialog(owner, 1);
+				
 			}
-			
-		}));
+		});
 		
-		contextMenuAddSubMenu = new Menu();
-		contextMenuAddSubMenu.add(addCommentContainer);
-		
-		ContentPanel editCommentContainer = new ContentPanel();
-		editCommentContainer.setHeaderVisible(false);
-		editCommentTextArea = new TextArea() {
-			
-			@Override
-			protected void onKeyPress(FieldEvent fe) {
-			    super.onKeyPress(fe);
+		add(contextMenuViewGradeLogItem);
+		contextMenuViewGradeLogItem.addSelectionListener(new SelectionListener<MenuEvent> () {
 
-			    switch (fe.getKeyCode()) {
-			    case KeyCodes.KEY_ENTER:		    
-			    	editComment(owner, getValue());
-			    	break;
-			    }
-			    
+			@Override
+			public void componentSelected(MenuEvent ce) {
+				prepareDialog(owner);
+				showDialog(owner, 2);
 			}
 			
-		};
-		editCommentTextArea.setSize(200, 150);
-		// GBRK-199 MJW - IE needs the container size to be set as well. 
-		editCommentContainer.setSize(200, 150);
-		editCommentContainer.add(editCommentTextArea);
-		editCommentContainer.addButton(new Button("Submit", new SelectionListener<ButtonEvent>() {
+		});
+
+	}
+	
+	@Override
+	public void showAt(int x, int y) {
+		super.showAt(x - 3, y - 3);
+	}
+	
+	public void enableAddComment(boolean isEnabled) {
+		contextMenuAddCommentItem.setEnabled(isEnabled);
+	}
+	
+	public void enableEditComment(boolean isEnabled) {
+		contextMenuEditCommentItem.setEnabled(isEnabled);
+	}
+	
+	public void enableViewGradeHistory(boolean isEnabled) {
+		contextMenuViewGradeLogItem.setEnabled(isEnabled);
+	}
+	
+	
+	private void editComment(StudentModelOwner owner, String value) {
+		ListStore<ModelData> learnerStore = owner.getStore();
+		ModelData learner = owner.getSelectedModel();
+    	Long itemId = owner.getSelectedAssignment();
+    	
+    	String property = DataTypeConversionUtil.buildCommentTextKey(String.valueOf(itemId)); //new StringBuilder().append(String.valueOf(itemId)).append(AppConstants.COMMENT_TEXT_FLAG).toString();
+    	
+    	String newCommentText = value;
+    	String oldCommentText = learner.get(property);
+    	
+    	Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord.getEventType(), new GradeRecordUpdate(learnerStore, learner, property, "Comment", oldCommentText, newCommentText) {
+    		public void onSuccess(GradeRecordUpdate update) {
+    			GWT.log(i18n.saved());
+    			editCommentTextArea.setOriginalValue(editCommentTextArea.getValue());
+    		}
+    		public void onError(GradeRecordUpdate update) {
+    			status.setText(i18n.errorOccurredGeneric());
+    			GWT.log("error saving comment");
+    		}
+    	});
+	}	
+	
+	private void prepareDialog(final StudentModelOwner owner) {
+		
+		LearnerModel data =  (LearnerModel) owner.getSelectedModel();
+		
+		if (null == data) {
+			GWT.log("null data in menuselection for comment edit menu");
+			return;
+		}
+		
+		WidgetInjector injector = Registry.get(AppConstants.WIDGET_INJECTOR);
+		wizard = injector.getWizardProvider().get();
+
+		// 1st and only card 
+		
+		Card commentsCard = wizard.newCard(i18n.commentName());
+		Card historyCard = wizard.newCard(i18n.headerHistoryTitle());
+		
+		wizard.setClosable(false);
+		wizard.setShowWestImageContainer(false);
+		wizard.setPanelBackgroundColor("#FFFFFF");
+		
+		wizard.setContainer(owner.getElement());
+		
+		wizard.setProgressIndicator(Wizard.Indicator.NONE);
+		wizard.setHidePreviousButtonOnFirstCard(true);
+		wizard.setHideHeaderPanel(false);
+		
+		wizard.setModal(true);
+		wizard.setResizable(false);
+		wizard.setSize(655, 555);
+		
+		wizard.setLayout(new FitLayout());
+		
+		wizard.setNextButtonText(i18n.headerHistory());
+		wizard.setPreviousButtonText(i18n.editCommentsMenu());
+		
+		wizard.setHidePreviousButtonOnFirstCard(true);
+		
+		wizard.addCancelListener(new DirtyCheckListener());
+		wizard.setCancelButtonText(i18n.close());
+		
+		 /// ---- start setup for comment editing
+		final Button submit = new Button("Submit");
+		submit.addSelectionListener(new SelectionListener<ButtonEvent>() {
 
 			@Override
 			public void componentSelected(ButtonEvent be) {
 				editComment(owner, editCommentTextArea.getValue());
+				submit.setEnabled(false);
+				setModified(true);
+				setSavedText();
 			}
 			
-		}));
+		});
+		submit.setEnabled(false);
+		submit.setVisible(true);
 		
 		
-		contextMenuEditSubMenu = new Menu();
-		contextMenuEditSubMenu.add(editCommentContainer);
+		editCommentTextArea = new TextArea() {
+			
+			@Override
+			protected void onKeyUp(FieldEvent fe) {
+				
+				super.onKeyUp(fe);
+				
+				submit.setEnabled(editCommentTextArea.isDirty());
+				status.setText(editCommentTextArea.isDirty() || !modified ? "" : i18n.saved());
+			}
+
+			@Override
+			public boolean isDirty() {
+				String newValue = getInputEl().getValue();
+				return !Util.equalWithNull(newValue, originalValue)
+						&& !i18n.noCommentsYet().equals(newValue) ;
+			}
+			
+		};
 		
-		contextMenuViewSubMenu = new Menu();
+		editCommentTextArea.setFieldLabel(i18n.commentName());
+		editCommentTextArea.setEmptyText(i18n.noCommentsYet());
+		editCommentTextArea.addStyleName("commentTextarea");
 		
+		
+		ContentPanel editCommentContainer = new ContentPanel();
+		editCommentContainer.setHeaderVisible(false);
+		
+		editCommentContainer.add(editCommentTextArea);		
+	    
+		historyCardForm = new FormPanel();
+		FormLayout flayout = new FormLayout();
+		flayout.setLabelAlign(LabelAlign.TOP);
+		historyCardForm.setLayout(flayout);
+			
+		commentsCard.setTitle(i18n.editCommentsMenu());
+		historyCard.setTitle(i18n.headerHistory());
+		
+		wizard.setHeaderTitle(data.getDisplayName() + " - '" + owner.getSelectedColumnHeader() + "'");
+		
+		historyCardForm.add(editCommentTextArea, new FormData("100% 85%"));
+		
+		status = new Text();
+		historyCardForm.add(status);
+		historyCardForm.addButton(submit);
+		
+		commentsCard.setFormPanel(historyCardForm);
+		
+		
+		/// ----- start setup for the grade history grid
 		
 		RestBuilder builder = RestBuilder.getInstance(Method.GET, GWT.getModuleBaseURL(),
 				AppConstants.REST_FRAGMENT, AppConstants.GRADE_EVENT_FRAGMENT);
@@ -195,7 +326,7 @@ public class MultiGradeContextMenu extends Menu {
 		// need a loader, proxy, and reader  
 		JsonLoadResultReader<ListLoadResult<ModelData>> reader = new JsonLoadResultReader<ListLoadResult<ModelData>>(type);  
 
-		final ListLoader<ListLoadResult<ModelData>> loader = new BaseListLoader<ListLoadResult<ModelData>>(proxy, reader);
+		loader = new BaseListLoader<ListLoadResult<ModelData>>(proxy, reader);
 				
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 		
@@ -237,92 +368,94 @@ public class MultiGradeContextMenu extends Menu {
 		store.setModelComparer(new EntityModelComparer<GradeEventModel>(GradeEventKey.S_ID.name()));
 		viewGradeHistoryGrid = new Grid<GradeEventModel>(store, cm);
 		viewGradeHistoryGrid.setBorders(true);
+		viewGradeHistoryGrid.setWidth(400);
+		viewGradeHistoryGrid.setHeight(325);
+		viewGradeHistoryGrid.getView().setAutoFill(true);
 		
 		LayoutContainer layoutContainer = new LayoutContainer();
 		layoutContainer.setLayout(new FitLayout());
-		layoutContainer.setSize(300, 250);
-		layoutContainer.add(viewGradeHistoryGrid);
+		layoutContainer.add(viewGradeHistoryGrid, new FormData("100% 80%") );
 		layoutContainer.setScrollMode(Scroll.AUTO);
 		
-		contextMenuViewSubMenu.add(layoutContainer);
-		
-		contextMenuAddCommentItem.setSubMenu(contextMenuAddSubMenu);
-		contextMenuEditCommentItem.setSubMenu(contextMenuEditSubMenu);
-		contextMenuViewGradeLogItem.setSubMenu(contextMenuViewSubMenu);
-		
-		add(contextMenuAddCommentItem);
-		add(contextMenuEditCommentItem);
-		add(contextMenuViewGradeLogItem);
-		
-		addListener(Events.BeforeShow, new Listener<MenuEvent>() {
+		historyCard.setLayoutContainer(layoutContainer);
+				
+	}
+	protected void setSavedText() {
+		status.setText(i18n.saved());
+	}
 
-			public void handleEvent(MenuEvent be) {
-				addCommentTextArea.setValue(null);
-				editCommentTextArea.setValue(null);
+	protected void setModified(boolean b) {
+		this.modified = b;
+		
+	}
+
+	private void showDialog(final StudentModelOwner owner, int page) {
+		setModified(false);
+		if (null == owner)
+			return;
+		
+		LearnerModel data =  (LearnerModel) owner.getSelectedModel();
 				
-				if (contextMenuEditCommentItem.isEnabled()) {
-					
-					ModelData learner = owner.getSelectedModel();
-					Long itemId = owner.getSelectedAssignment();
-					
-					if (learner != null && itemId != null) {
-						String property = DataTypeConversionUtil.buildCommentTextKey(String.valueOf(itemId)); //new StringBuilder().append(String.valueOf(itemId)).append(AppConstants.COMMENT_TEXT_FLAG).toString();
-						
-						String commentText = learner.get(property);
-						editCommentTextArea.setValue(commentText);
+		if (null == data) {
+			GWT.log("null data in menuselection for comment edit menu");
+			return;
+		}
+		Long itemId = owner.getSelectedAssignment();
+		
+		if (data != null && itemId != null) {
+			String property = DataTypeConversionUtil.buildCommentTextKey(String.valueOf(itemId)); 
+			
+			String commentText = data.get(property);
+			commentText = null == commentText ? "" : commentText;
+			editCommentTextArea.setValue(commentText);
+			editCommentTextArea.setOriginalValue(commentText);
+
+		}
+		
+		if (contextMenuViewGradeLogItem.isEnabled()) {
+			if (viewGradeHistoryGrid.isRendered()) {
+				viewGradeHistoryGrid.getView().refresh(false);
+			}
+			loader.load();
+			viewGradeHistoryGrid.getView().layout();
+		}
+
+		wizard.show();
+		if(page>1) 
+			wizard.pressNextButton();
+		
+	}
+	
+	public class DirtyCheckListener implements Listener<BaseEvent> {
+
+		public void handleEvent(BaseEvent be) {
+			editCommentTextArea.enable();
+			if (editCommentTextArea.isDirty()) {
+				confirm(i18n.hasChangesMessage());
+			}
+		}
+		
+		private void confirm(String msg) {
+			MessageBox.confirm("", msg, new Listener<MessageBoxEvent> () {
+
+				
+				public void handleEvent(MessageBoxEvent be) {
+					Button clicked = be.getButtonClicked();
+					if (!clicked.getItemId().equals(Dialog.YES)) {
+						wizard.show();
+						wizard.pressPreviousButton();
 					}
+					
 				}
 				
-				if (contextMenuViewGradeLogItem.isEnabled()) {
-					if (viewGradeHistoryGrid.isRendered())
-						viewGradeHistoryGrid.getView().refresh(false);
-					loader.load();
-				}
-			} 
-		});
-	}
-	
-	@Override
-	public void showAt(int x, int y) {
-		super.showAt(x - 3, y - 3);
-	}
-	
-	public void enableAddComment(boolean isEnabled) {
-		contextMenuAddCommentItem.setEnabled(isEnabled);
-	}
-	
-	public void enableEditComment(boolean isEnabled) {
-		contextMenuEditCommentItem.setEnabled(isEnabled);
-	}
-	
-	public void enableViewGradeHistory(boolean isEnabled) {
-		contextMenuViewGradeLogItem.setEnabled(isEnabled);
+			});
+		}
+		
+		 
+		
 	}
 	
 	
-	private void addComment(StudentModelOwner owner, String value) {
-		ListStore<ModelData> learnerStore = owner.getStore();
-		ModelData learner = owner.getSelectedModel();
-    	Long itemId = owner.getSelectedAssignment();
-    	
-    	String property = DataTypeConversionUtil.buildCommentTextKey(String.valueOf(itemId)); //new StringBuilder().append(String.valueOf(itemId)).append(AppConstants.COMMENT_TEXT_FLAG).toString();
-    	
-    	String newCommentText = value;
-    	String oldCommentText = learner.get(property);
-    	
-    	Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord.getEventType(), new GradeRecordUpdate(learnerStore, learner, property, "Comment", oldCommentText, newCommentText));
-	}
+
 	
-	private void editComment(StudentModelOwner owner, String value) {
-		ListStore<ModelData> learnerStore = owner.getStore();
-		ModelData learner = owner.getSelectedModel();
-    	Long itemId = owner.getSelectedAssignment();
-    	
-    	String property = DataTypeConversionUtil.buildCommentTextKey(String.valueOf(itemId)); //new StringBuilder().append(String.valueOf(itemId)).append(AppConstants.COMMENT_TEXT_FLAG).toString();
-    	
-    	String newCommentText = value;
-    	String oldCommentText = learner.get(property);
-    	
-    	Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord.getEventType(), new GradeRecordUpdate(learnerStore, learner, property, "Comment", oldCommentText, newCommentText));
-	}	
 }
