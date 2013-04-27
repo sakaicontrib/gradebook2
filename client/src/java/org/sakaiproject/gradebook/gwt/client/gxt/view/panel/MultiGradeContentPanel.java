@@ -785,7 +785,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 						contextMenu.enableViewGradeHistory(null != commentingStudentModel && isGraded);
 					} else
 						contextMenu.enableViewGradeHistory(false);
-						contextMenu.enableEditComment(true);
+						contextMenu.enableEditComment(false);
 						ge.stopEvent();
 				}
 			}
