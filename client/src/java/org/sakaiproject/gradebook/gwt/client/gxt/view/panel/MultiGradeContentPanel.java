@@ -753,7 +753,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 						ge.getGrid().getSelectionModel().select(ge.getRowIndex(), false);
 					}
 					
-					if (activeRowIndex >= 0 && activeColIndex >= 0) {
+					if (activeRowIndex >= 0 && activeColIndex > 6) {
 						commentingStudentModel = newStore().getAt(activeRowIndex);
 						ColumnConfig c = grid.getColumnModel().getColumn(
 								activeColIndex);
@@ -784,6 +784,8 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 
 						contextMenu.enableViewGradeHistory(null != commentingStudentModel && isGraded);
 					} else
+						contextMenu.enableViewGradeHistory(false);
+						contextMenu.enableEditComment(true);
 						ge.stopEvent();
 				}
 			}
