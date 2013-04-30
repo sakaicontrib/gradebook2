@@ -438,13 +438,11 @@ public class MultiGradeContextMenu extends Menu {
 
 		}
 		
-		if (contextMenuViewGradeLogItem.isEnabled()) {
-			if (viewGradeHistoryGrid.isRendered()) {
-				viewGradeHistoryGrid.getView().refresh(false);
-			}
-			loader.load();
-			viewGradeHistoryGrid.getView().layout();
+		if (viewGradeHistoryGrid.isRendered()) {
+			viewGradeHistoryGrid.getView().refresh(false);
 		}
+		loader.load();
+		viewGradeHistoryGrid.getView().layout();
 
 		wizard.show();
 		if(page>1) 
