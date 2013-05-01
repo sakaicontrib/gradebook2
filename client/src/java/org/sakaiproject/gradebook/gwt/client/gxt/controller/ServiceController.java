@@ -743,25 +743,11 @@ public class ServiceController extends Controller {
 			isReleaseItemsUpdated = changes != null && changes.get(ItemKey.B_REL_ITMS.name()) != null;
 			isExtraCreditScaled = changes != null && changes.get(ItemKey.B_SCL_X_CRDT.name()) != null;
 			
-			ItemModel item = (ItemModel) event.record.getModel();
+			ItemModel item = null;
 			ModelData returnedItem = null;
 			if (!changes.isEmpty()){
-				ItemModel i = result;
-				if (!i.getChildren().isEmpty()) {
-					List<ModelData> l = i.getChildren();   ///gradebook item
-					//GWT.log("record (gb): " + l.indexOf(item));
-					for (ModelData d:l) {                 ///categories
-						if (!((ItemModel)d).getChildren().isEmpty()) {
-							List<ModelData> ll =((ItemModel)d).getChildren();
-							int index = ll.indexOf(item);
-							if (index >= 0) {
-								returnedItem = ll.get(index);
-								break;
-							}
-						}
-					}
-				}
-				
+				item = (ItemModel) event.record.getModel();
+				returnedItem = findItemModel(item, result);				
 			}
 			if( null == returnedItem ) {
 				///send notification for alert
@@ -807,6 +793,9 @@ public class ServiceController extends Controller {
 			} else if (isGradeScaleUpdated) {
 				Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType(),
 						selectedGradebook);
+			} else {
+				Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookSetup.getEventType(),
+						selectedGradebook);
 			}
 
 			break;
@@ -828,6 +817,32 @@ public class ServiceController extends Controller {
 			break;
 		}
 
+	}
+
+	private ModelData findItemModel(ItemModel item, ItemModel result) {
+
+		ModelData rv = null;
+		if (result != null) {
+			if (result.equals(item)) {
+				return result;
+			}
+			if (!result.getChildren().isEmpty()) {
+				List<ModelData> l = result.getChildren();   
+				int i = l.indexOf(item);
+				if(i >= 0) {
+					rv = l.get(i);
+				} else {
+					for (ModelData d:l) {
+						rv = findItemModel(item, (ItemModel)d);
+						if (null != rv)
+							break;
+					}
+				}
+			}
+		}
+		return rv;
+			
+		
 	}
 
 	private void onUpdateItem(final ItemUpdate event) {
