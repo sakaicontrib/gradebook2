@@ -159,9 +159,9 @@ public class WizardWindow extends Window {
 
 	protected HorizontalAlignment buttonAlignment = HorizontalAlignment.RIGHT;
 
-	private boolean hideCancelButton;
+	private boolean hideCancelButton = false;
 
-	private boolean hideFinishButtonOnLastCard;
+	private boolean hideFinishButtonOnLastCard = false;
 	
 
 	/**
