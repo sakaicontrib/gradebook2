@@ -211,6 +211,7 @@ public class MultiGradeContextMenu extends Menu {
 		
 		wizard.setProgressIndicator(Wizard.Indicator.NONE);
 		wizard.setHidePreviousButtonOnFirstCard(true);
+		wizard.setHideFinishButtonOnLastCard(true);
 		wizard.setHideHeaderPanel(false);
 		
 		wizard.setModal(true);

@@ -264,7 +264,7 @@ public class WizardWindow extends Window {
 
 		if (currentStep + 1 == cards.size()) {
 			nextBtn.setText(finishButtonText);
-			nextBtn.setVisible(hideFinishButtonOnLastCard);
+			nextBtn.setVisible(!hideFinishButtonOnLastCard);
 		}
 		else {
 			nextBtn.setVisible(true);
