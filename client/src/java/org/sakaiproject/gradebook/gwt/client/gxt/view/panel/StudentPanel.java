@@ -669,20 +669,22 @@ public class StudentPanel extends GradebookPanel {
 					studentInformation.setText(PI_ROW_CALCULATED_GRADE, PI_COL_VALUE, calculatedGrade);
 				}
 				
-				if (isShowRank)
-				{
-					studentInformation.setText(PI_ROW_RANK, PI_COL_HEADING, i18n.studentPanelRank());
-					formatter.setStyleName(PI_ROW_RANK, PI_COL_HEADING, resources.css().gbImpact());
-					if (displayRank)
-						studentInformation.setText(PI_ROW_RANK, PI_COL_VALUE, courseGradeStats.getRank());
-					else
-						studentInformation.setText(PI_ROW_RANK, PI_COL_VALUE, i18n.studentPanelVisibleToStudent());
-				} else {
-					studentInformation.setText(PI_ROW_RANK, PI_COL_HEADING, "");
-					studentInformation.setText(PI_ROW_RANK, PI_COL_VALUE, "");
-				}
+				
 
 			} 
+			
+			if (isShowRank)
+			{
+				studentInformation.setText(PI_ROW_RANK, PI_COL_HEADING, i18n.studentPanelRank());
+				formatter.setStyleName(PI_ROW_RANK, PI_COL_HEADING, resources.css().gbImpact());
+				if (displayRank)
+					studentInformation.setText(PI_ROW_RANK, PI_COL_VALUE, courseGradeStats.getRank());
+				else
+					studentInformation.setText(PI_ROW_RANK, PI_COL_VALUE, i18n.studentPanelVisibleToStudent());
+			} else {
+				studentInformation.setText(PI_ROW_RANK, PI_COL_HEADING, "");
+				studentInformation.setText(PI_ROW_RANK, PI_COL_VALUE, "");
+			}
 
 			if (doReleaseItems) {
 				

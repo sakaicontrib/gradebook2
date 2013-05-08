@@ -160,6 +160,7 @@ public class DevelopmentModeBean {
 		itemModel.setShowMean(Boolean.FALSE);
 		itemModel.setShowMedian(Boolean.FALSE);
 		itemModel.setShowMode(Boolean.TRUE);
+		itemModel.setShowRank(Boolean.TRUE);
 		
 		service.updateItem(itemModel);
 		
