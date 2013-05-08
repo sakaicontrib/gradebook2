@@ -781,7 +781,6 @@ public class ItemFormPanel extends GradebookPanel {
 			}
 		}
 		
-		this.selectedItemModel = (ItemModel) rootItemModel.getChild(0); 
 	}
 
 	public void onNewCategory(final ItemModel itemModel) {
