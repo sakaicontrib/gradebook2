@@ -245,6 +245,7 @@ public class DevelopmentModeBean {
 		essay1.setReleased(Boolean.TRUE);
 		essay1.setItemType(ItemType.ITEM);
 		essay1.setIncluded(Boolean.TRUE);
+		essay1.setItemOrder(1);
 		try {
 		  essay1 = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, essay1, false));
 		} catch (BusinessRuleException re) {
@@ -264,6 +265,7 @@ public class DevelopmentModeBean {
 		essay2.setReleased(Boolean.TRUE);
 		essay2.setItemType(ItemType.ITEM);
 		essay2.setIncluded(Boolean.TRUE);
+		essay2.setItemOrder(0);
 		try {  
 		  service.createItem(gradebookUid, gradebookId, essay2, false);
 		} catch (BusinessRuleException re) {

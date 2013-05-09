@@ -45,6 +45,7 @@ import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.Statistics;
+import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.StatisticsKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
@@ -244,7 +245,8 @@ public class StudentPanel extends GradebookPanel {
 						return 0;
 
 					if (property.equals(Key.S_ITM_NM.name()))
-						property = Key.S_ORDER.name();
+						 property = ItemKey.I_SRT_ORDR.name();
+						//property = Key.S_ORDER.name();
 
 					Object v1 = m1.get(property);
 					Object v2 = m2.get(property);
