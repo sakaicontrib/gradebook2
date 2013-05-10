@@ -2315,17 +2315,14 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
  			}
  			else {
  				log.debug("getAllAssignmentGradeRecord cache miss for :" + cacheKey);
- 			}
-		
- 			allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebook.getId(), realmIds, learnerRoleNames);
-
- 			// put it into cache
- 			if (cache != null)
- 			{
+ 				allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebook.getId(), realmIds, learnerRoleNames);
  				cache.put(new Element(cacheKey, allGradeRecords));
  			}
+		
+ 		} else {
+ 			return gbService.getAllAssignmentGradeRecords(gradebook.getId(), realmIds, learnerRoleNames);
  		}
-		return allGradeRecords;
+ 		return allGradeRecords;
 	}
 
 	/* Extract and cache the user invariant summary information from all grade records. 
