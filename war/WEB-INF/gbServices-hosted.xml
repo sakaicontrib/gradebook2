@@ -9,6 +9,7 @@
     	init-method="init">
     	<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
     	<property name="externalService" ref="org.sakaiproject.service.gradebook.shared.GradebookExternalAssessmentService"/>
+    	<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/>
     </bean>
     
     <bean id="org.sakaiproject.service.gradebook.shared.GradebookExternalAssessmentService"

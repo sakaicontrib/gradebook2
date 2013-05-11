@@ -31,6 +31,7 @@ import java.util.Map;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
@@ -40,11 +41,13 @@ import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentServiceImpl;
+import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
 import org.sakaiproject.gradebook.gwt.server.model.GradeItemImpl;
 import org.sakaiproject.service.gradebook.shared.ConflictingAssignmentNameException;
 import org.sakaiproject.service.gradebook.shared.GradebookExternalAssessmentService;
 import org.sakaiproject.service.gradebook.shared.GradebookFrameworkService;
+import org.sakaiproject.service.gradebook.shared.GradebookService;
 
 import com.google.gwt.core.client.GWT;
 
@@ -60,8 +63,12 @@ public class DevelopmentModeBean {
 	private Gradebook2ComponentService service;
 	private GradebookExternalAssessmentService externalService;
 	private GradebookFrameworkService frameworkService; 
+	private GradebookToolService gbService;
 	
-	
+	public void setGbService(GradebookToolService gbService) {
+		this.gbService = gbService;
+	}
+
 	public void init() {	
 
 		boolean runSetup = false; 
@@ -148,10 +155,13 @@ public class DevelopmentModeBean {
 		 
 		Item itemModel = gbModel.getGradebookItemModel();
 		
+		org.sakaiproject.tool.gradebook.Gradebook gradebook = gbService.getGradebook(gbModel.getGradebookUid());
+		gradebook.setGrade_type(GradebookService.GRADE_TYPE_LETTER);
+		gbService.updateGradebook(gradebook);
 		
 		itemModel.setName("Gradebook");
 		itemModel.setCategoryType(CategoryType.WEIGHTED_CATEGORIES);
-		itemModel.setGradeType(GradeType.POINTS);
+		itemModel.setGradeType(GradeType.LETTERS);
 		itemModel.setItemType(ItemType.GRADEBOOK);
 		itemModel.setExtraCreditScaled(Boolean.TRUE);
 		itemModel.setReleaseGrades(Boolean.FALSE);
@@ -254,7 +264,7 @@ public class DevelopmentModeBean {
 		
 		Learner learner = gbModel.getUserAsStudent();
 		if (learner != null) {
-			service.assignScore(gradebookUid, learner.getIdentifier(), essay1.getIdentifier(), "A", null);
+			service.assignScore(gradebookUid, learner.getIdentifier(), essay1.getIdentifier(), "B", null);
 		}
 		
 		GradeItem essay2 = new GradeItemImpl();

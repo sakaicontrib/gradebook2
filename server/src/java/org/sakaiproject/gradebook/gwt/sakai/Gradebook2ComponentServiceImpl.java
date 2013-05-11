@@ -2171,7 +2171,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			CacheAllGradeRecordsWrapper agrw = summarizeAllGradeRecords(cacheKey_allGradeRecords,gradeType, allGradeRecords,
 					studentGradeRecordMap, gradedStudentUids, assignmentSumMap,
 					assignmentGradeListMap);
-			studentGradeRecordMap = agrw.getStudentGradeRecordMap();
+			studentGradeRecordMap = agrw.getStudentGradeRecordMap();/// these four assignments are no-ops since they were assigned in the method
 			gradedStudentUids = agrw.getGradedStudentUids();
 			assignmentSumMap = agrw.getAssignmentSumMap();
 			assignmentGradeListMap = agrw.getAssignmentGradeListMap();
@@ -6188,7 +6188,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		boolean isCourseStats = assignmentId != null && assignmentId.equals(Long.valueOf(-1l));
 		boolean isShowCourseStats = gradebook.isCourseGradeDisplayed() && isCourseStats;
-		boolean isShowItemStats = Util.checkBoolean(gradebook.getShowItemStatistics()) && !isCourseStats;
+		boolean isShowItemStats = Util.checkBoolean(gradebook.getShowItemStatistics()) ;
 		boolean isShowMean = Util.checkBoolean(gradebook.getShowMean());
 		boolean isShowMedian = Util.checkBoolean(gradebook.getShowMedian());
 		boolean isShowMode = Util.checkBoolean(gradebook.getShowMode());
