@@ -6208,10 +6208,11 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 			if (isGrader || isShowMode)
 				model.setMode(mode);
-
-			if (isGrader || isShowRank)
-				model.setRank(rank); 
 		}
+
+		if (isGrader || isShowRank)
+			model.setRank(rank); 
+		
 
 		return model;
 	}

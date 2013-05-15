@@ -166,11 +166,12 @@ public class DevelopmentModeBean {
 		itemModel.setExtraCreditScaled(Boolean.TRUE);
 		itemModel.setReleaseGrades(Boolean.FALSE);
 		itemModel.setReleaseItems(Boolean.TRUE);
-		itemModel.setShowItemStatistics(Boolean.TRUE);
+		itemModel.setShowItemStatistics(Boolean.TRUE); /// obsolete?
 		itemModel.setShowMean(Boolean.FALSE);
 		itemModel.setShowMedian(Boolean.FALSE);
 		itemModel.setShowMode(Boolean.TRUE);
 		itemModel.setShowRank(Boolean.TRUE);
+		itemModel.setShowStatisticsChart(Boolean.TRUE); /// this requires the GRBK-616 patch
 		
 		service.updateItem(itemModel);
 		

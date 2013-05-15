@@ -1350,6 +1350,8 @@ public class ItemFormPanel extends GradebookPanel {
 			@Override
 			public void selectionChanged(SelectionChangedEvent<ModelData> se) {
 				ModelData d = se.getSelectedItem(); 
+				if (null == d)
+					return;
 				String catText = d.get(INSTRUCTIONAL_MSG_DISPLAY_FIELD);
 				informationMessageCategoryTypeInGradebookSetup.setHtml(catText);
 				setChanges();
@@ -1362,6 +1364,8 @@ public class ItemFormPanel extends GradebookPanel {
 			@Override
 			public void selectionChanged(SelectionChangedEvent<ModelData> se) {
 				ModelData d = se.getSelectedItem(); 
+				if (null == d)
+					return;
 				String catText = d.get(INSTRUCTIONAL_MSG_DISPLAY_FIELD);
 				informationMessageGradeTypeInGradebookSetup.setHtml(catText);
 				setChanges();
