@@ -366,7 +366,7 @@ public class ItemFormPanel extends GradebookPanel {
 		showItemStatsField.setFieldLabel(i18n.showItemStatsFieldLabel());
 		showItemStatsField.setVisible(false);
 		showItemStatsField.setToolTip(newToolTipConfig(i18n.showItemStatsToolTip()));
-		right.add(showItemStatsField);
+		//right.add(showItemStatsField);
 		
 		showStatisticsChartField = new NullSensitiveCheckBox();
 		showStatisticsChartField.setName(ItemKey.B_SHW_STATS_CHART.name());

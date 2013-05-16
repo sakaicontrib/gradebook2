@@ -3342,6 +3342,9 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		case GRADEBOOK:
 			return updateGradebookModel(item);
 		}
+		// GRBK-1333 set the showItemStatistics flag value based on the choices selected in the ui
+		
+		
 
 		Long assignmentId = Long.valueOf(item.getIdentifier());
 		Assignment assignment = gbService.getAssignment(assignmentId);
@@ -6197,18 +6200,18 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		// Only transmit the stats data to the client if the user is a grader or
 		// if the grader has authorized students to view that stat
 
-		if (isGrader || isShowCourseStats || isShowItemStats) {
-			if (isGrader || isShowMean) {
-				model.setMean(mean);
-				model.setStandardDeviation(standardDev);	
-			}
-
-			if (isGrader || isShowMedian)
-				model.setMedian(median);
-
-			if (isGrader || isShowMode)
-				model.setMode(mode);
+	
+		if (isGrader || isShowMean) {
+			model.setMean(mean);
+			model.setStandardDeviation(standardDev);	
 		}
+
+		if (isGrader || isShowMedian)
+			model.setMedian(median);
+
+		if (isGrader || isShowMode)
+			model.setMode(mode);
+		
 
 		if (isGrader || isShowRank)
 			model.setRank(rank); 
@@ -6910,7 +6913,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		boolean isShowItemStatistics = Util.checkBoolean(item.getShowItemStatistics());
 
-		gradebook.setShowItemStatistics(Boolean.valueOf(isShowItemStatistics));
+		//gradebook.setShowItemStatistics(Boolean.valueOf(isShowItemStatistics));
 		
 		boolean isShowStatisticsChart = Util.checkBoolean(item.getShowStatisticsChart());
 		

@@ -157,6 +157,7 @@ public class DevelopmentModeBean {
 		
 		org.sakaiproject.tool.gradebook.Gradebook gradebook = gbService.getGradebook(gbModel.getGradebookUid());
 		gradebook.setGrade_type(GradebookService.GRADE_TYPE_LETTER);
+		gradebook.setCourseGradeDisplayed(Boolean.TRUE);
 		gbService.updateGradebook(gradebook);
 		
 		itemModel.setName("Gradebook");
@@ -164,7 +165,7 @@ public class DevelopmentModeBean {
 		itemModel.setGradeType(GradeType.LETTERS);
 		itemModel.setItemType(ItemType.GRADEBOOK);
 		itemModel.setExtraCreditScaled(Boolean.TRUE);
-		itemModel.setReleaseGrades(Boolean.FALSE);
+		itemModel.setReleaseGrades(Boolean.TRUE);
 		itemModel.setReleaseItems(Boolean.TRUE);
 		itemModel.setShowItemStatistics(Boolean.TRUE); /// obsolete?
 		itemModel.setShowMean(Boolean.FALSE);
@@ -172,7 +173,6 @@ public class DevelopmentModeBean {
 		itemModel.setShowMode(Boolean.TRUE);
 		itemModel.setShowRank(Boolean.TRUE);
 		itemModel.setShowStatisticsChart(Boolean.TRUE); /// this requires the GRBK-616 patch
-		
 		service.updateItem(itemModel);
 		
 		String gradebookUid = gbModel.getGradebookUid();
