@@ -1253,7 +1253,7 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 
 	private BigDecimal getAssignmentWeight(Assignment assignment) {
 
-		BigDecimal assignmentWeight = null;
+		BigDecimal assignmentWeight = BigDecimal.ZERO;
 
 		// If the assignment doesn't exist or has no weight then we return null
 		if (null == assignment || isDeleted(assignment)) 
@@ -1282,7 +1282,7 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 
 	private BigDecimal getAssignmentWeight(GradeItem assignment, CategoryType categoryType) {
 
-		BigDecimal assignmentWeight = null;
+		BigDecimal assignmentWeight = BigDecimal.ZERO;
 
 		// If the assignment doesn't exist or has no weight then we return null
 		if (null == assignment || Util.checkBoolean(assignment.getRemoved())) 
