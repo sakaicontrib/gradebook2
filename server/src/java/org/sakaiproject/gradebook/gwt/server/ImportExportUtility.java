@@ -68,7 +68,7 @@ public interface ImportExportUtility {
 			FileType rv = CSV;
 			if( extension != null) {
 				for (FileType f : values()) {
-					if (f.getExtension().equals(extension)) {
+					if (f.getExtension().equals(extension.toLowerCase())) {
 						rv = f;
 						break;
 					}
