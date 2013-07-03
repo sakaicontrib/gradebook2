@@ -4952,8 +4952,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		itemModel.setShowMode(gradebook.getShowMode());
 		itemModel.setShowRank(gradebook.getShowRank());
 		itemModel.setShowItemStatistics(gradebook.getShowItemStatistics());
-		// GRBK-616 : DO NOT REMOVE THE FOLLOWING LINE
-		// itemModel.setShowStatisticsChart(gradebook.getShowStatisticsChart());
+		itemModel.setShowStatisticsChart(gradebook.getShowStatisticsChart());
 
 		Boolean isScaledExtraCreditEnabled = Boolean.FALSE;
 		if (stateOfScaledExtraCredit != null) {
@@ -6916,9 +6915,8 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		//gradebook.setShowItemStatistics(Boolean.valueOf(isShowItemStatistics));
 		
 		boolean isShowStatisticsChart = Util.checkBoolean(item.getShowStatisticsChart());
-		
-		// GRBK-616 : DO NOT REMOVE THE FOLLOWING LINE
-		// gradebook.setShowStatisticsChart(Boolean.valueOf(isShowStatisticsChart));
+
+		gradebook.setShowStatisticsChart(Boolean.valueOf(isShowStatisticsChart));
 		
 		GradeMapping mapping = gradebook.getSelectedGradeMapping();
 		Long gradeScaleId = item.getGradeScaleId();
