@@ -688,13 +688,11 @@ public class StudentPanel extends GradebookPanel {
 				studentInformation.setText(PI_ROW_RANK, PI_COL_VALUE, "");
 			}
 
-			if (doReleaseItems) {
 				
-				cm.setHidden(cm.getIndexById(meanColumn.getId()), !isShowItemStatistics || !isShowMean);
-				cm.setHidden(cm.getIndexById(stdvColumn.getId()), !isShowItemStatistics || !isShowMean);	
-				cm.setHidden(cm.getIndexById(medianColumn.getId()), !isShowItemStatistics || !isShowMedian);	
-				cm.setHidden(cm.getIndexById(modeColumn.getId()), !isShowItemStatistics || !isShowMode);
-			}
+			cm.setHidden(cm.getIndexById(meanColumn.getId()),   !isShowMean);
+			cm.setHidden(cm.getIndexById(stdvColumn.getId()),   !isShowMean);	
+			cm.setHidden(cm.getIndexById(medianColumn.getId()), !isShowMedian);	
+			cm.setHidden(cm.getIndexById(modeColumn.getId()),   !isShowMode);
 		} 
 		studentInformationPanel.show();
 	}
