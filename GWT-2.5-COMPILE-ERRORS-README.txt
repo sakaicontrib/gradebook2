@@ -1,0 +1,16 @@
+
+Serializeable classes were not given explicit serialVersionUID values and so are subject to JDK-choice. This may lead to mismatches and java.io.InvalidClassException during compilation of client.
+
+Compile error stack trace example:
+ 
+Caused by: java.io.InvalidClassException: com.google.gwt.dev.jjs.ast.JDeclaredType; local class incompatible: stream classdesc serialVersionUID = -8155793964565947646, local class serialVersionUID = -1052417216019896795
+
+Please see http://code.google.com/p/google-web-toolkit/issues/detail?id=7530
+
+recommended fix: 
+ - run 'rm -rf gwt-unitCache' at the root of project source
+ - compile with '-Dgwt.usearchives=false'
+
+
+
+ 

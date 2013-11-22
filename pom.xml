@@ -11,7 +11,7 @@
 	<name>Sakai Gradebook2 Project</name>
 	<groupId>org.sakaiproject.gradebook2</groupId>
 	<artifactId>gradebook2-base</artifactId>
-	<version>1.9.0-SNAPSHOT</version>
+	<version>1.9-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<repositories>
@@ -49,7 +49,7 @@
 	</repositories>
 
 	<properties>
-		<gb2.version>1.9.0-SNAPSHOT</gb2.version>
+		<gb2.version>1.9-SNAPSHOT</gb2.version>
 		<gxt.version>2.2.5-gwt22</gxt.version>
 		<gxt3.version>3.0.1</gxt3.version>
 		<gwt.version>2.5.0</gwt.version>
@@ -135,17 +135,17 @@
 			<properties>
 				<gb2.cm.groupId>org.sakaiproject.edu-services.course-management</gb2.cm.groupId>
 				<gb2.cm.artifactId>coursemanagement-api</gb2.cm.artifactId>
-				<gb2.cm.version>${sakai.edu-services.version}</gb2.cm.version>
+				<gb2.cm.version>${sakai.version}</gb2.cm.version>
 				
 				<gb1.groupId>org.sakaiproject.edu-services.gradebook</gb1.groupId>
 				<gb1.api.artifactId>gradebook-service-api</gb1.api.artifactId>
 				<gb1.hibernate.artifactId>gradebook-service-hibernate</gb1.hibernate.artifactId>
 				<gb1.service.artifactId>gradebook-service-impl</gb1.service.artifactId>
-				<gb1.version>${sakai.edu-services.version}</gb1.version>
+				<gb1.version>${sakai.version}</gb1.version>
 				
 				<gb2.sections.groupId>org.sakaiproject.edu-services.sections</gb2.sections.groupId>
 				<gb2.sections.artifactId>sections-api</gb2.sections.artifactId>
-				<gb2.sections.version>${sakai.edu-services.version}</gb2.sections.version>
+				<gb2.sections.version>${sakai.version}</gb2.sections.version>
 				<gwt.unpack.skip>true</gwt.unpack.skip>
 			</properties>
 			<dependencies>
@@ -161,14 +161,14 @@
 				<dependency>
 					<groupId>org.sakaiproject.common</groupId>
 					<artifactId>archive-api</artifactId>
-					<version>${sakai.common.version}</version>
+					<version>${sakai.version}</version>
 					<scope>provided</scope>
 					<optional>true</optional>
 				</dependency>
 				<dependency>
 					<groupId>org.sakaiproject.common</groupId>
 					<artifactId>archive-impl</artifactId>
-					<version>${sakai.common.version}</version>
+					<version>${sakai.version}</version>
 					<scope>provided</scope>
 					<optional>true</optional>
 				</dependency>
@@ -266,14 +266,14 @@
 				<dependency>
 					<groupId>org.sakaiproject.common</groupId>
 					<artifactId>archive-api</artifactId>
-					<version>${sakai.common.version}</version>
+					<version>${sakai.version}</version>
 					<scope>provided</scope>
 					<optional>true</optional>
 				</dependency>
 				<dependency>
 					<groupId>org.sakaiproject.common</groupId>
 					<artifactId>archive-impl</artifactId>
-					<version>${sakai.common.version}</version>
+					<version>${sakai.version}</version>
 					<scope>provided</scope>
 					<optional>true</optional>
 				</dependency>
