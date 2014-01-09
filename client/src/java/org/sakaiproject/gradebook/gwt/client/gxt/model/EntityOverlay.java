@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
@@ -14,13 +13,18 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.regexp.shared.RegExp;
 
 public class EntityOverlay extends JavaScriptObject implements Serializable {
 
 	private static final long serialVersionUID = 1L;
+	
+	static class EntityOverlayUtil$ {
+		public static RegExp unixEpochPattern = RegExp.compile("\\d{13}");
+	}
+	
 
-	protected EntityOverlay() {
-		
+	protected EntityOverlay() {		
 	}
 		
 	public final Object safeGet(EntityOverlayOwner owner, String property) {
@@ -73,14 +77,21 @@ public class EntityOverlay extends JavaScriptObject implements Serializable {
 		case AppConstants.DATE_PREFIX:
 		case AppConstants.ODD_DATE_PREFIX:
 			Date d = null;
-			try {
-				s = getString(property);
-				if (s != null) {
-					DateTimeFormat f = DateTimeFormat.getFormat(AppConstants.LONG_DATE);
-					d = f.parse(s);
+			s = getString(property);
+			if (EntityOverlayUtil$.unixEpochPattern.test(s)) {
+				long l = Long.parseLong(s);
+				d = new Date(l);
+				
+			}else {
+				try {
+					
+					if (s != null) {
+						DateTimeFormat f = DateTimeFormat.getFormat(AppConstants.LONG_DATE);
+						d = f.parse(s);
+					}
+				} catch (IllegalArgumentException iae) {
+					d = DateTimeFormat.getFormat(AppConstants.SHORT_DATE).parse(s);
 				}
-			} catch (IllegalArgumentException iae) {
-				d = DateTimeFormat.getFormat(AppConstants.SHORT_DATE).parse(getString(property));
 			}
 		
 			return d;
