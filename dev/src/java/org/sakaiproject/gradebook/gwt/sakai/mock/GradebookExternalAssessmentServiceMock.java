@@ -314,7 +314,7 @@ public class GradebookExternalAssessmentServiceMock extends HibernateDaoSupport
 
 	@Override
 	public void updateExternalAssessmentScores(String arg0, String arg1,
-			Map<String, Double> arg2) throws GradebookNotFoundException,
+			Map arg2) throws GradebookNotFoundException,
 			AssessmentNotFoundException {
 		// TODO Auto-generated method stub
 		
@@ -322,7 +322,7 @@ public class GradebookExternalAssessmentServiceMock extends HibernateDaoSupport
 
 	@Override
 	public void updateExternalAssessmentScoresString(String arg0, String arg1,
-			Map<String, String> arg2) throws GradebookNotFoundException,
+			Map arg2) throws GradebookNotFoundException,
 			AssessmentNotFoundException {
 		// TODO Auto-generated method stub
 		
