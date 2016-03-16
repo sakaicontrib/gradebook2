@@ -235,6 +235,15 @@
 	overflow:hidden;
 }
 
+.x-menu-item {
+	text-indent: 25px;
+}
+.portletBody table,.portletBody p,.portletBody ul,.portletBody ol,.portletBody hr,.portletBody form,.portletBody fieldset{
+	margin: 0px;
+}
+oi li,ul li{
+	list-style-type:none;
+}
 .x-panel-mc {
 	font-family:tahoma,arial,helvetica,sans-serif;
 	font-size:12pt;

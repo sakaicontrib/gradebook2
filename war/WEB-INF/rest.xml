@@ -3,21 +3,21 @@
 
 <beans>
 
-	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.JAXBContextResolver" singleton="true"/>
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.JAXBContextResolver" scope="singleton"/>
 	
-	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.InvalidInputMapper" singleton="true"/>
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.InvalidInputMapper" scope="singleton"/>
 	
-	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.SecurityMapper" singleton="true"/>
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.SecurityMapper" scope="singleton"/>
 	
-	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.GradebookCreationMapper" singleton="true"/>
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.GradebookCreationMapper" scope="singleton"/>
 	
-	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.InvalidDataMapper" singleton="true"/>
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.InvalidDataMapper" scope="singleton"/>
 	
-	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.StaleObjectModificationMapper" singleton="true">
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.StaleObjectModificationMapper" scope="singleton">
 		<property name="i18n" ref="gradebook2.I18N"/>
 	</bean>
 	
-	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.DataIntegrityViolationMapper" singleton="true">
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.DataIntegrityViolationMapper" scope="singleton">
 		<property name="i18n" ref="gradebook2.I18N"/>
 	</bean>
 	
