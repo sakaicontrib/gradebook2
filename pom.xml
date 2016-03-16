@@ -14,40 +14,6 @@
 	<version>1.9.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-	<repositories>
-		<repository>
-			<id>sakai-maven</id>
-			<name>Sakai Maven Repo</name>
-			<layout>default</layout>
-			<url>http://source.sakaiproject.org/maven2</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>sakai-maven2-snapshots</id>
-			<name>Sakai Maven Repo</name>
-			<layout>default</layout>
-			<url>http://source.sakaiproject.org/maven2-snapshots</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>ucd-maven</id>
-			<url>http://maven2.ucdavis.edu/maven2</url>
-		</repository>
-		<repository>
-			<id>ibiblio</id>
-			<url>http://mirrors.ibiblio.org/pub/mirrors/maven2</url>
-		</repository>
-		<repository>
-		    <id>sencha-commercial-release</id>
-		    <name>Sencha commercial releases</name>
-		    <url>https://maven.sencha.com/repo/commercial-release/</url>
-		</repository>
-	</repositories>
-
 	<properties>
 		<gb2.version>1.9.0-SNAPSHOT</gb2.version>
 		<gxt.version>2.2.5-gwt22</gxt.version>
@@ -60,9 +26,6 @@
 		<gb2.jersey.version>1.13</gb2.jersey.version>
 	</properties>
 
-	<scm>
-	  <developerConnection>scm:svn:https://source.sakaiproject.org/contrib/gradebook2/trunk</developerConnection>
-	</scm>
 	<profiles>
 
 	    <profile>
@@ -161,13 +124,6 @@
 				<dependency>
 					<groupId>org.sakaiproject.common</groupId>
 					<artifactId>archive-api</artifactId>
-					<version>${sakai.version}</version>
-					<scope>provided</scope>
-					<optional>true</optional>
-				</dependency>
-				<dependency>
-					<groupId>org.sakaiproject.common</groupId>
-					<artifactId>archive-impl</artifactId>
 					<version>${sakai.version}</version>
 					<scope>provided</scope>
 					<optional>true</optional>
@@ -907,23 +863,27 @@
 			<dependency>
 				<groupId>org.sakaiproject.edu-services.gradebook</groupId>
 				<artifactId>gradebook-service-api</artifactId>
+				<version>${gb1.version}</version>
 			</dependency>
 			
 			<dependency>
 				<groupId>org.sakaiproject.edu-services.gradebook</groupId>
 				<artifactId>gradebook-service-hibernate</artifactId>
+				<version>${gb1.version}</version>
 			</dependency>
 			
 			<!-- Sakai Course Management Dependency -->
 			<dependency>
 				<groupId>org.sakaiproject.edu-services.course-management</groupId>
 				<artifactId>coursemanagement-api</artifactId>
+				<version>${gb1.version}</version>
 			</dependency>
 			
 			<!-- Sakai Sections Dependency -->
 			<dependency>
 				<groupId>org.sakaiproject.edu-services.sections</groupId>
 				<artifactId>sections-api</artifactId>
+				<version>${gb1.version}</version>
 			</dependency>
 			
 			<!-- Other Provided Dependencies -->
@@ -945,17 +905,6 @@
 				<groupId>javax.servlet</groupId>
 				<artifactId>servlet-api</artifactId>
 				<version>${sakai.servletapi.version}</version>
-				<scope>provided</scope>
-			</dependency>
-			
-			<dependency>
-				<groupId>commons-lang</groupId>
-				<artifactId>commons-lang</artifactId>
-			</dependency>
-			
-			<dependency>
-				<groupId>commons-logging</groupId>
-				<artifactId>commons-logging</artifactId>
 				<scope>provided</scope>
 			</dependency>
 			
