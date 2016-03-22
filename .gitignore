@@ -1,4 +1,14 @@
 *.class
+.idea
+.project
+.classpath
+.settings
+*.iml
+*.swp
+*.orig
+*.rej
+.DS_Store
+.metadata
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
