@@ -48,6 +48,7 @@ import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.layout.CardLayout;
 import com.extjs.gxt.ui.client.widget.layout.FillLayout;
 import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Accessibility;
 import com.google.gwt.user.client.ui.RootPanel;
 
@@ -65,6 +66,9 @@ public abstract class AppView extends View {
 	
 	protected LayoutContainer viewport;
 	
+	private static final String gb2Container = "gb2container";
+	private static final double screenScaleWidth = 0.75;
+	private static final double screenScaleHeight = 0.7;
 	private Label userFeedbackLabel;
 	private FxConfig fxFadeOutConfig = new FxConfig(1000);
 	
@@ -77,11 +81,20 @@ public abstract class AppView extends View {
 		this.viewportLayout = new CardLayout();
 		this.realViewport = new Viewport() {
 			protected void onRender(Element parent, int pos) {
-			    super.onRender(parent, pos);
-			    Accessibility.setRole(el().dom, "application");
+				super.onRender(parent, pos);
+				Accessibility.setRole(el().dom, "application");
+			}
+
+			public void onAttach() {
+				super.onAttach();
+				setSize(Window.getClientWidth()*screenScaleWidth+"px", Window.getClientHeight()*screenScaleHeight+"px");
+			}
+
+			protected void onWindowResize(final int width, final int height) {
+				setSize((int)(width*screenScaleWidth),(int)(height*screenScaleHeight));
 			}
 		};
-		realViewport.setEnableScroll(false);
+		realViewport.setEnableScroll(true);
 		realViewport.setLayout(new FillLayout());
 		realViewport.setLoadingPanelId(AppConstants.LOADINGPANELID);
 		
@@ -91,7 +104,7 @@ public abstract class AppView extends View {
 		viewport.setPosition(0, 0);
 		viewport.setLayout(viewportLayout);
 		
-		RootPanel.get().add(realViewport);
+		RootPanel.get(gb2Container).add(realViewport);
 		
 		userFeedbackLabel = new Label();
 		userFeedbackLabel.addStyleName(resources.css().userFeedbackLabel());

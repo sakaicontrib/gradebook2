@@ -291,4 +291,10 @@
 	background-image:url(images/gb2/grid/table_row_delete.png);
 }
 
+.gb2Container {
+        margin-left: 25px;
+}
 
+button:hover.x-btn-text {
+        background: transparent !important;
+}

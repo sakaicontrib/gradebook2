@@ -3447,7 +3447,6 @@ a.x-grid3-hd-btn:hover {
 	line-height: 11px;
 	text-decoration: none;
 	padding: 0 0 0 3px;
-	position: relative;
 	top: -4px;
 }
 
@@ -6347,7 +6346,7 @@ ul.x-tab-strip-bottom{
 }
 .x-btn button{
     font:normal 11px arial,tahoma,verdana,helvetica;
-    color:#333;
+    color:#333 !important;
 }
 .x-btn em {
     font-style:normal;
