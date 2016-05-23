@@ -91,7 +91,7 @@ public abstract class AppView extends View {
 		viewport.setPosition(0, 0);
 		viewport.setLayout(viewportLayout);
 		
-		RootPanel.get().add(realViewport);
+		RootPanel.get("mainapp").add(realViewport);
 		
 		userFeedbackLabel = new Label();
 		userFeedbackLabel.addStyleName(resources.css().userFeedbackLabel());

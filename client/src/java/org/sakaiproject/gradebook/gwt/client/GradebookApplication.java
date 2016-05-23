@@ -136,7 +136,7 @@ public class GradebookApplication implements EntryPoint  {
 	private void warnUser(Throwable e) {
 		
 		GXT.hideLoadingPanel(AppConstants.LOADINGPANELID);
-		RootPanel.get().clear();
+		RootPanel.get("mainapp").clear();
 		RootPanel rootPanel = RootPanel.get("alert");
 		rootPanel.clear();
 		String warning = e == null ? i18n.gradebookApplicationWarnUser() : e.getMessage();

@@ -67,7 +67,7 @@ public class StartupController extends Controller {
 		if (isUserAbleToGrade) {
 			GWT.runAsync(new RunAsyncCallback() {
 				public void onFailure(Throwable caught) {
-					RootPanel.get().add(new HTML(i18n.serverNetworkConnectionError()));
+					RootPanel.get("mainapp").add(new HTML(i18n.serverNetworkConnectionError()));
 				}
 	
 				public void onSuccess() {
@@ -81,7 +81,7 @@ public class StartupController extends Controller {
 		} else if (isUserAbleToViewOwnGrades) {
 			GWT.runAsync(new RunAsyncCallback() {
 				public void onFailure(Throwable caught) {
-					RootPanel.get().add(new HTML(i18n.serverNetworkConnectionError()));					
+					RootPanel.get("mainapp").add(new HTML(i18n.serverNetworkConnectionError()));					
 				}
 	
 				public void onSuccess() {
@@ -93,7 +93,7 @@ public class StartupController extends Controller {
 				}
 			});
 		} else {
-			RootPanel.get().add(new HTML(i18n.userAuthorizationError()));
+			RootPanel.get("mainapp").add(new HTML(i18n.userAuthorizationError()));
 		}
 	}
 	
@@ -107,7 +107,7 @@ public class StartupController extends Controller {
 		}
 		else {
 			
-			RootPanel.get().add(new HTML(i18n.applicationStartupError()));
+			RootPanel.get("mainapp").add(new HTML(i18n.applicationStartupError()));
 		}
 	}
 

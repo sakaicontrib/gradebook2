@@ -2,6 +2,9 @@ package org.sakaiproject.gradebook.gwt.client.gxt.view.components;
 
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
+import com.extjs.gxt.ui.client.widget.Document;
+import com.extjs.gxt.ui.client.Style.Scroll;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
 
@@ -9,6 +12,7 @@ public class Viewport extends LayoutContainer {
 
 	  private String loadingPanelId = "loading";
 	  private boolean enableScroll;
+	  private boolean iniframe = true;
 
 	  public Viewport() {
 		  
@@ -36,8 +40,23 @@ public class Viewport extends LayoutContainer {
 	  public void onAttach() {
 	    super.onAttach();
 	    GXT.hideLoadingPanel(loadingPanelId);
-	    setEnableScroll(enableScroll);
-	    setSize(Window.getClientWidth(), Window.getClientHeight());
+	    // see if we're in an iframe. 
+	    Element elt = DOM.getElementById("container");
+	    if (elt != null) {
+		String className = elt.getClassName();
+		if (className != null && className.indexOf("Mrphs") >= 0)
+		    iniframe = false;
+	    }
+	    elt = DOM.getElementById("mainapp");
+	    // if not in iframe, always want scroll enabled
+	    // I'm guessing they disable it in an iframe to avoid double scrollbar
+	    if (!iniframe) {
+		this.enableScroll = true;
+		Window.enableScrolling(true);
+           } else
+              setEnableScroll(enableScroll);
+
+	    setSize(elt.getClientWidth(), Window.getClientHeight());
 	  }
 
 	  /**
@@ -46,6 +65,9 @@ public class Viewport extends LayoutContainer {
 	   * @param enableScroll the window scroll state
 	   */
 	  public void setEnableScroll(boolean enableScroll) {
+	    // Only disable scroll in iframe
+	    if (!iniframe)
+		return;
 	    this.enableScroll = enableScroll;
 	    Window.enableScrolling(enableScroll);
 	  }
@@ -67,6 +89,7 @@ public class Viewport extends LayoutContainer {
 
 	  @Override
 	  protected void onWindowResize(final int width, final int height) {
-	    setSize(Window.getClientWidth(), Window.getClientHeight());
+	    Element elt = DOM.getElementById("mainapp");
+	    setSize(elt.getClientWidth(), Window.getClientHeight());
 	  }
 }

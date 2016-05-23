@@ -18,6 +18,12 @@
 		<dependency>
 			<groupId>org.sakaiproject.gradebook2</groupId>
 			<artifactId>gradebook2-server</artifactId>
+			<exclusions>
+			  <exclusion>
+			    <groupId>commons-logging</groupId>
+			    <artifactId>commons-logging-api</artifactId>
+			  </exclusion>
+			</exclusions> 
 		</dependency>
 		<dependency>
 			<groupId>org.sakaiproject.gradebook2</groupId>
