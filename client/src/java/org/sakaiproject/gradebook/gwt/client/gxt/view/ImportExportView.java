@@ -59,7 +59,7 @@ public class ImportExportView extends View {
 			}
 		
 			Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
-			StringBuilder uri = new StringBuilder().append(GWT.getModuleBaseURL())
+			StringBuilder uri = new StringBuilder().append(GWT.getModuleBaseURL().replaceAll("(.*)\\/site\\/[^\\/]+\\/(.*)","$1/$2"))
 				.append(AppConstants.REST_FRAGMENT)
 				.append("/").append(AppConstants.EXPORT_SERVLET)
 				.append("/").append(selectedGradebook.getGradebookUid());
