@@ -885,21 +885,64 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 				StringBuilder builder = new StringBuilder();
 
-				builder.append(" select agr from AssignmentGradeRecord agr, GradableObject go, Realm as r, RealmGroup rg, RealmRole rr ")
-				.append(" where agr.gradableObject = go.id ")
-				.append(" and agr.studentId = rg.userId ")
-				.append(" and rg.roleKey = rr.roleKey ")
+				builder.append(" select distinct rg.userId from Realm as r, RealmGroup rg, RealmRole rr ")
+				.append(" where rg.roleKey = rr.roleKey ")
 				.append(" and r.realmKey = rg.realmKey ")
-				.append(" and go.gradebook.id=:gradebookId ")
 				.append(" and r.realmId in (:realmIds) ")
-				.append(" and (go.removed=false or go.removed is null) ")
 				.append(" and rr.roleName in (:roleKeys) ");
 
 				query = session.createQuery(builder.toString());
-				query.setLong("gradebookId", gradebookId.longValue());
 				query.setParameterList("realmIds", realmIds);
 				query.setParameterList("roleKeys", roleNames);
+				List<String> studentIds = (List<String>)query.list();
+				if(studentIds==null||studentIds.isEmpty()){
+					return new ArrayList();
+				}
+				
+				StringBuilder str = new StringBuilder();
+				int count = studentIds.size();
+				List<List<String>> splittedList = new ArrayList();
+				 
+				splittedList.add(studentIds);
+				if(count>1000){
+					splittedList = new ArrayList();
+					int mult = count/1000, offSet = count%1000, ini=0, i=0; 
+					
+					for(i=0;i<mult;i++){
+						List<String> subList = studentIds.subList(ini,1000*(i+1));
+						splittedList.add(subList);
+						ini = 1000*(i+1);
+					}
+					if(offSet>0){
+						List<String> subList = studentIds.subList(1000*i,count);
+						splittedList.add(subList);
+					}
+					str.append(" and (");
+					int params = splittedList.size();
+					for(int j=0;j<params;j++){
+						str.append("agr.studentId in (:studentIds"+j+") or ");
+					}
+					str = new StringBuilder(str.substring(0,str.lastIndexOf("or")));
+					str.append(") ");
+				}
+				else{
+					str = new StringBuilder(" and agr.studentId in (:studentIds0) ");
+				}	
+				
+				builder = new StringBuilder();
 
+				builder.append(" select agr from AssignmentGradeRecord agr, GradableObject go ")
+				.append(" where agr.gradableObject = go.id ")
+				.append(" and go.gradebook.id=:gradebookId ")
+				.append(" and (go.removed=false or go.removed is null) ")
+				.append(str);
+								
+				query = session.createQuery(builder.toString());
+				query.setLong("gradebookId", gradebookId.longValue());
+				int j = 0;
+				for(List<String> subList:splittedList){
+					query.setParameterList("studentIds"+j, subList);j++;
+				}
 				return query.list();
 			}
 		};
