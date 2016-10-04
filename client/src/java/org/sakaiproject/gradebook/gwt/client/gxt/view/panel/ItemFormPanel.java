@@ -1061,7 +1061,7 @@ public class ItemFormPanel extends GradebookPanel {
 				category = getCategoryItemModel(itemModel.getCategoryId());
 				// GRBK-599 : Determine if the item's category is an extra credit category. Don't show the % Category field
 				// for items that are part of an extra credit category and the category is equally weighted
-				isParentExtraCreditCategory = (category != null && category.getExtraCredit()) ? true : false;
+				isParentExtraCreditCategory = (category != null && ItemType.CATEGORY.equals(category.getItemType()) && category.getExtraCredit()) ? true : false;
 
 				// GRBK-833 : Make sure that grade items in an extra credit category have the extra credit checkbox checked
 				if(isParentExtraCreditCategory) {
