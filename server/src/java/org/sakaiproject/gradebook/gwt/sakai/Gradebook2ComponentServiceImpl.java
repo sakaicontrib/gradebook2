@@ -3925,7 +3925,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		String id = String.valueOf(assignmentId);
 
-		boolean isCommented = userRecord.getCommentMap() != null && userRecord.getCommentMap().get(assignmentId) != null;
+		boolean isCommented = userRecord.getCommentMap() != null && userRecord.getCommentMap().get(assignmentId) != null && userRecord.getCommentMap().get(assignmentId).getCommentText() != null;
 		boolean isCountNullsAsZeros = Util.checkBoolean(countNullsAsZeros);
 
 		if (isCommented) {
