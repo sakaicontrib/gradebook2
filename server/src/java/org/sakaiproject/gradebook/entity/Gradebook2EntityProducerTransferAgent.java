@@ -8,6 +8,7 @@ import java.io.StringWriter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.Stack;
 
@@ -39,11 +40,10 @@ import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
-import org.sakaiproject.gradebook.gwt.server.ImportSettingsImpl;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility.FileType;
+import org.sakaiproject.gradebook.gwt.server.ImportSettingsImpl;
 import org.sakaiproject.service.gradebook.shared.GradebookFrameworkService;
 import org.sakaiproject.service.gradebook.shared.GradebookNotFoundException;
-import org.sakaiproject.util.ResourceLoader;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -59,7 +59,7 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 	private Gradebook2ComponentService componentService;
 	private GradebookToolService toolService;
 	// Set via IoC
-	private ResourceLoader i18n;
+	private ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 	private ImportExportUtility importExportUtil = null;
 	private GradebookFrameworkService frameworkService = null;
 	
@@ -349,10 +349,4 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 		
 		return w.toString();
 	}
-
-	public void setI18n(ResourceLoader i18n) {
-		this.i18n = i18n;
-	}
-	
-
 }

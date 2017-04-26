@@ -131,13 +131,7 @@
 		
 	</bean>
 	
-	<bean id="gradebook2.I18N" class="org.sakaiproject.gradebook.gwt.sakai.mock.DevelopmentModeResourceLoader">
-		<property name="baseName" value="org.sakaiproject.gradebook.gwt.client.I18nConstants" />
-		<lookup-method name="preferencesService" bean="org.sakaiproject.user.api.PreferencesService" />
-		<property name="sessionManager"><ref bean="org.sakaiproject.tool.api.SessionManager" /></property>
-	</bean>
-	
-	<bean id="gradebook2.EntityProducerContextListener" 
+	<bean id="gradebook2.EntityProducerContextListener"
 		class="org.sakaiproject.gradebook.entity.AssureGradebookContextObserver"> 
 		<property name="myToolIds">
 			<set>

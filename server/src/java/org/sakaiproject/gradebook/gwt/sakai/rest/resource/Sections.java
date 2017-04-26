@@ -2,7 +2,7 @@ package org.sakaiproject.gradebook.gwt.sakai.rest.resource;
 
 import java.util.List;
 import java.util.Map;
-import org.sakaiproject.util.ResourceLoader;
+import java.util.ResourceBundle;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -13,7 +13,7 @@ import javax.ws.rs.Produces;
 public class Sections extends Resource {
 
 	// Set via IoC
-	private ResourceLoader i18n;
+	private ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 	
 	@GET
     @Produces("application/json")
@@ -21,11 +21,4 @@ public class Sections extends Resource {
 		List<Map<String,Object>> sections = service.getVisibleSections(gradebookUid, true, i18n.getString("sectionsEmptyText"));
 		return toJson(sections, sections.size());
 	}
-
-	public void setI18n(ResourceLoader i18n) {
-		this.i18n = i18n;
-	}
-	
-	
-
 }

@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -114,19 +115,17 @@ import org.sakaiproject.tool.gradebook.Permission;
 import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.api.UserDirectoryService;
 import org.sakaiproject.user.api.UserNotDefinedException;
-import org.sakaiproject.util.ResourceLoader;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
 import net.sf.ehcache.Cache;
-import net.sf.ehcache.config.CacheConfiguration;
 import net.sf.ehcache.Element;
-import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
 
 public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrapper implements Gradebook2ComponentService, ApplicationContextAware {
 
 	// Set via IoC
-	private ResourceLoader i18n;
+	private ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 
 	private static final Log log = LogFactory.getLog(Gradebook2ComponentServiceImpl.class);
 
@@ -6868,9 +6867,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		if (oldGradeType != newGradeType) {
 			if (gbService.isAnyScoreEntered(gradebook.getId(), hasCategories))
-				throw new InvalidInputException(i18n.getString("scoresEnteredNoGradeTypeChange",
-						"There are one or more scores already entered for this gradebook. " +
-						"To switch grade types at this time you will have to remove those scores."));
+				throw new InvalidInputException(i18n.getString("scoresEnteredNoGradeTypeChange"));
 		}
 
 		gradebook.setGrade_type(newGradeType);
@@ -7112,11 +7109,6 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		this.isShowWeightedEnabled = isShowWeightedEnabled;
 	}
 	
-	
-	public void setI18n(ResourceLoader i18n) {
-		this.i18n = i18n;
-	}
-
 	public FinalGradeSubmissionStatus getFinalGradeSubmissionStatus(String gradebookUid) {
 		
 		FinalGradeSubmissionStatus status = null;

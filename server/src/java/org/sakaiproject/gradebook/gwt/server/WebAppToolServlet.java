@@ -24,6 +24,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ResourceBundle;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
@@ -40,7 +41,6 @@ import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.tool.api.SessionManager;
 import org.sakaiproject.tool.api.Tool;
-import org.sakaiproject.util.ResourceLoader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
@@ -54,9 +54,7 @@ public class WebAppToolServlet extends HttpServlet {
 
 	private static String version = null;
 	
-	// Set via IoC
-	@Autowired
-	private ResourceLoader rb = null;
+	private ResourceBundle rb = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");;
 	
 	@Autowired
 	private SessionManager sessionManager = null;
@@ -243,10 +241,5 @@ public class WebAppToolServlet extends HttpServlet {
 	public void setSessionManager(SessionManager sessionManager) {
 		
 		this.sessionManager = sessionManager;
-	}
-
-
-	public void setRb(ResourceLoader rb) {
-		this.rb = rb;
 	}
 }

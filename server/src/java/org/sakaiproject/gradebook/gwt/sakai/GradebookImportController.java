@@ -30,8 +30,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import org.sakaiproject.util.ResourceLoader;
+import java.util.ResourceBundle;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -72,8 +71,7 @@ public class GradebookImportController extends SimpleFormController implements O
 	
 	private final String CONTENT_TYPE_TEXT_HTML = "text/html";
 		
-	// Set via IoC
-	private ResourceLoader i18n;
+	private ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 	
 	public ModelAndView submit(HttpServletRequest request,
 			HttpServletResponse response,
@@ -175,8 +173,7 @@ public class GradebookImportController extends SimpleFormController implements O
 						if (studentIds.contains(id) && !student.getUserNotFound()) {
 							dupsFound = true;
 							if (null == msg) {
-								msg = new StringBuffer(i18n.getString("importDuplicateStudentsFound", 
-										"Duplicate rows found in the table. The following Student Id's where duplicated: "))
+								msg = new StringBuffer(i18n.getString("importDuplicateStudentsFound"))
 								      .append("'").append(student.getStudentName()).append("'");
 							} else {
 								msg.append(",").append("'").append(student.getStudentName()).append("'");
@@ -278,9 +275,5 @@ public class GradebookImportController extends SimpleFormController implements O
 
 	public void setImportExportUtility(ImportExportUtility importExportUtility) {
 		this.importExportUtility = importExportUtility;
-	}
-
-	public void setI18n(ResourceLoader i18n) {
-		this.i18n = i18n;
 	}
 }
