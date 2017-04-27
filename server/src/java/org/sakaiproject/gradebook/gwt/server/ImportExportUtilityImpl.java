@@ -42,12 +42,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
-
-import jxl.Cell;
-import jxl.Sheet;
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -93,11 +89,14 @@ import org.sakaiproject.gradebook.gwt.server.model.GradeItemImpl;
 import org.sakaiproject.gradebook.gwt.server.model.LearnerImpl;
 import org.sakaiproject.gradebook.gwt.server.model.UploadImpl;
 import org.sakaiproject.tool.gradebook.Assignment;
-import org.sakaiproject.util.ResourceLoader;
 import org.springframework.web.multipart.MultipartFile;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
+import jxl.Cell;
+import jxl.Sheet;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
 
 /*
  * TODO: too many setters here?
@@ -122,7 +121,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	// GRBK-689
 	private String clickerStudentIdHeader;
 	// Set via IoC
-	private ResourceLoader i18n;
+	private ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 
 	public String[] scantronIgnoreColumns = null;
 	public String[] clickerIgnoreColumns = null;
@@ -1032,13 +1031,9 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	private Upload handleJExcelAPISpreadSheet(InputStream is,
 			String fileName, boolean isNewAssignmentByFileName, ImportSettings settings) throws InvalidInputException, FatalException, IOException {
 		Workbook wb = null; 
-		final String unexpectedTypeErrorMessage = i18n.getString("filetypeExtensionMismatch", 
-				"jexcel ")
-				+ lookupI18nExportType(settings.getExportTypeName());
+		final String unexpectedTypeErrorMessage = i18n.getString("filetypeExtensionMismatch") + lookupI18nExportType(settings.getExportTypeName());
 		
-		final String unexpectedFormatErrorMessage = i18n.getString("expectedFormat", 
-				"The file content did not match your selection: ")
-				+ lookupI18nFileFormat(settings.getFileFormatName());
+		final String unexpectedFormatErrorMessage = i18n.getString("expectedFormat") + lookupI18nFileFormat(settings.getFileFormatName());
 		
 		Upload rv = new UploadImpl();
 		try {
@@ -1115,8 +1110,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		ImportExportDataFile raw = new ImportExportDataFile(); 
 		int numRows; 
 		
-		final String unexpectedFormatErrorMessage = i18n.getString("expectedFormat", 
-				"The file format did not match your selection: ")
+		final String unexpectedFormatErrorMessage = i18n.getString("expectedFormat")
 				+ lookupI18nFileFormat(settings.getFileFormatName());
 		
 		
@@ -1163,7 +1157,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			String fileName, boolean isNewAssignmentByFileName, ImportSettings settings) 
 	throws InvalidInputException, FatalException 
 			{
-		StringBuilder err = new StringBuilder(i18n.getString("scantronHasErrors", "Scantron File with errors: ")); 
+		StringBuilder err = new StringBuilder(i18n.getString("scantronHasErrors"));
 		ImportExportDataFile raw = new ImportExportDataFile(); 
 		boolean stop = false; 
 				
@@ -1172,7 +1166,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		
 		if (studentIdHeader == null)
 		{
-				err.append(i18n.getString("noColumnWithHeader","- There is no column with the header: ") + scantronStudentIdHeader);
+				err.append(i18n.getString("noColumnWithHeader") + scantronStudentIdHeader);
 				stop = true; 
 		}
 
@@ -1181,7 +1175,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			// check for rescore header - GRBK-407
 			scoreHeader = s.findCell(scantronRescoreHeader);
 			if (scoreHeader == null) {
-				err.append(i18n.getString("noColumnWithHeader","- There is no column with the header: ") + scantronRescoreHeader);
+				err.append(i18n.getString("noColumnWithHeader") + scantronRescoreHeader);
 				stop = true; 
 			}
 		}
@@ -1437,9 +1431,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			org.apache.poi.ss.usermodel.Sheet cur = inspread.getSheetAt(0);
 			ImportExportDataFile ret = null;
 			FileFormat fileFormatChosen = FileFormat.valueOf(settings.getFileFormatName());
-			final String unexpectedFormatErrorMessage = i18n.getString("expectedFormat", 
-					"The file format did not match your selection: ")
-					+ lookupI18nFileFormat(fileFormatChosen.name());
+			final String unexpectedFormatErrorMessage = i18n.getString("expectedFormat") + lookupI18nFileFormat(fileFormatChosen.name());
 			
 			
 			boolean mismatch = false;
@@ -3250,22 +3242,13 @@ private GradeItem buildNewCategory(String curCategoryString,
 		this.gradeCalculations = gradeCalculations;
 	}
 
-
-	public void setI18n(ResourceLoader i18n) {
-		this.i18n = i18n;
-	}
-	
 	public Upload getImportFile(MultipartFile file, ImportSettings importSettings) {
 		Upload rv = null;
 		boolean typeOK = true;
 		final FileType type = FileType.valueOf(importSettings.getExportTypeName());
 		String errorMessage = "";
-		final String unexpectedTypeErrorMessage = i18n.getString("filetypeExtensionMismatch", 
-				"top.")
-				+ lookupI18nExportType(importSettings.getExportTypeName());
-		final String unexpectedFormatErrorMessage = i18n.getString("expectedFormat", 
-				"The file format did not match your selection: ")
-				+ lookupI18nFileFormat(importSettings.getFileFormatName());
+		final String unexpectedTypeErrorMessage = i18n.getString("filetypeExtensionMismatch") + lookupI18nExportType(importSettings.getExportTypeName());
+		final String unexpectedFormatErrorMessage = i18n.getString("expectedFormat") + lookupI18nFileFormat(importSettings.getFileFormatName());
 		
 		String suffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf('.'));
 		
@@ -3444,8 +3427,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 				}
 			}
 		} catch (IOException e) { // file isn't CSV?
-			errorMessage = i18n.getString("errorReadingFile", 
-			                                  "The file could not be read.");
+			errorMessage = i18n.getString("errorReadingFile");
 			log.error(e);
 			
 			typeOK = false;

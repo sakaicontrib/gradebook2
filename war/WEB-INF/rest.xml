@@ -13,14 +13,10 @@
 	
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.InvalidDataMapper" scope="singleton"/>
 	
-	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.StaleObjectModificationMapper" scope="singleton">
-		<property name="i18n" ref="gradebook2.I18N"/>
-	</bean>
-	
-	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.DataIntegrityViolationMapper" scope="singleton">
-		<property name="i18n" ref="gradebook2.I18N"/>
-	</bean>
-	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.StaleObjectModificationMapper" scope="singleton"/>
+
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.DataIntegrityViolationMapper" scope="singleton"/>
+
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" 
 		  abstract="true"
 		  class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource"
@@ -78,10 +74,8 @@
 		parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
 	
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Sections" 
-		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" >
-		  <property name="i18n"><ref bean="gradebook2.I18N"/></property>
-	 </bean>
-	 
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.rest.resource.cache"
 		class="org.springframework.cache.ehcache.EhCacheFactoryBean">
 		<property name="cacheManager">

@@ -36,7 +36,6 @@
     	<property name="sessionManager" ref="org.sakaiproject.tool.api.SessionManager" />
     	<property name="configService" ref="org.sakaiproject.component.api.ServerConfigurationService" />
 		<property name="eventTrackingService" ref="org.sakaiproject.event.api.EventTrackingService" />
-		<property name="i18n" ref="gradebook2.I18N" />
 		<property name="scale" value="50"/>
 		<!-- cache -->
 		<property name="cache" ref="org.sakaiproject.gradebook.gwt.sakai.gradebookservice.cache" />
@@ -78,7 +77,6 @@
 		</property>
 		<property name="importExportUtil" ref="org.sakaiproject.gradebook.gwt.server.ImportExportUtility" />	
 		<property name="frameworkService" ref="org.sakaiproject.service.gradebook.GradebookFrameworkService"/>
-		<property name="i18n" ref="gradebook2.I18N"/>
 	</bean>
 	
 	<bean id="gradebook2.EntityProducerContextListener" 
@@ -91,9 +89,4 @@
 		<property name="frameworkService" ref="org.sakaiproject.service.gradebook.GradebookFrameworkService"/>
 		
 	</bean>
-	
-	<bean id="gradebook2.I18N" class="org.sakaiproject.util.ResourceLoader">
-		<property name="baseName" value="org.sakaiproject.gradebook.gwt.client.I18nConstants" />
-	</bean>
-	
 </beans>

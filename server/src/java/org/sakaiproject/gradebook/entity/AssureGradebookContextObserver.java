@@ -1,13 +1,14 @@
 package org.sakaiproject.gradebook.entity;
 
+import java.util.ResourceBundle;
+
 import org.sakaiproject.entity.api.ContextObserver;
 import org.sakaiproject.service.gradebook.shared.GradebookFrameworkService;
-import org.sakaiproject.util.ResourceLoader;
 
 public class AssureGradebookContextObserver implements ContextObserver {
 
 	// Set via IoC
-	private ResourceLoader i18n;
+	private ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 	
 	private GradebookFrameworkService frameworkService = null;
 	private String[] myToolIds;
@@ -43,10 +44,4 @@ public class AssureGradebookContextObserver implements ContextObserver {
 	public void setMyToolIds(String[] myToolIds) {
 		this.myToolIds = myToolIds;
 	}
-	
-	public void setI18n(ResourceLoader i18n) {
-		this.i18n = i18n;
-	}
-
-
 }
