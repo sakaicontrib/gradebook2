@@ -281,6 +281,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	private SiteService siteService;
 	private ToolManager toolManager;	
 	private UserDirectoryService userService;
+	private String currentSiteId;
 	
 	/*
 	 * GRBK-824 : Adding class member that is only set during init via sakai properties.
@@ -4391,7 +4392,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		Site s = null;
 		try {
-			s = siteService.getSite(toolManager.getCurrentPlacement().getContext());
+			s = siteService.getSite(getSiteContext());
 		} catch (IdUnusedException e) {
 			log.error("current site not found trying store '" + ActionType.GRADED.name() + "' actionrecord");
 
@@ -4715,6 +4716,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	private org.sakaiproject.gradebook.gwt.client.model.Gradebook createGradebookModel(Gradebook gradebook, List<Assignment> assignments, List<Category> categories, boolean isNewGradebook) {
 
 		log.debug("createGradebookModel() called"); 
+		setSiteContext(gradebook.getUid());
 		Site site = null;
 
 		if (siteService != null) {
@@ -6127,12 +6129,24 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		return site;
 	}
 
+	/*
+	 * GRBK-1441: set the site id so it can be used later.
+	 * This is used when the import from site occurs in a separate thread.
+	 */
+	private void setSiteContext(String currentSiteId) {
+		this.currentSiteId = currentSiteId;
+	}
+
 	private String getSiteContext() {
 
 		if (toolManager == null)
 			return AppConstants.TEST_SITE_CONTEXT_ID;
 
-		return toolManager.getCurrentPlacement().getContext();
+		Placement placement = toolManager.getCurrentPlacement();
+		if (placement != null)
+			return placement.getContext();
+
+		return currentSiteId;
 	}
 
 	private String getSiteId() {
@@ -7024,15 +7038,17 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	}	
 
 	public void saveFullGradebookFromClientModel (
-			org.sakaiproject.gradebook.gwt.client.model.Gradebook newGradebook) 
+			org.sakaiproject.gradebook.gwt.client.model.Gradebook newGradebook, String newSiteId)
 	throws FatalException, InvalidInputException {
 
 		if(!(newGradebook instanceof GradebookImpl)) {
 			throw new FatalException("Expected Gradebook implementation of type: " + GradebookImpl.class.getName());
 		}
 
+		// GRBK-1441: if we have a newSiteId, set it for later use
+		setSiteContext(newSiteId);
 
-		Gradebook current = gbService.getGradebook(toolManager.getCurrentPlacement().getContext());
+		Gradebook current = gbService.getGradebook(getSiteContext());
 
 		GradeItem itemModel = (GradeItem) newGradebook.getGradebookItemModel();	
 
