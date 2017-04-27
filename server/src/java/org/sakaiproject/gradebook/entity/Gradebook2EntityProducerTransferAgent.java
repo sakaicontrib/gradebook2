@@ -316,7 +316,7 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 		ignore.add(BusinessLogicCode.CannotIncludeItemFromUnincludedCategoryRule);
 		
 		try {
-			componentService.saveFullGradebookFromClientModel(toGB);
+			componentService.saveFullGradebookFromClientModel(toGB, to);
 		} catch (FatalException e) {
 			log.error("transferCopyEntities(migrate) - from: " + from + " - to: " + to);
 			e.printStackTrace();

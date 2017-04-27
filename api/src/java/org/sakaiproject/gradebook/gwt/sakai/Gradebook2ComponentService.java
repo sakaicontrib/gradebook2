@@ -139,7 +139,7 @@ public interface Gradebook2ComponentService {
 	
 	public Upload upload(String gradebookUid, Long gradebookId, Upload upload, boolean isDryRun) throws InvalidInputException;
 	
-	public void saveFullGradebookFromClientModel(Gradebook newGradebook) throws FatalException, InvalidInputException;
+	public void saveFullGradebookFromClientModel(Gradebook newGradebook, String newSiteId) throws FatalException, InvalidInputException;
 	
 	public Upload upload(String gradebookUid, Long gradebookId,
 			Upload upload, boolean isDryRun,
