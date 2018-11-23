@@ -1528,7 +1528,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				setEntity(1, category.getGradebook()).
 				setLong(2, category.getId().longValue()).list());
 				int numNameConflicts = conflictList.size();
-				if(numNameConflicts > 0) {
+				if(!category.isRemoved() && numNameConflicts > 0) {
 					throw new ConflictingCategoryNameException("You cannot save multiple categories in a gradebook with the same name");
 				}
 				if(category.getWeight().doubleValue() > 1 || category.getWeight().doubleValue() < 0)
