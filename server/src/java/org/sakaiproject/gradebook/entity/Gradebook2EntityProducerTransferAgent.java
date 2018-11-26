@@ -20,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
+import org.sakaiproject.entity.api.ContextObserver;
 import org.sakaiproject.entity.api.Entity;
 import org.sakaiproject.entity.api.EntityManager;
 import org.sakaiproject.entity.api.EntityProducer;
@@ -49,7 +50,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
-public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
+public class Gradebook2EntityProducerTransferAgent implements ContextObserver, EntityProducer,
 		EntityTransferrer {
 	
 	private EntityManager entityManager = null;
@@ -353,6 +354,29 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 	public void setI18n(ResourceLoader i18n) {
 		this.i18n = i18n;
 	}
-	
+
+	@Override
+	public void contextCreated(String context, boolean toolPlacement) {
+		if (!frameworkService.isGradebookDefined(context)) {
+
+			frameworkService.addGradebook(context, i18n
+					.getString("defaultGradebookName"));
+		}
+	}
+
+	@Override
+	public void contextDeleted(String context, boolean toolPlacement) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void contextUpdated(String context, boolean toolPlacement) {
+		if (!frameworkService.isGradebookDefined(context)) {
+
+			frameworkService.addGradebook(context, i18n
+					.getString("defaultGradebookName"));
+		}
+	}		
 
 }
